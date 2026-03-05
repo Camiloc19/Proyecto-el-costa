@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Módulo de Inventario</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="bg-gray-100 p-10">
+
+<h1 class="text-3xl font-bold mb-6 text-center">📦 INVENTARIO DE PRODECTOS.</h1>#titulo de modulo
+
+<!-- FORMULARIO -->
+<div class="bg-white p-6 rounded shadow-md max-w-xl mx-auto">
+
+<h2 class="text-xl font-bold mb-4">Agregar Producto</h2>
+
+<div class="mb-3">
+<label class="block">Nombre del producto</label>
+<input id="nombre" class="w-full border p-2 rounded">
+</div>
+
+<div class="mb-3">
+<label class="block">Descripción</label>
+<input id="descripcion" class="w-full border p-2 rounded">
+</div>
+
+<div class="mb-3">
+<label class="block">Stock de entrada</label>
+<input id="stock" type="number" class="w-full border p-2 rounded">
+</div>
+
+<div class="mb-3">
+<label class="block">Stock salida</label>
+<input id="stock" type="number" class="w-full border p-2 rounded">
+</div>
+
+<div class="mb-3">
+<label class="block">Precio</label>
+<input id="precio" type="number" class="w-full border p-2 rounded">
+</div>
+
+<div class="mb-3">
+<label class="block">entrada</label>
+<input id="precio" type="number" class="w-full border p-2 rounded">
+</div>
+
+<div class="mb-3">
+<label class="block">salida</label>
+<input id="precio" type="number" class="w-full border p-2 rounded">
+</div>
+
+<button onclick="agregarProducto()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+Agregar Producto
+</button>
+
+</div>
+
+<!-- TABLA -->
+<div class="mt-10 max-w-4xl mx-auto">
+
+<table class="w-full bg-white shadow-md rounded">
+
+<thead class="bg-blue-500 text-white">
+<tr>
+<th class="p-3">Producto</th>
+<th class="p-3">Descripción</th>
+<th class="p-3">Stock</th>
+<th class="p-3">Precio</th>
+<th class="p-3">entrada</th>
+<th class="p-3">salida</th>
+</tr>
+</thead>
+
+<tbody id="tablaProductos">
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+function agregarProducto(){
+
+let nombre = document.getElementById("nombre").value
+let descripcion = document.getElementById("descripcion").value
+let stock = document.getElementById("stock").value
+let precio = document.getElementById("precio").value
+
+let tabla = document.getElementById("tablaProductos")
+
+let fila = `
+<tr class="border-b">
+<td class="p-2">${nombre}</td>
+<td class="p-2">${descripcion}</td>
+<td class="p-2">${stock}</td>
+<td class="p-2">$${precio}</td>
+</tr>
+`
+
+tabla.innerHTML += fila
+
+}
+
+</script>
+
+</body>
+</html>
