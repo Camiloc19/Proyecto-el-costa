@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orden de Servicio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+
+<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-8">
+  <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">
+    Orden de Servicio
+  </h1>
+
+  <!-- Datos del cliente -->
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <input id="cliente" type="text" placeholder="Nombre del Cliente"
+      class="border rounded-lg p-2 w-full">
+
+    <input id="documento" type="text" placeholder="Documento"
+      class="border rounded-lg p-2 w-full">
+
+    <input id="telefono" type="text" placeholder="Teléfono"
+      class="border rounded-lg p-2 w-full">
+
+    <input id="fecha" type="date"
+      class="border rounded-lg p-2 w-full">
+  </div>
+
+  <!-- Agregar servicio -->
+  <div class="grid grid-cols-4 gap-4 mb-4">
+    <input id="servicio" type="text" placeholder="Servicio"
+      class="border rounded-lg p-2">
+
+    <input id="cantidad" type="number" placeholder="Cantidad"
+      class="border rounded-lg p-2">
+
+    <input id="precio" type="number" placeholder="Precio"
+      class="border rounded-lg p-2">
+
+    <button onclick="agregarServicio()"
+      class="bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+      Agregar
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="overflow-x-auto mb-6">
+    <table class="w-full border-collapse border border-gray-300">
+      <thead class="bg-blue-500 text-white">
+        <tr>
+          <th class="border p-2">Servicio</th>
+          <th class="border p-2">Cantidad</th>
+          <th class="border p-2">Precio</th>
+          <th class="border p-2">Total</th>
+        </tr>
+      </thead>
+      <tbody id="tablaServicios"></tbody>
+    </table>
+  </div>
+
+  <!-- Total General -->
+  <div class="text-right mb-6">
+    <h2 class="text-xl font-bold">
+      Total General: $<span id="totalGeneral">0</span>
+    </h2>
+  </div>
+
+  <!-- Botón Guardar -->
+  <div class="text-center">
+    <button onclick="guardarOrden()"
+      class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+      Guardar Orden
+    </button>
+  </div>
+</div>
+
+<script>
+let servicios = [];
+
+function agregarServicio() {
+  const servicio = document.getElementById("servicio").value;
+  const cantidad = parseInt(document.getElementById("cantidad").value);
+  const precio = parseFloat(document.getElementById("precio").value);
+
+  if (!servicio || !cantidad || !precio) {
+    alert("Completa todos los campos del servicio");
+    return;
+  }
+
+  const total = cantidad * precio;
+
+  servicios.push({ servicio, cantidad, precio, total });
+
+  actualizarTabla();
+  limpiarCampos();
+}
+
+function actualizarTabla() {
+  const tabla = document.getElementById("tablaServicios");
+  tabla.innerHTML = "";
+
+  let totalGeneral = 0;
+
+  servicios.forEach(item => {
+    totalGeneral += item.total;
+
+    tabla.innerHTML += `
+      <tr>
+        <td class="border p-2">${item.servicio}</td>
+        <td class="border p-2">${item.cantidad}</td>
+        <td class="border p-2">$${item.precio}</td>
+        <td class="border p-2">$${item.total}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("totalGeneral").textContent = totalGeneral;
+}
+
+function limpiarCampos() {
+  document.getElementById("servicio").value = "";
+  document.getElementById("cantidad").value = "";
+  document.getElementById("precio").value = "";
+}
+
+function guardarOrden() {
+  const orden = {
+    cliente: document.getElementById("cliente").value,
+    documento: document.getElementById("documento").value,
+    telefono: document.getElementById("telefono").value,
+    fecha: document.getElementById("fecha").value,
+    servicios: servicios,
+    total: document.getElementById("totalGeneral").textContent
+  };
+
+  localStorage.setItem("ordenServicio", JSON.stringify(orden));
+  alert("Orden guardada correctamente 💾");
+}
+
+window.onload = function() {
+  const ordenGuardada = localStorage.getItem("ordenServicio");
+
+  if (ordenGuardada) {
+    const orden = JSON.parse(ordenGuardada);
+
+    document.getElementById("cliente").value = orden.cliente;
+    document.getElementById("documento").value = orden.documento;
+    document.getElementById("telefono").value = orden.telefono;
+    document.getElementById("fecha").value = orden.fecha;
+
+    servicios = orden.servicios || [];
+    actualizarTabla();
+  }
+}
+</script>
+
+</body>
+</html>
