@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sistema de Facturación - Taller</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-800 min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-4xl bg-gray-900 text-white p-10 rounded-2xl shadow-2xl">
+
+<h1 class="text-3xl font-bold mb-8 border-b border-gray-700 pb-3">
+🚗 Facturación - Taller Automotriz
+</h1>
+
+<form class="grid grid-cols-2 gap-6">
+
+<!-- ID ORDEN -->
+<div>
+<label class="block text-sm mb-1 text-gray-300">ID Orden</label>
+<input type="number" name="Fac_id_orden"
+class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+</div>
+
+<!-- ID USUARIO -->
+<div>
+<label class="block text-sm mb-1 text-gray-300">ID Usuario</label>
+<input type="number" name="Fac_id_usu"
+class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+</div>
+
+<!-- NUMERO FACTURA -->
+<div>
+<label class="block text-sm mb-1 text-gray-300">Número de Factura</label>
+<input type="number" name="Fac_num_fact"
+class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+</div>
+
+<!-- METODO PAGO -->
+<div>
+<label class="block text-sm mb-1 text-gray-300">Método de Pago</label>
+<select name="Fac_Met_pago"
+class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+
+<option>Nequi</option>
+<option>Daviplata</option>
+<option>Tarjeta</option>
+<option>Efectivo</option>
+
+</select>
+</div>
+
+<!-- FECHA -->
+<div>
+<label class="block text-sm mb-1 text-gray-300">Fecha</label>
+<input type="date" name="Fac_Fecha"
+class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+</div>
+
+<!-- TOTAL -->
+<div>
+<label class="block text-sm mb-1 text-gray-300">Total ($)</label>
+<input type="number" name="Fac_total"
+class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+</div>
+
+<!-- BOTONES -->
+<div class="col-span-2 flex justify-end gap-4 pt-4">
+
+<button type="reset"
+class="bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded-lg transition">
+Limpiar
+</button>
+
+<button type="submit"
+class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg transition font-semibold">
+Guardar Factura
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</body>
+</html>
