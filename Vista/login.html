@@ -1,49 +1,130 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Login</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>El Costa</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #0f0f0f; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+    @keyframes gearSpin { to { transform: rotate(360deg); } }
+    .gear-spin { animation: gearSpin 14s linear infinite; }
+
+    input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); color: #F0C040; -webkit-text-fill-color: #F0C040; font-size: 13px; width: 100%; padding: 6px 2px; transition: border-color 0.2s; font-family: 'Inter', sans-serif; }
+    input::placeholder { color: rgba(255,255,255,0.35); }
+    input:focus { outline: none; border-bottom-color: #F0C040; }
+
+    .login-btn {
+      width: 100%;
+      padding: 8px 0;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+      background: linear-gradient(90deg, #facc15, #f97316, #ef4444);
+      box-shadow: 0 4px 18px rgba(249,115,22,0.4);
+      transition: opacity 0.15s, transform 0.1s;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.05em;
+    }
+    .login-btn:hover { opacity: 0.88; }
+    .login-btn:active { transform: scale(0.97); }
+
+    .link { color: rgba(255,255,255,0.35); font-size: 11px; text-decoration: none; transition: color 0.2s; }
+    .link:hover { color: #F0C040; }
+
+    /* Glow ambiental detrás del engranaje */
+    .glow {
+      position: absolute;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,140,10,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  </style>
 </head>
+<body>
 
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div style="position:relative;width:420px;height:420px;display:flex;align-items:center;justify-content:center;">
 
-  <div class="bg-white p-8 rounded-2xl shadow-lg w-96">
-    
-    <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">
-      Iniciar Sesión
-    </h2>
+    <!-- Glow de fondo -->
+    <div class="glow"></div>
 
-    <form>
-      
-      <div class="mb-4">
-        <label class="block text-gray-600 mb-2">Correo</label>
-        <input 
-          type="email" 
-          placeholder="ejemplo@gmail.com"
-          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
+    <!-- Engranaje giratorio -->
+    <svg class="gear-spin" style="position:absolute;top:0;left:0;width:420px;height:420px;"
+         viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#3D2600"/>
+          <stop offset="15%"  stop-color="#A06808"/>
+          <stop offset="35%"  stop-color="#F0C040"/>
+          <stop offset="52%"  stop-color="#E8A818"/>
+          <stop offset="68%"  stop-color="#B07010"/>
+          <stop offset="85%"  stop-color="#C88010"/>
+          <stop offset="100%" stop-color="#5A3800"/>
+        </linearGradient>
+        <filter id="gs">
+          <feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#C8900A" flood-opacity="0.4"/>
+        </filter>
+      </defs>
+      <path id="gearPath" fill="url(#gold)" fill-rule="evenodd"
+            stroke="#6B4400" stroke-width="0.6" filter="url(#gs)"/>
+    </svg>
+
+    <!-- Contenido del login DENTRO del engranaje (sin caja) -->
+    <div style="position:relative;z-index:10;width:200px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+
+      <!-- Título -->
+      <h1 style="color:#fff;font-size:22px;font-weight:700;letter-spacing:0.12em;text-shadow:0 0 18px rgba(240,192,64,0.5);font-family:'Orbitron', sans-serif;">
+        El Costa
+      </h1>
+
+      <!-- Inputs -->
+      <div style="width:100%;display:flex;flex-direction:column;gap:14px;">
+        <input type="text"     placeholder="Correo"/>
+        <input type="password" placeholder="Contraseña"/>
       </div>
 
-      <div class="mb-6">
-        <label class="block text-gray-600 mb-2">Contraseña</label>
-        <input 
-          type="password" 
-          placeholder="********"
-          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
+      <!-- Botón -->
+      <button class="login-btn">Ingresar</button>
+
+      <!-- Links -->
+      <div style="display:flex;justify-content:center;width:100%;padding:0 2px;">
+        <a href="#" class="link">¿olvidaste tu contraseña?</a>
       </div>
 
-      <button 
-        type="submit"
-        class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-      >
-        Entrar
-      </button>
-
-    </form>
-
+    </div>
   </div>
 
+  <script>
+    const f = n => n.toFixed(3);
+    function buildGear(cx, cy, n, rOut, rRoot, rInner) {
+      const step = (2 * Math.PI) / n;
+      const th = step * 0.20;
+      const ch = 1.20;
+      const px = (r,a) => cx + r * Math.cos(a);
+      const py = (r,a) => cy + r * Math.sin(a);
+      let d = '';
+      for (let i = 0; i < n; i++) {
+        const a = i * step - Math.PI / 2;
+        const aRL = a - th * ch, aTL = a - th * 0.78, aTR = a + th * 0.78, aRR = a + th * ch;
+        d += `${i===0?'M':'L'} ${f(px(rRoot,aRL))} ${f(py(rRoot,aRL))} `;
+        d += `L ${f(px(rOut,aTL))}  ${f(py(rOut,aTL))}  `;
+        d += `L ${f(px(rOut,aTR))}  ${f(py(rOut,aTR))}  `;
+        d += `L ${f(px(rRoot,aRR))} ${f(py(rRoot,aRR))} `;
+        const next = (i+1)*step - Math.PI/2 - th*ch;
+        d += `A ${rRoot} ${rRoot} 0 0 1 ${f(px(rRoot,next))} ${f(py(rRoot,next))} `;
+      }
+      d += `Z M ${f(cx+rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx-rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx+rInner)} ${f(cy)} Z`;
+      return d;
+    }
+    // cx=210,cy=210 | 26 dientes | outer=208 | root=180 | inner=142
+    document.getElementById('gearPath').setAttribute('d', buildGear(210,210,26,208,180,142));
+  </script>
 </body>
 </html>
