@@ -2,81 +2,62 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Módulo de Inventario</title>
-
+<title>Inventario PRO</title>
 <script src="https://cdn.tailwindcss.com"></script>
-
 </head>
 
-<body class="bg-gray-100 p-10">
+<body class="bg-gradient-to-r from-blue-100 to-green-100 p-10">
 
-<h1 class="text-3xl font-bold mb-6 text-center">📦 INVENTARIO EL COSTA</h1>
+<h1 class="text-3xl font-bold mb-6 text-center bg-blue-600 text-white p-4 rounded">
+📦 INVENTARIO EL COSTA
+</h1>
+
+<!-- BUSCADOR -->
+<div class="max-w-xl mx-auto mb-4">
+<input onkeyup="buscar()" id="buscador" placeholder="🔍 Buscar producto..."
+class="w-full p-2 border rounded">
+</div>
+
+<!-- CONTADOR -->
+<h2 class="text-center mb-4 font-bold">
+Total productos: <span id="total">0</span>
+</h2>
 
 <!-- FORMULARIO -->
 <div class="bg-white p-6 rounded shadow-md max-w-xl mx-auto">
 
-<h2 class="text-xl font-bold mb-4">Agregar Producto</h2>
+<h2 class="text-xl font-bold mb-4">Agregar / Editar Producto</h2>
 
-<div class="mb-3">
-<label class="block">Nombre del producto</label>
-<input id="nombre" class="w-full border p-2 rounded">
-</div>
+<input id="nombre" placeholder="Nombre" class="w-full border p-2 mb-2 rounded">
+<input id="descripcion" placeholder="Descripción" class="w-full border p-2 mb-2 rounded">
+<input id="entrada" type="number" placeholder="Entrada" class="w-full border p-2 mb-2 rounded">
+<input id="salida" type="number" placeholder="Salida" class="w-full border p-2 mb-2 rounded">
+<input id="precio" type="number" placeholder="Precio" class="w-full border p-2 mb-2 rounded">
 
-<div class="mb-3">
-<label class="block">Descripción</label>
-<input id="descripcion" class="w-full border p-2 rounded">
-</div>
-
-<div class="mb-3">
-<label class="block">Stock de entrada</label>
-<input id="stock" type="number" class="w-full border p-2 rounded">
-</div>
-
-<div class="mb-3">
-<label class="block">Stock salida</label>
-<input id="stock" type="number" class="w-full border p-2 rounded">
-</div>
-
-<div class="mb-3">
-<label class="block">Precio</label>
-<input id="precio" type="number" class="w-full border p-2 rounded">
-</div>
-
-<div class="mb-3">
-<label class="block">entrada</label>
-<input id="precio" type="number" class="w-full border p-2 rounded">
-</div>
-
-<div class="mb-3">
-<label class="block">salida</label>
-<input id="precio" type="number" class="w-full border p-2 rounded">
-</div>
-
-<button onclick="agregarProducto()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-Agregar Producto
+<button onclick="agregarProducto()" class="bg-green-500 text-white px-4 py-2 rounded w-full hover:bg-green-700">
+Guardar Producto
 </button>
 
 </div>
 
 <!-- TABLA -->
-<div class="mt-10 max-w-4xl mx-auto">
+<div class="mt-10 max-w-5xl mx-auto">
 
 <table class="w-full bg-white shadow-md rounded">
 
-<thead class="bg-blue-500 text-white">
+<thead class="bg-blue-600 text-white">
 <tr>
 <th class="p-3">Producto</th>
 <th class="p-3">Descripción</th>
+<th class="p-3">Entrada</th>
+<th class="p-3">Salida</th>
 <th class="p-3">Stock</th>
 <th class="p-3">Precio</th>
-<th class="p-3">entrada</th>
-<th class="p-3">salida</th>
+<th class="p-3">Acciones</th>
 </tr>
 </thead>
 
-<tbody id="tablaProductos">
-
-</tbody>
+<tbody id="tablaProductos"></tbody>
 
 </table>
 
@@ -84,26 +65,110 @@ Agregar Producto
 
 <script>
 
+let editando = null
+
+// CARGAR DATOS
+window.onload = function(){
+document.getElementById("tablaProductos").innerHTML = localStorage.getItem("productos") || ""
+actualizarTotal()
+}
+
+// AGREGAR / EDITAR
 function agregarProducto(){
 
 let nombre = document.getElementById("nombre").value
 let descripcion = document.getElementById("descripcion").value
-let stock = document.getElementById("stock").value
+let entrada = parseInt(document.getElementById("entrada").value) || 0
+let salida = parseInt(document.getElementById("salida").value) || 0
 let precio = document.getElementById("precio").value
 
-let tabla = document.getElementById("tablaProductos")
+if(nombre === "" || precio === ""){
+    alert("Completa los campos")
+    return
+}
+
+let stock = entrada - salida
 
 let fila = `
-<tr class="border-b">
+<tr class="border-b text-center hover:bg-green-100">
 <td class="p-2">${nombre}</td>
 <td class="p-2">${descripcion}</td>
-<td class="p-2">${stock}</td>
+<td class="p-2">${entrada}</td>
+<td class="p-2">${salida}</td>
+<td class="p-2 font-bold">${stock}</td>
 <td class="p-2">$${precio}</td>
+<td class="p-2 space-x-1">
+<button onclick="editarFila(this)" class="bg-yellow-400 px-2 py-1 rounded">✏️</button>
+<button onclick="eliminarFila(this)" class="bg-red-500 text-white px-2 py-1 rounded">🗑️</button>
+</td>
 </tr>
 `
 
-tabla.innerHTML += fila
+if(editando){
+editando.outerHTML = fila
+editando = null
+}else{
+document.getElementById("tablaProductos").innerHTML += fila
+}
 
+guardarDatos()
+limpiar()
+actualizarTotal()
+
+}
+
+// ELIMINAR
+function eliminarFila(boton){
+if(confirm("¿Eliminar producto?")){
+boton.parentElement.parentElement.remove()
+guardarDatos()
+actualizarTotal()
+}
+}
+
+// EDITAR
+function editarFila(boton){
+let fila = boton.parentElement.parentElement
+let celdas = fila.children
+
+document.getElementById("nombre").value = celdas[0].innerText
+document.getElementById("descripcion").value = celdas[1].innerText
+document.getElementById("entrada").value = celdas[2].innerText
+document.getElementById("salida").value = celdas[3].innerText
+document.getElementById("precio").value = celdas[5].innerText.replace("$","")
+
+editando = fila
+}
+
+// BUSCAR
+function buscar(){
+let filtro = document.getElementById("buscador").value.toLowerCase()
+let filas = document.querySelectorAll("#tablaProductos tr")
+
+filas.forEach(fila => {
+let texto = fila.innerText.toLowerCase()
+fila.style.display = texto.includes(filtro) ? "" : "none"
+})
+}
+
+// GUARDAR
+function guardarDatos(){
+localStorage.setItem("productos", document.getElementById("tablaProductos").innerHTML)
+}
+
+// TOTAL
+function actualizarTotal(){
+let total = document.getElementById("tablaProductos").rows.length
+document.getElementById("total").innerText = total
+}
+
+// LIMPIAR
+function limpiar(){
+document.getElementById("nombre").value = ""
+document.getElementById("descripcion").value = ""
+document.getElementById("entrada").value = ""
+document.getElementById("salida").value = ""
+document.getElementById("precio").value = ""
 }
 
 </script>
