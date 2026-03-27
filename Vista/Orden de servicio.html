@@ -5,74 +5,194 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Orden de Servicio</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @media print {
+      body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .print-container {
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        background: white !important;
+      }
+
+      input, textarea {
+        border: none !important;
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+
+      th, td {
+        border: 1px solid black !important;
+        padding: 8px !important;
+        color: black !important;
+        font-size: 12px !important;
+      }
+
+      h1, h2, h3, p, span, label {
+        color: black !important;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 p-6">
 
-<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-8">
-  <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">
-    Orden de Servicio
-  </h1>
+<body class="min-h-screen bg-cover bg-center bg-no-repeat p-6"
+  style="background-image: linear-gradient(rgba(5, 10, 8, 0.82), rgba(10, 20, 18, 0.88)), url('fondo-taller.jpg');">
 
-  <!-- Datos del cliente -->
-  <div class="grid grid-cols-2 gap-4 mb-6">
-    <input id="cliente" type="text" placeholder="Nombre del Cliente"
-      class="border rounded-lg p-2 w-full">
+  <div class="print-container max-w-6xl mx-auto bg-[#0b1120]/85 backdrop-blur-lg border border-[#28443c] shadow-2xl rounded-3xl p-8 text-white">
+    
+    <!-- Encabezado -->
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-8 border-b border-[#1f3b33] pb-6">
+      <div>
+        <h1 class="text-4xl font-extrabold tracking-wide text-[#d1fae5]">
+          Orden de Servicio
+        </h1>
+        <p class="text-slate-400 mt-2">
+          Registro y control de servicios automotrices
+        </p>
+      </div>
 
-    <input id="documento" type="text" placeholder="Documento"
-      class="border rounded-lg p-2 w-full">
+      <div class="text-left md:text-right">
+        <p class="text-slate-400 text-sm">N° de Orden</p>
+        <h2 class="text-2xl font-bold text-[#86efac]" id="numeroOrden">#001</h2>
+      </div>
+    </div>
 
-    <input id="telefono" type="text" placeholder="Teléfono"
-      class="border rounded-lg p-2 w-full">
+    <!-- Datos del cliente -->
+    <h3 class="text-xl font-semibold text-[#93c5fd] mb-4">Datos del Cliente</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <input id="cliente" type="text" placeholder="Nombre del Cliente"
+        class="bg-[#111827]/80 border border-[#355c4a] rounded-xl p-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]">
 
-    <input id="fecha" type="date"
-      class="border rounded-lg p-2 w-full">
-  </div>
+      <input id="documento" type="text" placeholder="Documento"
+        class="bg-[#111827]/80 border border-[#355c4a] rounded-xl p-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]">
 
-  <!-- Agregar servicio -->
-  <div class="grid grid-cols-4 gap-4 mb-4">
-    <input id="servicio" type="text" placeholder="Servicio"
-      class="border rounded-lg p-2">
+      <input id="telefono" type="text" placeholder="Teléfono"
+        class="bg-[#111827]/80 border border-[#355c4a] rounded-xl p-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]">
 
-    <input id="cantidad" type="number" placeholder="Cantidad"
-      class="border rounded-lg p-2">
+      <input id="fecha" type="date"
+        class="bg-[#111827]/80 border border-[#355c4a] rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#3b82f6]">
+    </div>
 
-    <input id="precio" type="number" placeholder="Precio"
-      class="border rounded-lg p-2">
+    <!-- Servicios -->
+    <h3 class="text-xl font-semibold text-[#93c5fd] mb-4">Agregar Servicio</h3>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <input id="servicio" type="text" placeholder="Servicio"
+        class="bg-[#111827]/80 border border-[#355c4a] rounded-xl p-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]">
 
-    <button onclick="agregarServicio()"
-      class="bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-      Agregar
-    </button>
-  </div>
+      <input id="cantidad" type="number" placeholder="Cantidad"
+        class="bg-[#111827]/80 border border-[#355c4a] rounded-xl p-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]">
 
-  <!-- Tabla -->
-  <div class="overflow-x-auto mb-6">
-    <table class="w-full border-collapse border border-gray-300">
-      <thead class="bg-blue-500 text-white">
-        <tr>
-          <th class="border p-2">Servicio</th>
-          <th class="border p-2">Cantidad</th>
-          <th class="border p-2">Precio</th>
-          <th class="border p-2">Total</th>
-        </tr>
-      </thead>
-      <tbody id="tablaServicios"></tbody>
-    </table>
-  </div>
+      <input id="precio" type="number" placeholder="Precio"
+        class="bg-[#111827]/80 border border-[#355c4a] rounded-xl p-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]">
 
-  <!-- Total General -->
-  <div class="text-right mb-6">
-    <h2 class="text-xl font-bold">
-      Total General: $<span id="totalGeneral">0</span>
-    </h2>
-  </div>
+      <button onclick="agregarServicio()"
+        class="bg-[#14532d] hover:bg-[#166534] text-white font-semibold rounded-xl px-4 py-3 transition shadow-lg">
+        Agregar
+      </button>
+    </div>
 
-  <!-- Botón Guardar -->
-  <div class="text-center">
-    <button onclick="guardarOrden()"
-      class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
-      Guardar Orden
-    </button>
+    <!-- Tabla de servicios -->
+    <div class="overflow-x-auto mb-8">
+      <table class="w-full border-collapse overflow-hidden rounded-2xl">
+        <thead class="bg-[#0f172a] text-[#d1fae5]">
+          <tr>
+            <th class="border border-[#28443c] p-3">Servicio</th>
+            <th class="border border-[#28443c] p-3">Cantidad</th>
+            <th class="border border-[#28443c] p-3">Precio</th>
+            <th class="border border-[#28443c] p-3">Total</th>
+            <th class="border border-[#28443c] p-3 no-print">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tablaServicios" class="bg-[#111827]/70 text-slate-200"></tbody>
+      </table>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="mb-8">
+      <label class="block text-lg font-semibold text-[#93c5fd] mb-3">Observaciones</label>
+      <textarea id="observaciones" rows="4" placeholder="Escribe observaciones adicionales..."
+        class="w-full bg-[#111827]/80 border border-[#355c4a] rounded-2xl p-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]"></textarea>
+    </div>
+
+    <!-- Total -->
+    <div class="flex justify-end mb-8">
+      <div class="bg-[#0f172a]/80 border border-[#28443c] rounded-2xl px-6 py-4 shadow-lg">
+        <h2 class="text-2xl font-bold text-[#86efac]">
+          Total General: $<span id="totalGeneral">0</span>
+        </h2>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex flex-wrap gap-4 justify-center no-print mb-12">
+      <button onclick="guardarOrden()"
+        class="bg-[#14532d] hover:bg-[#166534] text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
+        Guardar Orden
+      </button>
+
+      <button onclick="limpiarTodo()"
+        class="bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
+        Limpiar Todo
+      </button>
+
+      <button onclick="window.print()"
+        class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
+        Imprimir
+      </button>
+
+      <button onclick="cargarHistorial()"
+        class="bg-[#1e293b] hover:bg-[#334155] text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
+        Actualizar Historial
+      </button>
+    </div>
+
+    <!-- Historial -->
+    <div class="border-t border-[#1f3b33] pt-8">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h3 class="text-2xl font-bold text-[#d1fae5]">Historial de Órdenes</h3>
+          <p class="text-slate-400 text-sm mt-1">Órdenes guardadas en el navegador</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse overflow-hidden rounded-2xl">
+          <thead class="bg-[#0f172a] text-[#d1fae5]">
+            <tr>
+              <th class="border border-[#28443c] p-3">N° Orden</th>
+              <th class="border border-[#28443c] p-3">Cliente</th>
+              <th class="border border-[#28443c] p-3">Documento</th>
+              <th class="border border-[#28443c] p-3">Teléfono</th>
+              <th class="border border-[#28443c] p-3">Fecha</th>
+              <th class="border border-[#28443c] p-3">Total</th>
+            </tr>
+          </thead>
+          <tbody id="tablaHistorial" class="bg-[#111827]/70 text-slate-200"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
   <script>
