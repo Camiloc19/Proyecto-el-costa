@@ -74,87 +74,178 @@
       Guardar Orden
     </button>
   </div>
-</div>
 
-<script>
-let servicios = [];
+  <script>
+    let servicios = [];
+    let numeroOrden = parseInt(localStorage.getItem("numeroOrden")) || 1;
 
-function agregarServicio() {
-  const servicio = document.getElementById("servicio").value;
-  const cantidad = parseInt(document.getElementById("cantidad").value);
-  const precio = parseFloat(document.getElementById("precio").value);
+    function mostrarNumeroOrden() {
+      document.getElementById("numeroOrden").textContent =
+        "#" + String(numeroOrden).padStart(3, "0");
+    }
 
-  if (!servicio || !cantidad || !precio) {
-    alert("Completa todos los campos del servicio");
-    return;
-  }
+    mostrarNumeroOrden();
 
-  const total = cantidad * precio;
+    function agregarServicio() {
+      const servicio = document.getElementById("servicio").value.trim();
+      const cantidad = parseInt(document.getElementById("cantidad").value);
+      const precio = parseFloat(document.getElementById("precio").value);
 
-  servicios.push({ servicio, cantidad, precio, total });
+      if (!servicio || !cantidad || !precio) {
+        alert("Completa todos los campos del servicio");
+        return;
+      }
 
-  actualizarTabla();
-  limpiarCampos();
-}
+      const total = cantidad * precio;
+      servicios.push({ servicio, cantidad, precio, total });
 
-function actualizarTabla() {
-  const tabla = document.getElementById("tablaServicios");
-  tabla.innerHTML = "";
+      actualizarTabla();
+      limpiarCampos();
+    }
 
-  let totalGeneral = 0;
+    function actualizarTabla() {
+      const tabla = document.getElementById("tablaServicios");
+      tabla.innerHTML = "";
 
-  servicios.forEach(item => {
-    totalGeneral += item.total;
+      let totalGeneral = 0;
 
-    tabla.innerHTML += `
-      <tr>
-        <td class="border p-2">${item.servicio}</td>
-        <td class="border p-2">${item.cantidad}</td>
-        <td class="border p-2">$${item.precio}</td>
-        <td class="border p-2">$${item.total}</td>
-      </tr>
-    `;
-  });
+      servicios.forEach((item, index) => {
+        totalGeneral += item.total;
 
-  document.getElementById("totalGeneral").textContent = totalGeneral;
-}
+        tabla.innerHTML += `
+          <tr class="hover:bg-[#1f2937]/80 transition">
+            <td class="border border-[#28443c] p-3">${item.servicio}</td>
+            <td class="border border-[#28443c] p-3">${item.cantidad}</td>
+            <td class="border border-[#28443c] p-3">$${item.precio.toLocaleString()}</td>
+            <td class="border border-[#28443c] p-3">$${item.total.toLocaleString()}</td>
+            <td class="border border-[#28443c] p-3 text-center no-print">
+              <button onclick="eliminarServicio(${index})"
+                class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-lg transition">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
 
-function limpiarCampos() {
-  document.getElementById("servicio").value = "";
-  document.getElementById("cantidad").value = "";
-  document.getElementById("precio").value = "";
-}
+      document.getElementById("totalGeneral").textContent = totalGeneral.toLocaleString();
+    }
 
-function guardarOrden() {
-  const orden = {
-    cliente: document.getElementById("cliente").value,
-    documento: document.getElementById("documento").value,
-    telefono: document.getElementById("telefono").value,
-    fecha: document.getElementById("fecha").value,
-    servicios: servicios,
-    total: document.getElementById("totalGeneral").textContent
-  };
+    function limpiarCampos() {
+      document.getElementById("servicio").value = "";
+      document.getElementById("cantidad").value = "";
+      document.getElementById("precio").value = "";
+    }
 
-  localStorage.setItem("ordenServicio", JSON.stringify(orden));
-  alert("Orden guardada correctamente 💾");
-}
+    function eliminarServicio(index) {
+      servicios.splice(index, 1);
+      actualizarTabla();
+    }
 
-window.onload = function() {
-  const ordenGuardada = localStorage.getItem("ordenServicio");
+    function guardarOrden() {
+      const cliente = document.getElementById("cliente").value.trim();
+      const documento = document.getElementById("documento").value.trim();
+      const telefono = document.getElementById("telefono").value.trim();
+      const fecha = document.getElementById("fecha").value;
+      const observaciones = document.getElementById("observaciones").value.trim();
+      const total = document.getElementById("totalGeneral").textContent;
 
-  if (ordenGuardada) {
-    const orden = JSON.parse(ordenGuardada);
+      if (!cliente || !documento || !telefono || !fecha || servicios.length === 0) {
+        alert("Completa los datos del cliente y agrega al menos un servicio");
+        return;
+      }
 
-    document.getElementById("cliente").value = orden.cliente;
-    document.getElementById("documento").value = orden.documento;
-    document.getElementById("telefono").value = orden.telefono;
-    document.getElementById("fecha").value = orden.fecha;
+      const orden = {
+        numeroOrden: document.getElementById("numeroOrden").textContent,
+        cliente,
+        documento,
+        telefono,
+        fecha,
+        observaciones,
+        servicios,
+        total
+      };
 
-    servicios = orden.servicios || [];
-    actualizarTabla();
-  }
-}
-</script>
+      let ordenes = JSON.parse(localStorage.getItem("ordenesServicio")) || [];
+      ordenes.push(orden);
 
+      localStorage.setItem("ordenesServicio", JSON.stringify(ordenes));
+      localStorage.setItem("ordenServicio", JSON.stringify(orden));
+
+      alert("Orden guardada correctamente 💾");
+
+      numeroOrden++;
+      localStorage.setItem("numeroOrden", numeroOrden);
+
+      limpiarTodo(false);
+      mostrarNumeroOrden();
+      cargarHistorial();
+    }
+
+    function limpiarTodo(confirmar = true) {
+      if (!confirmar || confirm("¿Seguro que quieres borrar toda la orden actual?")) {
+        document.getElementById("cliente").value = "";
+        document.getElementById("documento").value = "";
+        document.getElementById("telefono").value = "";
+        document.getElementById("fecha").value = "";
+        document.getElementById("observaciones").value = "";
+
+        servicios = [];
+        actualizarTabla();
+
+        localStorage.removeItem("ordenServicio");
+      }
+    }
+
+    function cargarHistorial() {
+      const tabla = document.getElementById("tablaHistorial");
+      tabla.innerHTML = "";
+
+      const ordenes = JSON.parse(localStorage.getItem("ordenesServicio")) || [];
+
+      if (ordenes.length === 0) {
+        tabla.innerHTML = `
+          <tr>
+            <td colspan="6" class="border border-[#28443c] p-4 text-center text-slate-400">
+              No hay órdenes guardadas todavía.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      ordenes.forEach(orden => {
+        tabla.innerHTML += `
+          <tr class="hover:bg-[#1f2937]/80 transition">
+            <td class="border border-[#28443c] p-3">${orden.numeroOrden}</td>
+            <td class="border border-[#28443c] p-3">${orden.cliente}</td>
+            <td class="border border-[#28443c] p-3">${orden.documento}</td>
+            <td class="border border-[#28443c] p-3">${orden.telefono}</td>
+            <td class="border border-[#28443c] p-3">${orden.fecha}</td>
+            <td class="border border-[#28443c] p-3">$${orden.total}</td>
+          </tr>
+        `;
+      });
+    }
+
+    window.onload = function() {
+      const ordenGuardada = localStorage.getItem("ordenServicio");
+
+      if (ordenGuardada) {
+        const orden = JSON.parse(ordenGuardada);
+
+        document.getElementById("cliente").value = orden.cliente || "";
+        document.getElementById("documento").value = orden.documento || "";
+        document.getElementById("telefono").value = orden.telefono || "";
+        document.getElementById("fecha").value = orden.fecha || "";
+        document.getElementById("observaciones").value = orden.observaciones || "";
+
+        servicios = orden.servicios || [];
+        actualizarTabla();
+      }
+
+      cargarHistorial();
+    }
+  </script>
 </body>
 </html>
