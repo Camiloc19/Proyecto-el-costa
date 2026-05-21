@@ -1,16 +1,8 @@
-import mysql.connector
+import sys
+import os
 
-conexion = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="1234",
-    database="taller_el_costa"
-)
+sys.path.append(os.path.join(os.path.dirname(__file__), 'Controlador'))
+from controlador import app
 
-print("Conectado")
-
-cursor = conexion.cursor()
-cursor.execute("select * from vehiculos")
-
-for fila in cursor:
-    print(fila)
+if __name__ == '__main__':
+    app.run(debug=True)
