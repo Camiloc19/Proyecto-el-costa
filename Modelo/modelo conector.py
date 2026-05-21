@@ -109,23 +109,23 @@ def obtener_vehiculo_por_id(id):
     con.close()
     return resultado
 
-def crear_vehiculo(id_usuario, id_marca, placa, modelo, anio, color, tipo):
+def crear_vehiculo(id_usuario, id_marca, placa, modelo, año, color, tipo):
     con = conectar()
     cursor = con.cursor()
     cursor.execute("""
         INSERT INTO vehiculos (id_Usuario_fk, id_Marca_fk, placa, modelo, año, color, tipo) 
         VALUES (%s, %s, %s, %s, %s, %s, %s)
-    """, (id_usuario, id_marca, placa, modelo, anio, color, tipo))
+    """, (id_usuario, id_marca, placa, modelo, año, color, tipo))
     con.commit()
     con.close()
 
-def actualizar_vehiculo(id, id_usuario, id_marca, placa, modelo, anio, color, tipo):
+def actualizar_vehiculo(id, id_usuario, id_marca, placa, modelo, año, color, tipo):
     con = conectar()
     cursor = con.cursor()
     cursor.execute("""
         UPDATE vehiculos SET id_Usuario_fk=%s, id_Marca_fk=%s, placa=%s, modelo=%s, año=%s, color=%s, tipo=%s 
         WHERE IDvehiculos=%s
-    """, (id_usuario, id_marca, placa, modelo, anio, color, tipo, id))
+    """, (id_usuario, id_marca, placa, modelo, año, color, tipo, id))
     con.commit()
     con.close()
 
