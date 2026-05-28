@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Órdenes de Servicio — Taller El Costa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-900 text-white p-6">
+<div class="max-w-6xl mx-auto">
+
+  <h1 class="text-3xl font-extrabold text-green-300 mb-6">🔧 Órdenes — Taller El Costa</h1>
+
+  <!-- PESTAÑAS -->
+  <div class="flex gap-2 mb-6 border-b border-gray-700">
+    <button onclick="cambiarPestana('ordenes')" id="tab-ordenes"
+      class="px-5 py-2 rounded-t-lg font-semibold transition tab-activa">
+      📋 Órdenes de Servicio
+    </button>
+    <button onclick="cambiarPestana('atenciones')" id="tab-atenciones"
+      class="px-5 py-2 rounded-t-lg font-semibold transition tab-inactiva">
+      🩺 Atenciones
+    </button>
+  </div>
+
+
+  <!-- PANEL: ÓRDENES -->
+  <div id="panel-ordenes">
+    <div class="flex justify-end mb-4">
+      <button onclick="document.getElementById('modalAgregar').classList.remove('hidden')"
+        class="bg-green-700 hover:bg-green-600 px-5 py-2 rounded-xl font-semibold transition">
+        + Nueva Orden
+      </button>
+    </div>
+
+    <div class="overflow-x-auto bg-gray-800 rounded-2xl shadow-lg">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-700 text-green-300 uppercase text-xs tracking-wider">
+          <tr>
+            <th class="p-4 text-left">N° Orden</th>
+            <th class="p-4 text-left">Placa</th>
+            <th class="p-4 text-left">Cliente</th>
+            <th class="p-4 text-left">Estado</th>
+            <th class="p-4 text-left">Fecha Apertura</th>
+            <th class="p-4 text-left">Fecha Cierre</th>
+            <th class="p-4 text-left">Total</th>
+            <th class="p-4 text-left">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in ordenes %}
+          <tr class="border-b border-gray-700 hover:bg-gray-750 transition">
+            <td class="p-4 font-bold text-green-400">{{ o.numero_orden }}</td>
+            <td class="p-4">{{ o.placa }}</td>
+            <td class="p-4">{{ o.cliente }}</td>
+            <td class="p-4">
+              <span class="px-2 py-1 rounded-full text-xs font-bold
+                {% if o.estado == 'En proceso' %}bg-blue-500/20 text-blue-300
+                {% elif o.estado == 'Finalizado' %}bg-green-500/20 text-green-300
+                {% else %}bg-gray-500/20 text-gray-300{% endif %}">
+                {{ o.estado }}
+              </span>
+            </td>
+            <td class="p-4">{{ o.fecha_apertura }}</td>
+            <td class="p-4">{{ o.fecha_cierre or '—' }}</td>
+            <td class="p-4">{% if o.total %}${{ "{:,.0f}".format(o.total) }}{% else %}—{% endif %}</td>
+            <td class="p-4 space-x-1">
+              <button onclick="abrirCerrar({{ o.Id_orden }}, '{{ o.numero_orden }}')"
+                class="bg-yellow-600 hover:bg-yellow-500 px-3 py-1 rounded text-xs font-semibold">Cerrar</button>
+              <a href="/ordenes/eliminar/{{ o.Id_orden }}"
+                 onclick="return confirm('¿Eliminar la orden {{ o.numero_orden }}?')"
+                 class="bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-xs font-semibold">🗑️</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="p-8 text-center text-gray-400">No hay órdenes registradas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- PANEL: ATENCIONES -->
+  <div id="panel-atenciones" class="hidden">
+    <div class="flex justify-end mb-4">
+      <button onclick="document.getElementById('modalAtencion').classList.remove('hidden')"
+        class="bg-teal-600 hover:bg-teal-500 px-5 py-2 rounded-xl font-semibold transition">
+        + Nueva Atención
+      </button>
+    </div>
+
+    <div class="overflow-x-auto bg-gray-800 rounded-2xl shadow-lg">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-700 text-teal-300 uppercase text-xs tracking-wider">
+          <tr>
+            <th class="p-4 text-left">Vehículo</th>
+            <th class="p-4 text-left">Descripción</th>
+            <th class="p-4 text-left">Fecha</th>
+            <th class="p-4 text-left">Mecánico</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- ✅ Jinja2: atenciones reales de modelo.obtener_atenciones() -->
+          {% for a in atenciones %}
+          <tr class="border-b border-gray-700 hover:bg-gray-750 transition">
+            <td class="p-4 font-bold text-teal-400">{{ a.placa }}</td>
+            <td class="p-4">{{ a.descripcion }}</td>
+            <td class="p-4 text-gray-300">{{ a.fecha }}</td>
+            <td class="p-4">{{ a.mecanico }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="p-8 text-center text-gray-400">No hay atenciones registradas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- MODAL: NUEVA ORDEN -->
+<div id="modalAgregar" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-gray-800 rounded-2xl p-8 w-full max-w-lg border border-gray-600">
+    <h2 class="text-xl font-bold text-green-300 mb-6">Nueva Orden de Servicio</h2>
+    <form method="POST" action="/ordenes/agregar">
+      <label class="block text-sm text-gray-300 mb-1">Vehículo (placa)</label>
+      <select name="id_vehiculo" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+        <option value="">Seleccionar vehículo...</option>
+        {% for v in vehiculos %}
+          <option value="{{ v.IDvehiculos }}">{{ v.placa }} — {{ v.marca }}</option>
+        {% endfor %}
+      </select>
+      <label class="block text-sm text-gray-300 mb-1">Usuario responsable</label>
+      <select name="id_usuario" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+        <option value="">Seleccionar usuario...</option>
+        {% for u in usuarios %}
+          <option value="{{ u.idUsuario }}">{{ u.nombre }} {{ u.apellido }}</option>
+        {% endfor %}
+      </select>
+      <label class="block text-sm text-gray-300 mb-1">Número de Orden</label>
+      <input type="text" name="numero_orden" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 text-white" placeholder="Ej: 5006" required>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Fecha apertura</label>
+          <input type="date" name="fecha_apertura" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white" required>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Hora apertura</label>
+          <input type="time" name="hora_apertura" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white">
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button type="button" onclick="document.getElementById('modalAgregar').classList.add('hidden')"
+          class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg w-full">Cancelar</button>
+        <button type="submit" class="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-lg w-full font-semibold">Crear Orden</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- MODAL: CERRAR ORDEN -->
+<div id="modalCerrar" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-gray-800 rounded-2xl p-8 w-full max-w-md border border-gray-600">
+    <h2 class="text-xl font-bold text-yellow-300 mb-2">Cerrar Orden</h2>
+    <p id="textoOrden" class="text-gray-400 text-sm mb-6"></p>
+    <form method="POST" id="formCerrar">
+      <input type="hidden" name="id_estado" value="2">
+      <label class="block text-sm text-gray-300 mb-1">Fecha de cierre</label>
+      <input type="date" name="fecha_cierre" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+      <label class="block text-sm text-gray-300 mb-1">Total ($)</label>
+      <input type="number" name="total" min="0" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-6 text-white" placeholder="0" required>
+      <div class="flex gap-3">
+        <button type="button" onclick="document.getElementById('modalCerrar').classList.add('hidden')"
+          class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg w-full">Cancelar</button>
+        <button type="submit" class="bg-yellow-600 hover:bg-yellow-500 px-4 py-2 rounded-lg w-full font-semibold">Cerrar Orden</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- MODAL: NUEVA ATENCIÓN -->
+<div id="modalAtencion" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-gray-800 rounded-2xl p-8 w-full max-w-lg border border-gray-600">
+    <h2 class="text-xl font-bold text-teal-300 mb-6">Nueva Atención</h2>
+    <form method="POST" action="/atenciones/agregar">
+      <!-- ✅ Select con vehículos reales -->
+      <label class="block text-sm text-gray-300 mb-1">Vehículo</label>
+      <select name="id_vehiculo" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+        <option value="">Seleccionar vehículo...</option>
+        {% for v in vehiculos %}
+          <option value="{{ v.IDvehiculos }}">{{ v.placa }} — {{ v.marca }}</option>
+        {% endfor %}
+      </select>
+      <!-- ✅ Select con usuarios (mecánicos) reales -->
+      <label class="block text-sm text-gray-300 mb-1">Mecánico</label>
+      <select name="id_usuario" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+        <option value="">Seleccionar mecánico...</option>
+        {% for u in usuarios %}
+          <option value="{{ u.idUsuario }}">{{ u.nombre }} {{ u.apellido }}</option>
+        {% endfor %}
+      </select>
+      <label class="block text-sm text-gray-300 mb-1">Descripción del servicio</label>
+      <textarea name="descripcion" rows="3"
+        class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 text-white"
+        placeholder="Describe la atención realizada..." required></textarea>
+      <label class="block text-sm text-gray-300 mb-1">Fecha</label>
+      <input type="date" name="fecha" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-6 text-white" required>
+      <div class="flex gap-3">
+        <button type="button" onclick="document.getElementById('modalAtencion').classList.add('hidden')"
+          class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg w-full">Cancelar</button>
+        <button type="submit" class="bg-teal-600 hover:bg-teal-500 px-4 py-2 rounded-lg w-full font-semibold">Registrar Atención</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<style>
+  .tab-activa   { background: #15803d; color: white; }
+  .tab-inactiva { background: #374151; color: #9ca3af; }
+  .tab-inactiva:hover { background: #4b5563; color: white; }
+</style>
+
+<script>
+  function cambiarPestana(cual) {
+    document.getElementById('panel-ordenes').classList.toggle('hidden', cual !== 'ordenes');
+    document.getElementById('panel-atenciones').classList.toggle('hidden', cual !== 'atenciones');
+    document.getElementById('tab-ordenes').className    = 'px-5 py-2 rounded-t-lg font-semibold transition ' + (cual === 'ordenes'    ? 'tab-activa' : 'tab-inactiva');
+    document.getElementById('tab-atenciones').className = 'px-5 py-2 rounded-t-lg font-semibold transition ' + (cual === 'atenciones' ? 'tab-activa' : 'tab-inactiva');
+  }
+
+  function abrirCerrar(id, numeroOrden) {
+    document.getElementById("formCerrar").action = "/ordenes/cerrar/" + id;
+    document.getElementById("textoOrden").textContent = "Orden N° " + numeroOrden;
+    document.getElementById("modalCerrar").classList.remove("hidden");
+  }
+</script>
+
+</body>
+</html>

@@ -3,793 +3,400 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>El Costa — Dashboard</title>
+  <title>Dashboard — Taller El Costa</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --gold:        #F0C040;
-      --gold-dim:    rgba(240,192,64,0.12);
-      --gold-glow:   rgba(200,140,10,0.45);
-      --bg:          #0f0f0f;
-      --surface:     rgba(255,255,255,0.025);
-      --border:      rgba(255,255,255,0.07);
-      --border-gold: rgba(240,192,64,0.22);
-      --text:        #f0f0f0;
-      --muted:       rgba(255,255,255,0.38);
+      --gold: #F0C040;
+      --gold-dark: #B07010;
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: rgba(240,192,64,0.15);
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Barlow', sans-serif;
       background: var(--bg);
-      color: var(--text);
       min-height: 100vh;
+      color: #e5e7eb;
       overflow-x: hidden;
     }
 
-    /* ── ANIMATIONS ── */
-    @keyframes spinCW   { to { transform: rotate(360deg);  } }
-    @keyframes spinCCW  { to { transform: rotate(-360deg); } }
-    @keyframes fadeUp   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes pulse    { 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
-
-    .spin-cw  { animation: spinCW  26s linear infinite; transform-origin: center; }
-    .spin-ccw { animation: spinCCW 20s linear infinite; transform-origin: center; }
-    .spin-cw2 { animation: spinCW  40s linear infinite; transform-origin: center; }
-    .spin-hdr { animation: spinCW  14s linear infinite; transform-origin: center; }
-
-    /* ── BACKGROUND GEARS ── */
-    .bg-gear {
+    /* Fondo con textura de rejilla */
+    body::before {
+      content: '';
       position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(240,192,64,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,192,64,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.032;
     }
 
-    /* ── SCANLINES ── */
+    /* Glow central */
     body::after {
       content: '';
-      position: fixed; inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(240,192,64,0.06) 0%, transparent 70%);
       pointer-events: none;
-      z-index: 9999;
+      z-index: 0;
     }
 
-    /* ── HEADER ── */
-    header {
-      position: relative; z-index: 200;
-      padding: 18px 36px;
-      border-bottom: 1px solid var(--border-gold);
-      background: linear-gradient(to bottom, rgba(240,192,64,0.048), transparent);
-      display: flex; align-items: center; justify-content: space-between; gap: 20px;
-    }
-    .logo-wrap { display: flex; align-items: center; gap: 14px; }
-    .logo-gear { width: 48px; height: 48px; flex-shrink: 0; }
-    .logo-text h1 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 19px; font-weight: 900;
-      color: var(--gold);
-      letter-spacing: .13em;
-      text-shadow: 0 0 22px var(--gold-glow);
-      line-height: 1.1;
-    }
-    .logo-text span {
-      font-size: 10px; color: var(--muted);
-      letter-spacing: .22em; text-transform: uppercase;
-    }
-    .logo-text-right { text-align: right; }
-    /* ── DROPDOWN MENU ── */
-    .menu-wrap { position: relative; }
-    .menu-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 9px 18px;
-      background: var(--gold-dim);
-      border: 1px solid var(--border-gold);
-      border-radius: 10px;
-      color: var(--gold);
-      font-family: 'Orbitron', sans-serif;
-      font-size: 11.5px; font-weight: 700;
-      letter-spacing: .14em; text-transform: uppercase;
-      cursor: pointer;
-      transition: background .2s, box-shadow .2s, transform .15s;
-    }
-    .menu-btn:hover {
-      background: rgba(240,192,64,0.18);
-      box-shadow: 0 0 18px rgba(240,192,64,0.22);
-    }
-    .menu-btn:active { transform: scale(.97); }
-    .menu-btn .bars {
-      display: inline-flex; flex-direction: column; gap: 3px;
-    }
-    .menu-btn .bars span {
-      width: 18px; height: 2px; background: var(--gold); border-radius: 2px;
-      transition: transform .25s, opacity .2s;
-    }
-    .menu-btn.open .bars span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
-    .menu-btn.open .bars span:nth-child(2) { opacity: 0; }
-    .menu-btn.open .bars span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
-    .menu-btn .chev { font-size: 9px; transition: transform .25s; }
-    .menu-btn.open .chev { transform: rotate(180deg); }
-
-    .menu-panel {
-      position: absolute;
-      top: calc(100% + 12px); left: 0;
-      min-width: 260px;
-      background: linear-gradient(180deg, rgba(20,20,20,0.98), rgba(12,12,12,0.98));
-      border: 1px solid var(--border-gold);
-      border-radius: 12px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(240,192,64,0.06);
-      padding: 8px;
-      opacity: 0; pointer-events: none;
-      transform: translateY(-8px) scale(.97);
-      transform-origin: top left;
-      transition: opacity .2s, transform .2s;
-      z-index: 100;
-      backdrop-filter: blur(8px);
-    }
-    .menu-panel.open {
-      opacity: 1; pointer-events: auto;
-      transform: translateY(0) scale(1);
-    }
-    .menu-panel::before {
-      content: '';
-      position: absolute; top: -6px; left: 22px;
-      width: 12px; height: 12px;
-      background: rgba(20,20,20,0.98);
-      border-left: 1px solid var(--border-gold);
-      border-top: 1px solid var(--border-gold);
-      transform: rotate(45deg);
-    }
-    .menu-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 11px 14px;
-      border-radius: 8px;
-      color: var(--text);
-      text-decoration: none;
-      font-size: 12.5px;
-      letter-spacing: .04em;
-      transition: background .15s, color .15s, padding-left .18s;
+    .container {
       position: relative;
-    }
-    .menu-item:hover {
-      background: var(--gold-dim);
-      color: var(--gold);
-      padding-left: 18px;
-    }
-    .menu-item.active {
-      background: var(--gold-dim);
-      color: var(--gold);
-    }
-    .menu-item.active::before {
-      content: '';
-      position: absolute; left: 0; top: 8px; bottom: 8px;
-      width: 3px; border-radius: 2px;
-      background: var(--gold);
-      box-shadow: 0 0 8px var(--gold-glow);
-    }
-    .menu-icon {
-      width: 26px; height: 26px;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--gold-dim);
-      border: 1px solid var(--border-gold);
-      border-radius: 7px;
-      font-size: 13px;
-      flex-shrink: 0;
-    }
-    .menu-divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
-      margin: 6px 8px;
-    }
-    .menu-item.danger { color: #f87171; }
-    .menu-item.danger .menu-icon {
-      background: rgba(248,113,113,0.08);
-      border-color: rgba(248,113,113,0.22);
-    }
-    .menu-item.danger:hover { background: rgba(248,113,113,0.10); color: #fca5a5; }
-
-    /* ── MAIN ── */
-    main {
-      position: relative; z-index: 10;
-      max-width: 1240px; margin: 0 auto;
-      padding: 34px 36px 70px;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px;
     }
 
-    /* ── WELCOME ── */
-    .welcome {
-      margin-bottom: 28px;
-      animation: fadeUp .45s ease both;
-    }
-    .welcome h2 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 26px; font-weight: 700;
-      color: var(--gold);
-      letter-spacing: .09em;
-      text-shadow: 0 0 22px var(--gold-glow);
-      margin-bottom: 6px;
-    }
-    .welcome p {
-      font-size: 12.5px; color: var(--muted);
-      letter-spacing: .04em;
-    }
-    .welcome .accent-bar {
-      width: 60px; height: 3px; border-radius: 99px;
-      background: linear-gradient(90deg, #facc15, #f97316, #ef4444);
-      margin-top: 14px;
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 56px;
     }
 
-    /* ── STATS ── */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4,1fr);
+    .logo-area {
+      display: flex;
+      align-items: center;
       gap: 16px;
-      margin-bottom: 32px;
     }
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 13px; padding: 20px 22px;
-      position: relative; overflow: hidden;
-      transition: border-color .2s, transform .2s;
-      animation: fadeUp .5s ease both;
-    }
-    .stat-card:nth-child(1) { animation-delay: .05s; }
-    .stat-card:nth-child(2) { animation-delay: .12s; }
-    .stat-card:nth-child(3) { animation-delay: .19s; }
-    .stat-card:nth-child(4) { animation-delay: .26s; }
-    .stat-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
-    .stat-card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(240,192,64,0.055) 0%, transparent 55%);
-      pointer-events: none;
-    }
-    .stat-icon {
-      font-size: 20px; margin-bottom: 8px;
-    }
-    .stat-label {
-      font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 8px;
-    }
-    .stat-val {
-      font-family: 'Orbitron', sans-serif; font-size: 30px; font-weight: 700;
-      color: var(--gold); line-height: 1;
-      text-shadow: 0 0 16px rgba(240,192,64,.28);
-    }
-    .stat-sub {
-      font-size: 10px; color: var(--muted); margin-top: 7px;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .trend {
-      margin-left: auto;
-      font-size: 9.5px;
-      font-weight: 600;
-      letter-spacing: .04em;
-      padding: 2px 7px;
-      border-radius: 99px;
-    }
-    .trend.up      { color: #4ade80; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.18); }
-    .trend.down    { color: #f87171; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.18); }
-    .trend.neutral { color: var(--muted); background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
-    .dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
-      flex-shrink: 0;
-    }
-    .dot-gold  { background:#F0C040; box-shadow:0 0 6px #F0C040; }
-    .dot-green { background:#22c55e; box-shadow:0 0 6px #22c55e; }
-    .dot-blue  { background:#60a5fa; box-shadow:0 0 6px #60a5fa; }
-    .dot-amber { background:#f59e0b; box-shadow:0 0 6px #f59e0b; }
 
-    /* ── SECTION TITLE ── */
-    .sec-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 13px;
+    .gear-icon {
+      width: 52px;
+      height: 52px;
+      animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .logo-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
       color: var(--gold);
-      letter-spacing: .14em;
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 30px rgba(240,192,64,0.3);
+    }
+
+    .logo-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      margin-bottom: 16px;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .sec-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, var(--border-gold), transparent);
+      margin-top: 2px;
     }
 
-    /* ── MODULES GRID ── */
-    .modules {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 16px;
-      margin-bottom: 36px;
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .mod-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 24px 22px;
-      position: relative; overflow: hidden;
+
+    .user-name {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      text-align: right;
+    }
+
+    .user-name strong {
+      display: block;
+      color: rgba(255,255,255,0.85);
+      font-size: 14px;
+    }
+
+    .logout-btn {
+      padding: 8px 16px;
+      border: 1px solid rgba(240,192,64,0.3);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--gold);
+      font-size: 12px;
+      font-family: 'Barlow', sans-serif;
       cursor: pointer;
       text-decoration: none;
-      color: var(--text);
-      display: flex; flex-direction: column; gap: 10px;
-      transition: border-color .22s, transform .22s, box-shadow .22s;
-      animation: fadeUp .5s ease both;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
     }
-    .mod-card:nth-child(1) { animation-delay: .30s; }
-    .mod-card:nth-child(2) { animation-delay: .37s; }
-    .mod-card:nth-child(3) { animation-delay: .44s; }
-    .mod-card:nth-child(4) { animation-delay: .51s; }
-    .mod-card:nth-child(5) { animation-delay: .58s; }
-    .mod-card:hover {
-      border-color: var(--border-gold);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 28px rgba(0,0,0,.45), 0 0 0 1px rgba(240,192,64,.08);
+    .logout-btn:hover {
+      background: rgba(240,192,64,0.1);
+      border-color: var(--gold);
     }
-    .mod-card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(240,192,64,0.05) 0%, transparent 60%);
-      pointer-events: none;
+
+    /* TÍTULO SECCIÓN */
+    .section-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      margin-bottom: 24px;
     }
-    .mod-card::after {
+
+    /* GRID DE TARJETAS */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* TARJETA */
+    .card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.20s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(6) { animation-delay: 0.30s; }
+    .card:nth-child(7) { animation-delay: 0.35s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Brillo en hover */
+    .card::before {
       content: '';
       position: absolute;
-      top: -2px; left: -100%;
-      width: 80%; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      transition: left .7s ease;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(240,192,64,0.08) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
       pointer-events: none;
     }
-    .mod-card:hover::after { left: 120%; }
-    .mod-icon {
-      width: 46px; height: 46px; border-radius: 12px;
-      background: var(--gold-dim);
-      border: 1px solid var(--border-gold);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      margin-bottom: 4px;
+
+    /* Línea superior de acento */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 20px; right: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
     }
-    .mod-name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 14px; font-weight: 700;
-      color: var(--gold);
-      letter-spacing: .08em;
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(240,192,64,0.4);
+      box-shadow: 0 12px 40px rgba(240,192,64,0.08);
     }
-    .mod-desc {
-      font-size: 11.5px;
-      color: var(--muted);
+    .card:hover::before { opacity: 1; }
+    .card:hover::after  { opacity: 1; }
+
+    .card-icon {
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .card-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.04em;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
       line-height: 1.5;
     }
-    .mod-arrow {
+
+    .card-arrow {
       margin-top: auto;
-      display: flex; align-items: center; gap: 6px;
-      font-size: 10.5px;
-      color: var(--muted);
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      transition: color .2s, gap .2s;
-    }
-    .mod-card:hover .mod-arrow { color: var(--gold); gap: 10px; }
-
-    /* ── QUICK ACTIONS ── */
-    .quick-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      animation: fadeUp .45s ease .22s both;
-    }
-    .btn-quick {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer;
-      font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif;
-      letter-spacing: .05em;
-      color: #111;
-      background: linear-gradient(90deg, #facc15, #f97316, #ef4444);
-      box-shadow: 0 4px 18px rgba(249,115,22,.35);
-      transition: opacity .15s, transform .1s, box-shadow .15s;
-      text-decoration: none;
-    }
-    .btn-quick:hover { opacity: .88; box-shadow: 0 4px 24px rgba(249,115,22,.5); }
-    .btn-quick:active { transform: scale(.97); }
-    .btn-quick.ghost {
-      background: transparent;
-      border: 1px solid var(--border-gold);
+      font-size: 18px;
       color: var(--gold);
-      box-shadow: none;
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: opacity 0.2s, transform 0.2s;
     }
-    .btn-quick.ghost:hover {
-      background: var(--gold-dim);
-      box-shadow: 0 0 18px rgba(240,192,64,.18);
+    .card:hover .card-arrow {
+      opacity: 1;
+      transform: translateX(0);
     }
 
-    /* ── TOAST "PRÓXIMAMENTE" ── */
-    .toast {
-      position: fixed;
-      top: 22px; right: 22px;
-      min-width: 280px; max-width: 380px;
-      background: linear-gradient(180deg, rgba(20,20,20,0.98), rgba(12,12,12,0.98));
-      border: 1px solid var(--border-gold);
-      border-radius: 12px;
-      padding: 14px 18px;
-      color: var(--text);
-      font-size: 12.5px;
-      letter-spacing: .03em;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.6), 0 0 22px rgba(240,192,64,0.18);
-      z-index: 9998;
-      display: flex; align-items: center; gap: 12px;
-      opacity: 0; pointer-events: none;
-      transform: translateX(110%);
-      transition: transform .45s cubic-bezier(.2,1,.3,1), opacity .25s;
-      backdrop-filter: blur(8px);
+    /* Tarjeta destacada (estadísticas) más grande */
+    .card-wide {
+      grid-column: span 3;
+      flex-direction: row;
+      align-items: center;
+      padding: 28px 36px;
+      gap: 24px;
     }
-    .toast.show { opacity: 1; transform: translateX(0); pointer-events: auto; }
-    .toast-icon {
-      width: 34px; height: 34px;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--gold-dim);
-      border: 1px solid var(--border-gold);
-      border-radius: 8px;
-      font-size: 16px;
-      flex-shrink: 0;
+
+    .card-wide .card-icon { font-size: 40px; }
+    .card-wide .card-title { font-size: 22px; }
+
+    /* DIVISOR */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(240,192,64,0.15), transparent);
+      margin: 48px 0 32px;
     }
-    .toast-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .toast-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 11px; font-weight: 700;
-      color: var(--gold);
-      letter-spacing: .14em;
-      text-transform: uppercase;
-    }
-    .toast-msg {
+
+    /* FOOTER */
+    .footer {
+      margin-top: 56px;
+      text-align: center;
       font-size: 12px;
-      color: rgba(255,255,255,0.78);
-      letter-spacing: .02em;
-    }
-    .toast::after {
-      content: '';
-      position: absolute; left: 0; right: 0; bottom: 0;
-      height: 2px;
-      background: linear-gradient(90deg, #facc15, #f97316, #ef4444);
-      border-radius: 0 0 12px 12px;
-      transform: scaleX(0);
-      transform-origin: left;
-    }
-    .toast.show::after { animation: toastBar 2.4s linear forwards; }
-    @keyframes toastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
-      main { padding: 22px 18px 50px; }
-      header { padding: 14px 18px; }
-      .stats { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 560px) {
-      .stats { grid-template-columns: 1fr; }
-      .welcome h2 { font-size: 22px; }
+      color: rgba(255,255,255,0.15);
+      letter-spacing: 0.1em;
     }
   </style>
 </head>
 <body>
 
-  <!-- ═══ TOAST "PRÓXIMAMENTE" ═══ -->
-  <div class="toast" id="toast" role="status" aria-live="polite">
-    <div class="toast-icon">🚧</div>
-    <div class="toast-body">
-      <div class="toast-title">Próximamente</div>
-      <div class="toast-msg" id="toastMsg">Esta sección estará disponible pronto.</div>
-    </div>
-  </div>
+<div class="container">
 
-  <!-- ═══ BACKGROUND GEARS ═══ -->
-  <svg class="bg-gear spin-cw"  style="width:500px;height:500px;bottom:-100px;right:-100px;" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><path id="bgG1" fill="#F0C040" fill-rule="evenodd"/></svg>
-  <svg class="bg-gear spin-ccw" style="width:340px;height:340px;top:-70px;left:-70px;"      viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><path id="bgG2" fill="#F0C040" fill-rule="evenodd"/></svg>
-  <svg class="bg-gear spin-cw2" style="width:200px;height:200px;top:38%;left:54%;"          viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><path id="bgG3" fill="#F0C040" fill-rule="evenodd"/></svg>
-
-  <!-- ═══ HEADER ═══ -->
-  <header>
-    <div class="menu-wrap">
-      <button class="menu-btn" id="menuBtn" type="button" aria-haspopup="true" aria-expanded="false">
-        <span class="bars"><span></span><span></span><span></span></span>
-        <span>Menú</span>
-        <span class="chev">▼</span>
-      </button>
-      <div class="menu-panel" id="menuPanel" role="menu">
-        <a href="#" class="menu-item active" role="menuitem">
-          <span class="menu-icon">🏠</span><span>Inicio</span>
-        </a>
-        <a href="#" class="menu-item js-soon" role="menuitem" data-section="Inventario">
-          <span class="menu-icon">📦</span><span>Inventario</span>
-        </a>
-        <a href="#" class="menu-item js-soon" role="menuitem" data-section="Órdenes de Servicio">
-          <span class="menu-icon">🔧</span><span>Órdenes de Servicio</span>
-        </a>
-        <a href="#" class="menu-item js-soon" role="menuitem" data-section="Facturación">
-          <span class="menu-icon">🧾</span><span>Facturación</span>
-        </a>
-        <a href="#" class="menu-item js-soon" role="menuitem" data-section="Proveedores">
-          <span class="menu-icon">🏭</span><span>Proveedores</span>
-        </a>
-        <a href="#" class="menu-item js-soon" role="menuitem" data-section="Estadísticas">
-          <span class="menu-icon">📊</span><span>Estadísticas</span>
-        </a>
-        <div class="menu-divider"></div>
-        <a href="#" class="menu-item danger js-soon" role="menuitem" data-section="Cerrar Sesión">
-          <span class="menu-icon">←</span><span>Cerrar Sesión</span>
-        </a>
-      </div>
-    </div>
-    <div class="logo-wrap">
-      <div class="logo-text logo-text-right">
-        <h1>El Costa</h1>
-        <span>Panel de Control</span>
-      </div>
-      <svg class="logo-gear spin-hdr" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo-area">
+      <!-- Engranaje SVG pequeño -->
+      <svg class="gear-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="gHdr" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#3D2600"/>
-            <stop offset="30%"  stop-color="#F0C040"/>
-            <stop offset="62%"  stop-color="#E8A818"/>
-            <stop offset="100%" stop-color="#5A3800"/>
+          <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#A06808"/>
+            <stop offset="50%"  stop-color="#F0C040"/>
+            <stop offset="100%" stop-color="#B07010"/>
           </linearGradient>
-          <filter id="gHdrShadow">
-            <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#C8900A" flood-opacity="0.55"/>
-          </filter>
         </defs>
-        <path id="hdrGear" fill="url(#gHdr)" fill-rule="evenodd" filter="url(#gHdrShadow)"/>
+        <path id="gSmall" fill="url(#g)" fill-rule="evenodd"/>
       </svg>
+      <div>
+        <div class="logo-text">EL COSTA</div>
+        <div class="logo-sub">Sistema de Gestión</div>
+      </div>
+    </div>
+
+    <div class="user-info">
+      <!-- ✅ Jinja2: muestra el usuario de sesión si existe -->
+      {% if session.usuario %}
+      <div class="user-name">
+        Bienvenido
+        <strong>{{ session.usuario }}</strong>
+      </div>
+      {% endif %}
+      <a href="/logout" class="logout-btn">Cerrar sesión</a>
     </div>
   </header>
 
-  <!-- ═══ MAIN ═══ -->
-  <main>
+  <!-- MÓDULOS PRINCIPALES -->
+  <p class="section-title">Módulos del sistema</p>
 
-    <!-- Welcome -->
-    <div class="welcome">
-      <h2>Bienvenido al Taller</h2>
-      <p>Resumen general de la operación del día — Taller El Costa</p>
-      <div class="accent-bar"></div>
-    </div>
+  <div class="grid">
 
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-icon">📦</div>
-        <div class="stat-label">Productos en Inventario</div>
-        <div class="stat-val" id="sInv" data-target="0">0</div>
-        <div class="stat-sub"><span class="dot dot-gold"></span>Registros activos<span class="trend" id="tInv">—</span></div>
+    <a href="/inventario" class="card">
+      <div class="card-icon">📦</div>
+      <div class="card-title">Inventario</div>
+      <div class="card-desc">Gestión de productos, stock y precios del taller.</div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="/ordenes" class="card">
+      <div class="card-icon">🔧</div>
+      <div class="card-title">Órdenes</div>
+      <div class="card-desc">Órdenes de servicio y atenciones a vehículos.</div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="/facturacion" class="card">
+      <div class="card-icon">🧾</div>
+      <div class="card-title">Facturación</div>
+      <div class="card-desc">Facturas, pagos y movimientos de inventario.</div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="/proveedores" class="card">
+      <div class="card-icon">🏭</div>
+      <div class="card-title">Proveedores</div>
+      <div class="card-desc">Registro y contacto de proveedores del taller.</div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="/usuarios" class="card">
+      <div class="card-icon">👤</div>
+      <div class="card-title">Usuarios</div>
+      <div class="card-desc">Administración de usuarios y roles del sistema.</div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="/vehiculos" class="card">
+      <div class="card-icon">🚗</div>
+      <div class="card-title">Vehículos</div>
+      <div class="card-desc">Registro de vehículos y sus propietarios.</div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="/estadisticas" class="card card-wide">
+      <div class="card-icon">📊</div>
+      <div style="flex:1">
+        <div class="card-title">Estadísticas</div>
+        <div class="card-desc">Resumen general del taller: ingresos, órdenes, stock bajo y más.</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">🔧</div>
-        <div class="stat-label">Órdenes de Servicio</div>
-        <div class="stat-val" id="sOrd" data-target="0">0</div>
-        <div class="stat-sub"><span class="dot dot-blue"></span>En el sistema<span class="trend" id="tOrd">—</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🧾</div>
-        <div class="stat-label">Facturas Registradas</div>
-        <div class="stat-val" id="sFac" data-target="0">0</div>
-        <div class="stat-sub"><span class="dot dot-green"></span>Emitidas<span class="trend" id="tFac">—</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🏭</div>
-        <div class="stat-label">Proveedores</div>
-        <div class="stat-val" id="sProv" data-target="0">0</div>
-        <div class="stat-sub"><span class="dot dot-amber"></span>Aliados comerciales<span class="trend" id="tProv">—</span></div>
-      </div>
-    </div>
+      <div class="card-arrow" style="opacity:1;font-size:22px;">→</div>
+    </a>
 
-    <!-- Modules -->
-    <div class="sec-title">Módulos</div>
-    <div class="modules">
+  </div>
 
-      <a href="#" class="mod-card js-soon" data-section="Inventario">
-        <div class="mod-icon">📦</div>
-        <div class="mod-name">Inventario</div>
-        <p class="mod-desc">Gestiona productos, stock y precios del taller.</p>
-        <div class="mod-arrow">Ingresar →</div>
-      </a>
+  <div class="divider"></div>
 
-      <a href="#" class="mod-card js-soon" data-section="Órdenes de Servicio">
-        <div class="mod-icon">🔧</div>
-        <div class="mod-name">Órdenes</div>
-        <p class="mod-desc">Registra y administra órdenes de servicio para vehículos.</p>
-        <div class="mod-arrow">Ingresar →</div>
-      </a>
+  <footer class="footer">TALLER EL COSTA © 2026</footer>
 
-      <a href="#" class="mod-card js-soon" data-section="Facturación">
-        <div class="mod-icon">🧾</div>
-        <div class="mod-name">Facturación</div>
-        <p class="mod-desc">Genera facturas a partir de las órdenes cerradas.</p>
-        <div class="mod-arrow">Ingresar →</div>
-      </a>
+</div>
 
-      <a href="#" class="mod-card js-soon" data-section="Proveedores">
-        <div class="mod-icon">🏭</div>
-        <div class="mod-name">Proveedores</div>
-        <p class="mod-desc">Controla la información de los proveedores del taller.</p>
-        <div class="mod-arrow">Ingresar →</div>
-      </a>
-
-      <a href="#" class="mod-card js-soon" data-section="Estadísticas">
-        <div class="mod-icon">📊</div>
-        <div class="mod-name">Estadísticas</div>
-        <p class="mod-desc">Visualiza métricas, ventas y rendimiento del taller.</p>
-        <div class="mod-arrow">Ingresar →</div>
-      </a>
-
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="sec-title">Accesos Rápidos</div>
-    <div class="quick-actions">
-      <a href="#" class="btn-quick js-soon" data-section="Agregar Producto">+ Agregar Producto</a>
-      <a href="#" class="btn-quick js-soon" data-section="Nueva Orden">+ Nueva Orden</a>
-      <a href="#" class="btn-quick js-soon" data-section="Nueva Factura">+ Nueva Factura</a>
-      <a href="#" class="btn-quick ghost js-soon" data-section="Nuevo Proveedor">+ Nuevo Proveedor</a>
-    </div>
-
-  </main>
-
-  <!-- ═══ GEAR PATH GENERATOR ═══ -->
-  <script>
-    const f = n => n.toFixed(3);
-    function buildGear(cx, cy, n, rOut, rRoot, rInner) {
-      const step = (2 * Math.PI) / n;
-      const th = step * 0.20;
-      const ch = 1.20;
-      const px = (r,a) => cx + r * Math.cos(a);
-      const py = (r,a) => cy + r * Math.sin(a);
-      let d = '';
-      for (let i = 0; i < n; i++) {
-        const a = i * step - Math.PI / 2;
-        const aRL = a - th * ch, aTL = a - th * 0.78, aTR = a + th * 0.78, aRR = a + th * ch;
-        d += `${i===0?'M':'L'} ${f(px(rRoot,aRL))} ${f(py(rRoot,aRL))} `;
-        d += `L ${f(px(rOut,aTL))}  ${f(py(rOut,aTL))}  `;
-        d += `L ${f(px(rOut,aTR))}  ${f(py(rOut,aTR))}  `;
-        d += `L ${f(px(rRoot,aRR))} ${f(py(rRoot,aRR))} `;
-        const next = (i+1)*step - Math.PI/2 - th*ch;
-        d += `A ${rRoot} ${rRoot} 0 0 1 ${f(px(rRoot,next))} ${f(py(rRoot,next))} `;
-      }
-      d += `Z M ${f(cx+rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx-rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx+rInner)} ${f(cy)} Z`;
-      return d;
+<script>
+  // Dibuja el engranaje pequeño del header
+  const f = n => n.toFixed(3);
+  function buildGear(cx, cy, n, rOut, rRoot, rInner) {
+    const step = (2 * Math.PI) / n;
+    const th = step * 0.20, ch = 1.20;
+    const px = (r,a) => cx + r * Math.cos(a);
+    const py = (r,a) => cy + r * Math.sin(a);
+    let d = '';
+    for (let i = 0; i < n; i++) {
+      const a = i * step - Math.PI / 2;
+      const aRL = a-th*ch, aTL = a-th*0.78, aTR = a+th*0.78, aRR = a+th*ch;
+      d += `${i===0?'M':'L'} ${f(px(rRoot,aRL))} ${f(py(rRoot,aRL))} `;
+      d += `L ${f(px(rOut,aTL))} ${f(py(rOut,aTL))} `;
+      d += `L ${f(px(rOut,aTR))} ${f(py(rOut,aTR))} `;
+      d += `L ${f(px(rRoot,aRR))} ${f(py(rRoot,aRR))} `;
+      const next = (i+1)*step - Math.PI/2 - th*ch;
+      d += `A ${rRoot} ${rRoot} 0 0 1 ${f(px(rRoot,next))} ${f(py(rRoot,next))} `;
     }
-    // Background gears
-    document.getElementById('bgG1').setAttribute('d', buildGear(150,150,24,148,128,98));
-    document.getElementById('bgG2').setAttribute('d', buildGear(150,150,20,148,128,98));
-    document.getElementById('bgG3').setAttribute('d', buildGear(150,150,18,148,128,98));
-    // Header gear
-    document.getElementById('hdrGear').setAttribute('d', buildGear(40,40,12,38,32,20));
-
-    // ── DROPDOWN MENU ──
-    const menuBtn   = document.getElementById('menuBtn');
-    const menuPanel = document.getElementById('menuPanel');
-
-    function toggleMenu(force) {
-      const open = force !== undefined ? force : !menuPanel.classList.contains('open');
-      menuPanel.classList.toggle('open', open);
-      menuBtn.classList.toggle('open', open);
-      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    }
-    menuBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      toggleMenu();
-    });
-    document.addEventListener('click', e => {
-      if (!menuPanel.contains(e.target) && !menuBtn.contains(e.target)) toggleMenu(false);
-    });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') toggleMenu(false);
-    });
-
-    /* ═══════════════════════════════════════════════════════════════
-       DATOS DEL DASHBOARD — LISTO PARA CONECTAR A MYSQL
-       ═══════════════════════════════════════════════════════════════
-
-       Cuando vayas a conectar con la base de datos:
-
-       1) En tu backend (Flask), creá un endpoint que devuelva JSON:
-
-          @app.route('/api/dashboard')
-          def api_dashboard():
-              return jsonify({
-                  'productos':   {'total': 24, 'tendencia': '+8%'},
-                  'ordenes':     {'total': 12, 'tendencia': '+15%'},
-                  'facturas':    {'total':  8, 'tendencia': '+12%'},
-                  'proveedores': {'total':  5, 'tendencia': 'estable'}
-              })
-
-       2) Acá abajo, comentá la línea "const data = MOCK_DATA;"
-          y descomentá las dos líneas del fetch.
-
-       3) Listo: el dashboard mostrará datos reales de MySQL.
-       ═══════════════════════════════════════════════════════════════ */
-
-    // ↓ Datos vacíos — se llenan cuando conectes MySQL/Flask
-    const MOCK_DATA = {
-      productos:   { total: 0, tendencia: 'sin datos' },
-      ordenes:     { total: 0, tendencia: 'sin datos' },
-      facturas:    { total: 0, tendencia: 'sin datos' },
-      proveedores: { total: 0, tendencia: 'sin datos' }
-    };
-
-    async function cargarDashboard() {
-      // ── PARA CONECTAR MYSQL/FLASK, DESCOMENTAR ESTAS 2 LÍNEAS: ──
-      // const res  = await fetch('/api/dashboard');
-      // const data = await res.json();
-
-      // ── Y COMENTAR LA SIGUIENTE LÍNEA: ──
-      const data = MOCK_DATA;
-
-      pintarStats(data);
-    }
-
-    // Animador de contador (de 0 → valor real)
-    function animarContador(el, destino, duracion = 900) {
-      const inicio = performance.now();
-      const desde  = parseInt(el.textContent) || 0;
-      function step(now) {
-        const t = Math.min((now - inicio) / duracion, 1);
-        const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
-        el.textContent = Math.round(desde + (destino - desde) * ease);
-        if (t < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-
-    // Pinta los 4 stat-cards con los datos recibidos
-    function pintarStats(data) {
-      const mapa = [
-        ['sInv',  'tInv',  data.productos],
-        ['sOrd',  'tOrd',  data.ordenes],
-        ['sFac',  'tFac',  data.facturas],
-        ['sProv', 'tProv', data.proveedores]
-      ];
-      mapa.forEach(([idVal, idTrend, info]) => {
-        const valEl   = document.getElementById(idVal);
-        const trendEl = document.getElementById(idTrend);
-        valEl.setAttribute('data-target', info.total);
-        animarContador(valEl, info.total);
-
-        // Estilo del badge de tendencia según el valor
-        const t = String(info.tendencia);
-        trendEl.textContent = t.startsWith('+') ? '↑ ' + t.slice(1)
-                            : t.startsWith('-') ? '↓ ' + t.slice(1)
-                            : '— ' + t;
-        trendEl.className = 'trend ' +
-          (t.startsWith('+') ? 'up' : t.startsWith('-') ? 'down' : 'neutral');
-      });
-    }
-
-    // Arranca al cargar la página
-    cargarDashboard();
-
-    // ── TOAST "PRÓXIMAMENTE" ──
-    const toast    = document.getElementById('toast');
-    const toastMsg = document.getElementById('toastMsg');
-    let toastTimer = null;
-
-    function showToast(seccion) {
-      toastMsg.textContent = seccion
-        ? `"${seccion}" estará disponible pronto.`
-        : 'Esta sección estará disponible pronto.';
-      toast.classList.remove('show');
-      void toast.offsetWidth; // restart animation
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
-    }
-
-    document.querySelectorAll('.js-soon').forEach(el => {
-      el.addEventListener('click', e => {
-        e.preventDefault();
-        toggleMenu(false);
-        showToast(el.dataset.section);
-      });
-    });
-  </script>
+    d += `Z M ${f(cx+rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx-rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx+rInner)} ${f(cy)} Z`;
+    return d;
+  }
+  document.getElementById('gSmall').setAttribute('d', buildGear(50,50,16,50,42,30));
+</script>
 
 </body>
 </html>
