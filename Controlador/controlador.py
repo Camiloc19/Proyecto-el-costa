@@ -24,7 +24,7 @@ def login():
         contrasena = request.form.get('contrasena')
         usuario    = modelo.login_usuario(correo, contrasena)
         if usuario:
-            session['usuario'] = usuario
+            session['usuario'] = usuario['nombre'] + ' ' + usuario['apellido']
             return redirect(url_for('dashboard'))
         else:
             return render_template('login.html', error='Correo o contraseña incorrectos')

@@ -2,401 +2,333 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard — Taller El Costa</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --gold: #F0C040;
-      --gold-dark: #B07010;
-      --bg: #0a0a0a;
-      --surface: #111111;
-      --border: rgba(240,192,64,0.15);
-    }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Barlow', sans-serif;
-      background: var(--bg);
+      background: #080808;
       min-height: 100vh;
       color: #e5e7eb;
-      overflow-x: hidden;
     }
 
-    /* Fondo con textura de rejilla */
+    /* Grid de fondo */
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
+      content: ''; position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(240,192,64,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(240,192,64,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
+        linear-gradient(rgba(240,192,64,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,192,64,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none; z-index: 0;
     }
 
-    /* Glow central */
-    body::after {
-      content: '';
-      position: fixed;
-      top: -200px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 800px;
-      height: 500px;
-      background: radial-gradient(ellipse, rgba(240,192,64,0.06) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
+    .wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 40px 24px 60px; }
 
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 48px 24px;
-    }
-
-    /* HEADER */
+    /* ── HEADER ── */
     .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 56px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 52px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid rgba(240,192,64,0.12);
     }
 
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+    .brand { display: flex; align-items: center; gap: 14px; }
 
-    .gear-icon {
-      width: 52px;
-      height: 52px;
-      animation: spin 20s linear infinite;
-    }
-
+    .gear { width: 46px; height: 46px; animation: spin 18s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .logo-text {
+    .brand-name {
       font-family: 'Rajdhani', sans-serif;
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 0.08em;
-      text-shadow: 0 0 30px rgba(240,192,64,0.3);
-    }
-
-    .logo-sub {
-      font-size: 12px;
-      color: rgba(255,255,255,0.3);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-top: 2px;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user-name {
-      font-size: 13px;
-      color: rgba(255,255,255,0.5);
-      text-align: right;
-    }
-
-    .user-name strong {
-      display: block;
-      color: rgba(255,255,255,0.85);
-      font-size: 14px;
-    }
-
-    .logout-btn {
-      padding: 8px 16px;
-      border: 1px solid rgba(240,192,64,0.3);
-      border-radius: 8px;
-      background: transparent;
-      color: var(--gold);
-      font-size: 12px;
-      font-family: 'Barlow', sans-serif;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s;
-      letter-spacing: 0.05em;
-    }
-    .logout-btn:hover {
-      background: rgba(240,192,64,0.1);
-      border-color: var(--gold);
-    }
-
-    /* TÍTULO SECCIÓN */
-    .section-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.25);
-      margin-bottom: 24px;
-    }
-
-    /* GRID DE TARJETAS */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    /* TARJETA */
-    .card {
-      position: relative;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px 28px;
-      text-decoration: none;
-      color: inherit;
-      overflow: hidden;
-      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      animation: fadeUp 0.5s ease both;
-    }
-
-    .card:nth-child(1) { animation-delay: 0.05s; }
-    .card:nth-child(2) { animation-delay: 0.10s; }
-    .card:nth-child(3) { animation-delay: 0.15s; }
-    .card:nth-child(4) { animation-delay: 0.20s; }
-    .card:nth-child(5) { animation-delay: 0.25s; }
-    .card:nth-child(6) { animation-delay: 0.30s; }
-    .card:nth-child(7) { animation-delay: 0.35s; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Brillo en hover */
-    .card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 50% 0%, rgba(240,192,64,0.08) 0%, transparent 60%);
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-    }
-
-    /* Línea superior de acento */
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 20px; right: 20px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(240,192,64,0.4);
-      box-shadow: 0 12px 40px rgba(240,192,64,0.08);
-    }
-    .card:hover::before { opacity: 1; }
-    .card:hover::after  { opacity: 1; }
-
-    .card-icon {
-      font-size: 32px;
+      font-size: 28px; font-weight: 700;
+      color: #F0C040;
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 24px rgba(240,192,64,0.25);
       line-height: 1;
     }
+    .brand-sub {
+      font-size: 10px; color: rgba(255,255,255,0.25);
+      letter-spacing: 0.22em; text-transform: uppercase; margin-top: 3px;
+    }
 
-    .card-title {
+    .user-zone { display: flex; align-items: center; gap: 12px; }
+
+    .avatar-pill {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(240,192,64,0.06);
+      border: 1px solid rgba(240,192,64,0.18);
+      border-radius: 100px; padding: 6px 14px 6px 6px;
+    }
+    .avatar-circle {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, #A06808, #F0C040);
+      display: flex; align-items: center; justify-content: center;
       font-family: 'Rajdhani', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.04em;
+      font-weight: 700; font-size: 14px; color: #000;
+    }
+    .avatar-name { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 500; }
+
+    .btn-logout {
+      padding: 7px 16px;
+      border: 1px solid rgba(240,192,64,0.25);
+      border-radius: 8px; background: transparent;
+      color: rgba(240,192,64,0.7); font-size: 12px;
+      font-family: 'Barlow', sans-serif; cursor: pointer;
+      text-decoration: none; transition: all 0.2s; letter-spacing: 0.04em;
+    }
+    .btn-logout:hover { background: rgba(240,192,64,0.08); color: #F0C040; border-color: #F0C040; }
+
+    /* ── SALUDO ── */
+    .greeting {
+      margin-bottom: 40px;
+    }
+    .greeting h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 26px; font-weight: 600; color: #fff;
+      letter-spacing: 0.02em;
+    }
+    .greeting p { font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+
+    /* ── LABEL DE SECCIÓN ── */
+    .section-label {
+      font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+      color: rgba(255,255,255,0.2); margin-bottom: 16px;
     }
 
-    .card-desc {
-      font-size: 13px;
-      color: rgba(255,255,255,0.35);
-      line-height: 1.5;
+    /* ── GRID PRINCIPAL (2 columnas) ── */
+    .grid-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
+    /* ── GRID SECUNDARIO (3 columnas) ── */
+    .grid-secondary {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    /* ── TARJETA BASE ── */
+    .card {
+      position: relative;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 28px 24px;
+      text-decoration: none; color: inherit;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex; flex-direction: column; gap: 10px;
+      animation: up 0.45s ease both;
+    }
+
+    .card:nth-child(1){animation-delay:.04s} .card:nth-child(2){animation-delay:.08s}
+    .card:nth-child(3){animation-delay:.12s} .card:nth-child(4){animation-delay:.16s}
+    .card:nth-child(5){animation-delay:.20s}
+
+    @keyframes up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Línea de color superior */
+    .card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent, linear-gradient(90deg, transparent, rgba(240,192,64,0.4), transparent));
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .card:hover::after { opacity: 1; }
+
+    .card-accent { position: absolute; top: 0; right: 0; width: 80px; height: 80px; border-radius: 0 14px 0 80px; opacity: 0.04; }
+
+    .card-icon { font-size: 28px; line-height: 1; }
+    .card-title { font-family: 'Rajdhani', sans-serif; font-size: 19px; font-weight: 700; color: #fff; letter-spacing: 0.03em; }
+    .card-desc  { font-size: 12px; color: rgba(255,255,255,0.3); line-height: 1.55; flex: 1; }
+
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 6px; padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .card-tag {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.18); font-weight: 600;
+    }
     .card-arrow {
-      margin-top: auto;
-      font-size: 18px;
-      color: var(--gold);
-      opacity: 0;
-      transform: translateX(-6px);
-      transition: opacity 0.2s, transform 0.2s;
+      font-size: 16px; color: rgba(255,255,255,0.2);
+      transition: color 0.2s, transform 0.2s;
     }
-    .card:hover .card-arrow {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    .card:hover .card-arrow { color: #F0C040; transform: translateX(3px); }
 
-    /* Tarjeta destacada (estadísticas) más grande */
+    /* Colores por módulo */
+    .c-inventario  { --accent: linear-gradient(90deg, transparent, rgba(34,197,94,0.5),  transparent); }
+    .c-ordenes     { --accent: linear-gradient(90deg, transparent, rgba(59,130,246,0.5),  transparent); }
+    .c-facturacion { --accent: linear-gradient(90deg, transparent, rgba(168,85,247,0.5),  transparent); }
+    .c-proveedores { --accent: linear-gradient(90deg, transparent, rgba(251,191,36,0.5),  transparent); }
+    .c-estadisticas{ --accent: linear-gradient(90deg, transparent, rgba(240,192,64,0.6),  transparent); }
+
+    .bg-inventario  { background: #22c55e; }
+    .bg-ordenes     { background: #3b82f6; }
+    .bg-facturacion { background: #a855f7; }
+    .bg-proveedores { background: #fbbf24; }
+    .bg-estadisticas{ background: #F0C040; }
+
+    /* Tarjeta estadísticas ancha */
     .card-wide {
       grid-column: span 3;
-      flex-direction: row;
-      align-items: center;
-      padding: 28px 36px;
-      gap: 24px;
+      flex-direction: row; align-items: center; gap: 20px; padding: 24px 28px;
     }
+    .card-wide .card-icon { font-size: 36px; flex-shrink: 0; }
+    .card-wide .card-desc { max-width: 400px; }
+    .card-wide .card-footer { border: none; padding: 0; margin: 0; flex-direction: column; align-items: flex-end; gap: 4px; margin-left: auto; }
+    .card-wide .card-arrow { font-size: 22px; }
 
-    .card-wide .card-icon { font-size: 40px; }
-    .card-wide .card-title { font-size: 22px; }
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(240,192,64,0.1), transparent); margin: 44px 0 20px; }
 
-    /* DIVISOR */
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(240,192,64,0.15), transparent);
-      margin: 48px 0 32px;
-    }
-
-    /* FOOTER */
-    .footer {
-      margin-top: 56px;
-      text-align: center;
-      font-size: 12px;
-      color: rgba(255,255,255,0.15);
-      letter-spacing: 0.1em;
-    }
+    /* ── FOOTER ── */
+    .footer { text-align: center; font-size: 11px; color: rgba(255,255,255,0.1); letter-spacing: 0.12em; }
   </style>
 </head>
 <body>
-
-<div class="container">
+<div class="wrap">
 
   <!-- HEADER -->
   <header class="header">
-    <div class="logo-area">
-      <!-- Engranaje SVG pequeño -->
-      <svg class="gear-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <div class="brand">
+      <svg class="gear" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#A06808"/>
-            <stop offset="50%"  stop-color="#F0C040"/>
+          <linearGradient id="gl" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#7A4E08"/>
+            <stop offset="45%" stop-color="#F0C040"/>
             <stop offset="100%" stop-color="#B07010"/>
           </linearGradient>
         </defs>
-        <path id="gSmall" fill="url(#g)" fill-rule="evenodd"/>
+        <path id="gp" fill="url(#gl)" fill-rule="evenodd"/>
       </svg>
       <div>
-        <div class="logo-text">EL COSTA</div>
-        <div class="logo-sub">Sistema de Gestión</div>
+        <div class="brand-name">EL COSTA</div>
+        <div class="brand-sub">Sistema de Gestión</div>
       </div>
     </div>
 
-    <div class="user-info">
-      <!-- ✅ Jinja2: muestra el usuario de sesión si existe -->
+    <div class="user-zone">
       {% if session.usuario %}
-      <div class="user-name">
-        Bienvenido
-        <strong>{{ session.usuario }}</strong>
+      <div class="avatar-pill">
+        <div class="avatar-circle">{{ session.usuario[0] }}</div>
+        <span class="avatar-name">{{ session.usuario }}</span>
       </div>
       {% endif %}
-      <a href="/logout" class="logout-btn">Cerrar sesión</a>
+      <a href="/logout" class="btn-logout">Cerrar sesión</a>
     </div>
   </header>
 
-  <!-- MÓDULOS PRINCIPALES -->
-  <p class="section-title">Módulos del sistema</p>
+  <!-- SALUDO -->
+  <div class="greeting">
+    <h2>Bienvenido{% if session.usuario %}, {{ session.usuario.split(' ')[0] }}{% endif %} 👋</h2>
+    <p>Selecciona un módulo para comenzar a trabajar.</p>
+  </div>
 
-  <div class="grid">
+  <p class="section-label">Módulos principales</p>
 
-    <a href="/inventario" class="card">
+  <!-- FILA 1: 2 tarjetas grandes -->
+  <div class="grid-main">
+
+    <a href="/inventario" class="card c-inventario">
+      <div class="card-accent bg-inventario"></div>
       <div class="card-icon">📦</div>
       <div class="card-title">Inventario</div>
-      <div class="card-desc">Gestión de productos, stock y precios del taller.</div>
-      <div class="card-arrow">→</div>
-    </a>
-
-    <a href="/ordenes" class="card">
-      <div class="card-icon">🔧</div>
-      <div class="card-title">Órdenes</div>
-      <div class="card-desc">Órdenes de servicio y atenciones a vehículos.</div>
-      <div class="card-arrow">→</div>
-    </a>
-
-    <a href="/facturacion" class="card">
-      <div class="card-icon">🧾</div>
-      <div class="card-title">Facturación</div>
-      <div class="card-desc">Facturas, pagos y movimientos de inventario.</div>
-      <div class="card-arrow">→</div>
-    </a>
-
-    <a href="/proveedores" class="card">
-      <div class="card-icon">🏭</div>
-      <div class="card-title">Proveedores</div>
-      <div class="card-desc">Registro y contacto de proveedores del taller.</div>
-      <div class="card-arrow">→</div>
-    </a>
-
-    <a href="/usuarios" class="card">
-      <div class="card-icon">👤</div>
-      <div class="card-title">Usuarios</div>
-      <div class="card-desc">Administración de usuarios y roles del sistema.</div>
-      <div class="card-arrow">→</div>
-    </a>
-
-    <a href="/vehiculos" class="card">
-      <div class="card-icon">🚗</div>
-      <div class="card-title">Vehículos</div>
-      <div class="card-desc">Registro de vehículos y sus propietarios.</div>
-      <div class="card-arrow">→</div>
-    </a>
-
-    <a href="/estadisticas" class="card card-wide">
-      <div class="card-icon">📊</div>
-      <div style="flex:1">
-        <div class="card-title">Estadísticas</div>
-        <div class="card-desc">Resumen general del taller: ingresos, órdenes, stock bajo y más.</div>
+      <div class="card-desc">Gestión de productos, stock mínimo y precios de compra y venta.</div>
+      <div class="card-footer">
+        <span class="card-tag">Productos</span>
+        <span class="card-arrow">→</span>
       </div>
-      <div class="card-arrow" style="opacity:1;font-size:22px;">→</div>
+    </a>
+
+    <a href="/ordenes" class="card c-ordenes">
+      <div class="card-accent bg-ordenes"></div>
+      <div class="card-icon">🔧</div>
+      <div class="card-title">Órdenes de Servicio</div>
+      <div class="card-desc">Apertura, seguimiento y cierre de órdenes. Registro de atenciones a vehículos.</div>
+      <div class="card-footer">
+        <span class="card-tag">Servicios</span>
+        <span class="card-arrow">→</span>
+      </div>
     </a>
 
   </div>
 
-  <div class="divider"></div>
+  <!-- FILA 2: 2 tarjetas medianas -->
+  <div class="grid-main" style="margin-bottom:12px">
 
-  <footer class="footer">TALLER EL COSTA © 2026</footer>
+    <a href="/facturacion" class="card c-facturacion">
+      <div class="card-accent bg-facturacion"></div>
+      <div class="card-icon">🧾</div>
+      <div class="card-title">Facturación</div>
+      <div class="card-desc">Registro de facturas, métodos de pago y movimientos de inventario.</div>
+      <div class="card-footer">
+        <span class="card-tag">Pagos</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a href="/proveedores" class="card c-proveedores">
+      <div class="card-accent bg-proveedores"></div>
+      <div class="card-icon">🏭</div>
+      <div class="card-title">Proveedores</div>
+      <div class="card-desc">Directorio de proveedores con NIT, teléfono y dirección de contacto.</div>
+      <div class="card-footer">
+        <span class="card-tag">Contactos</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- FILA 3: estadísticas ancha -->
+  <div class="grid-secondary">
+    <a href="/estadisticas" class="card c-estadisticas card-wide">
+      <div class="card-icon">📊</div>
+      <div>
+        <div class="card-title">Estadísticas</div>
+        <div class="card-desc">Resumen general: ingresos totales, órdenes recientes, productos con stock bajo y más.</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-tag">Reportes</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="divider"></div>
+  <p class="footer">TALLER EL COSTA &copy; 2026</p>
 
 </div>
 
 <script>
-  // Dibuja el engranaje pequeño del header
   const f = n => n.toFixed(3);
   function buildGear(cx, cy, n, rOut, rRoot, rInner) {
-    const step = (2 * Math.PI) / n;
-    const th = step * 0.20, ch = 1.20;
-    const px = (r,a) => cx + r * Math.cos(a);
-    const py = (r,a) => cy + r * Math.sin(a);
-    let d = '';
-    for (let i = 0; i < n; i++) {
-      const a = i * step - Math.PI / 2;
-      const aRL = a-th*ch, aTL = a-th*0.78, aTR = a+th*0.78, aRR = a+th*ch;
-      d += `${i===0?'M':'L'} ${f(px(rRoot,aRL))} ${f(py(rRoot,aRL))} `;
-      d += `L ${f(px(rOut,aTL))} ${f(py(rOut,aTL))} `;
-      d += `L ${f(px(rOut,aTR))} ${f(py(rOut,aTR))} `;
-      d += `L ${f(px(rRoot,aRR))} ${f(py(rRoot,aRR))} `;
-      const next = (i+1)*step - Math.PI/2 - th*ch;
-      d += `A ${rRoot} ${rRoot} 0 0 1 ${f(px(rRoot,next))} ${f(py(rRoot,next))} `;
+    const step=(2*Math.PI)/n, th=step*0.20, ch=1.20;
+    const px=(r,a)=>cx+r*Math.cos(a), py=(r,a)=>cy+r*Math.sin(a);
+    let d='';
+    for(let i=0;i<n;i++){
+      const a=i*step-Math.PI/2;
+      d+=`${i===0?'M':'L'} ${f(px(rRoot,a-th*ch))} ${f(py(rRoot,a-th*ch))} `;
+      d+=`L ${f(px(rOut,a-th*0.78))} ${f(py(rOut,a-th*0.78))} `;
+      d+=`L ${f(px(rOut,a+th*0.78))} ${f(py(rOut,a+th*0.78))} `;
+      d+=`L ${f(px(rRoot,a+th*ch))} ${f(py(rRoot,a+th*ch))} `;
+      const next=(i+1)*step-Math.PI/2-th*ch;
+      d+=`A ${rRoot} ${rRoot} 0 0 1 ${f(px(rRoot,next))} ${f(py(rRoot,next))} `;
     }
-    d += `Z M ${f(cx+rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx-rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx+rInner)} ${f(cy)} Z`;
+    d+=`Z M ${f(cx+rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx-rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx+rInner)} ${f(cy)} Z`;
     return d;
   }
-  document.getElementById('gSmall').setAttribute('d', buildGear(50,50,16,50,42,30));
+  document.getElementById('gp').setAttribute('d', buildGear(50,50,16,50,42,30));
 </script>
-
 </body>
 </html>
