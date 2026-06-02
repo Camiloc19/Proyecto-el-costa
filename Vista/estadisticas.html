@@ -766,8 +766,35 @@ new Chart(document.getElementById('chart-monthly'), {
 });
 
 /* ── Gráfica semanal — barras rectangulares 3D ── */
-const weekLabels = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-const weekShort  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+// Genera las fechas reales de la semana actual
+function getSemanaActual() {
+  const hoy = new Date();
+  const diaSemana = hoy.getDay(); // 0=Dom, 1=Lun...
+  const diffLunes = (diaSemana === 0) ? -6 : 1 - diaSemana;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diffLunes);
+
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const diasNombre = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const diasLargo  = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+  const labels = [];
+  const shorts = [];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(lunes);
+    d.setDate(lunes.getDate() + i);
+    const dia = d.getDate();
+    const mes = meses[d.getMonth()];
+    const anio = d.getFullYear();
+    labels.push(`${diasLargo[i]}\n${dia} ${mes} ${anio}`);
+    shorts.push(`${diasNombre[i]}\n${dia} ${mes}`);
+  }
+  return { labels, shorts };
+}
+
+const { labels: weekLabels, shorts: weekShort } = getSemanaActual();
+
 const weekColors = ['#f97316','#fb923c','#60a5fa','#4ade80','#c084fc','#fbbf24','#f472b6'];
 const weekData   = [18, 24, 31, 27, 35, 22, 12];
 const weekMax    = Math.max(...weekData);
