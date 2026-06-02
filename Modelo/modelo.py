@@ -520,3 +520,86 @@ def validar_usuario(correo, contrasena):
     conexion.close()
 
     return usuario
+
+# ═════════════════════════════════════════
+#  ESTADÍSTICAS PARA EXPORTAR
+# ═════════════════════════════════════════
+
+def obtener_producto_mas_vendido():
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT p.nombre_producto, SUM(d.cantidad) AS total_ventas,
+               SUM(d.cantidad * d.precio_unitario) AS ingresos
+        FROM detalle_orden d
+        LEFT JOIN producto p ON d.id_Producto_fk = p.idProducto
+        GROUP BY d.id_Producto_fk
+        ORDER BY total_ventas DESC
+        LIMIT 1
+    """)
+    resultado = cursor.fetchone()
+    con.close()
+    return resultado
+
+def obtener_ventas_por_categoria():
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT c.nombre AS categoria,
+               SUM(d.cantidad) AS total_ventas,
+               SUM(d.cantidad * d.precio_unitario) AS ingresos
+        FROM detalle_orden d
+        LEFT JOIN producto p ON d.id_Producto_fk = p.idProducto
+        LEFT JOIN categoria_producto c ON p.id_Categoria_fk = c.idCategoria
+        GROUP BY c.idCategoria
+        ORDER BY total_ventas DESC
+    """)
+    resultado = cursor.fetchall()
+    con.close()
+    return resultado
+
+def obtener_actividad_mensual():
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT MONTH(fecha_apertura) AS mes,
+               COUNT(*) AS total_ordenes
+        FROM orden_servicio
+        GROUP BY MONTH(fecha_apertura)
+        ORDER BY mes
+    """)
+    resultado = cursor.fetchall()
+    con.close()
+    return resultado
+
+def obtener_total_ganancias():
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("SELECT SUM(total) AS total FROM factura")
+    resultado = cursor.fetchone()
+    con.close()
+    return resultado['total'] or 0
+
+def obtener_total_gastos():
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("SELECT SUM(precio_compra * stock) AS total FROM producto")
+    resultado = cursor.fetchone()
+    con.close()
+    return resultado['total'] or 0
+
+def obtener_mecanico_destacado():
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT CONCAT(u.nombre, ' ', u.apellido) AS mecanico,
+               COUNT(av.idAtencion) AS total_ordenes
+        FROM atencion_vehiculo av
+        LEFT JOIN usuarios u ON av.id_Usuario_fk = u.idUsuario
+        GROUP BY av.id_Usuario_fk
+        ORDER BY total_ordenes DESC
+        LIMIT 3
+    """)
+    resultado = cursor.fetchall()
+    con.close()
+    return resultado
