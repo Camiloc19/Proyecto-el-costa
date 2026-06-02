@@ -1,522 +1,264 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario — Taller El Costa</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<title>Inventario — Taller El Costa</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-
-<style>
-
-:root{
-  --orange:#f97316;
-  --dark:#0f0f0f;
-  --dark2:#1a1a1a;
-  --dark3:#242424;
-}
-
-*{
-  box-sizing:border-box;
-}
-
-body{
-  font-family:'Inter',sans-serif;
-  background:var(--dark);
-  color:#e5e7eb;
-  margin:0;
-  min-height:100vh;
-  overflow-x:hidden;
-}
-
-h1,h2,h3{
-  font-family:'Oswald',sans-serif;
-}
-
-::-webkit-scrollbar{
-  width:5px;
-}
-
-::-webkit-scrollbar-track{
-  background:var(--dark);
-}
-
-::-webkit-scrollbar-thumb{
-  background:var(--orange);
-  border-radius:999px;
-}
-
-.main-card{
-  background:var(--dark2);
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:28px;
-  box-shadow:0 0 40px rgba(0,0,0,0.35);
-  animation:fadeUp .6s ease;
-  position:relative;
-  z-index:1;
-}
-
-.mini-card{
-  background:var(--dark3);
-  border:1px solid rgba(255,255,255,0.05);
-  border-radius:20px;
-}
-
-.title-gradient{
-  background:linear-gradient(135deg,#f97316 0%,#fb923c 40%,#fbbf24 100%);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-
-input{
-  background:#111111 !important;
-  border:1px solid rgba(255,255,255,0.08) !important;
-  color:white !important;
-  transition:0.25s;
-}
-
-input::placeholder{
-  color:#6b7280;
-}
-
-input:focus{
-  border-color:#f97316 !important;
-  box-shadow:0 0 0 3px rgba(249,115,22,0.15);
-  outline:none;
-}
-
-table{
-  width:100%;
-  overflow:hidden;
-  border-radius:18px;
-}
-
-thead{
-  background:#111111;
-}
-
-th{
-  color:#f97316;
-  font-weight:700;
-  font-size:0.9rem;
-  letter-spacing:0.04em;
-}
-
-td{
-  border-color:rgba(255,255,255,0.05) !important;
-}
-
-tr{
-  transition:0.2s;
-}
-
-tr:hover{
-  background:rgba(249,115,22,0.05);
-}
-
-.btn{
-  padding:0.85rem 1.5rem;
-  border-radius:14px;
-  font-weight:600;
-  transition:0.25s;
-  border:none;
-  cursor:pointer;
-  color:white;
-  box-shadow:0 4px 20px rgba(0,0,0,0.25);
-}
-
-.btn:hover{
-  transform:translateY(-2px);
-}
-
-.btn-orange{
-  background:linear-gradient(135deg,#f97316,#ea580c);
-  box-shadow:0 4px 20px rgba(249,115,22,0.35);
-}
-
-.btn-red{
-  background:linear-gradient(135deg,#ef4444,#b91c1c);
-}
-
-.btn-yellow{
-  background:linear-gradient(135deg,#facc15,#ca8a04);
-  color:black;
-}
-
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:0.3rem;
-  padding:0.3rem 0.7rem;
-  border-radius:999px;
-  font-size:0.75rem;
-  font-weight:700;
-  background:rgba(249,115,22,0.1);
-  color:#f97316;
-  border:1px solid rgba(249,115,22,0.2);
-}
-
-.gear{
-  position:fixed;
-  opacity:0.04;
-  z-index:0;
-  animation:spin 18s linear infinite;
-  pointer-events:none;
-}
-
-.gear2{
-  animation-direction:reverse;
-  animation-duration:12s;
-}
-
-@keyframes spin{
-  to{
-    transform:rotate(360deg);
-  }
-}
-
-@keyframes fadeUp{
-  from{
-    opacity:0;
-    transform:translateY(25px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-}
-
-</style>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: #080808;
+      min-height: 100vh;
+      color: #e5e7eb;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(240,192,64,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,192,64,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none; z-index: 0;
+    }
+    .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 60px; }
+    
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 40px; padding-bottom: 24px;
+      border-bottom: 1px solid rgba(240,192,64,0.12);
+    }
+    .brand-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 32px; font-weight: 700; color: #F0C040;
+      letter-spacing: 0.08em; text-shadow: 0 0 24px rgba(240,192,64,0.25);
+    }
+    .card-dashboard {
+      background: #111111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+    }
+    .title-sector {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.03em;
+    }
+    input {
+      background: #0d0d0d !important;
+      border: 1px solid rgba(255,255,255,0.08) !important;
+      color: white !important;
+      transition: all 0.25s;
+    }
+    input:focus {
+      border-color: #F0C040 !important;
+      box-shadow: 0 0 0 3px rgba(240,192,64,0.15);
+      outline: none;
+    }
+    th {
+      font-family: 'Rajdhani', sans-serif;
+      color: #F0C040; font-weight: 600; font-size: 14px; letter-spacing: 0.06em;
+      text-transform: uppercase; background: #0d0d0d;
+    }
+    tr { transition: 0.2s; }
+    tr:hover { background: rgba(240,192,64,0.03); }
+    
+    .btn-custom {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      transition: all 0.2s;
+    }
+    .btn-custom:hover { transform: translateY(-1px); }
+  </style>
 </head>
+<body class="p-4 md:p-6">
 
-<body class="p-6">
+<div class="wrap">
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <h1 class="brand-name">INVENTARIO</h1>
+      <p class="text-xs text-neutral-500 uppercase tracking-[0.2em] mt-1">Taller El Costa — Panel de Control</p>
+    </div>
+    <div class="text-right">
+      <p class="text-neutral-500 text-[10px] uppercase tracking-widest mb-1">Items Totales</p>
+      <h2 class="text-3xl font-bold font-['Rajdhani'] text-emerald-400" id="total">0</h2>
+    </div>
+  </header>
 
-<!-- ENGRANAJES -->
-<svg class="gear" style="width:220px;top:-40px;left:-50px;" viewBox="0 0 100 100" fill="#f97316">
-<path d="M50 15 L58 18 L64 12 L72 20 L68 28 L75 34 L84 32 L88 42 L80 48 L82 58 L72 62 L66 56 L58 60 L56 70 L44 70 L42 60 L34 56 L28 62 L18 58 L20 48 L12 42 L16 32 L25 34 L32 28 L28 20 L36 12 L42 18 Z"></path>
-</svg>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- PANEL IZQUIERDO: BUSCADOR Y REGISTRO -->
+    <div class="lg:col-span-1 space-y-6">
+      
+      <!-- BUSCADOR -->
+      <div class="card-dashboard p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="text-xl text-amber-400">🔍</div>
+          <div>
+            <h3 class="title-sector">Filtrar Catálogo</h3>
+            <p class="text-neutral-500 text-xs">Localiza piezas o repuestos</p>
+          </div>
+        </div>
+        <input onkeyup="buscar()" id="buscador" placeholder="Escribe el nombre..." class="w-full rounded-lg p-3 text-sm">
+      </div>
 
-<svg class="gear gear2" style="width:150px;bottom:-30px;right:-30px;" viewBox="0 0 100 100" fill="#f97316">
-<path d="M50 15 L58 18 L64 12 L72 20 L68 28 L75 34 L84 32 L88 42 L80 48 L82 58 L72 62 L66 56 L58 60 L56 70 L44 70 L42 60 L34 56 L28 62 L18 58 L20 48 L12 42 L16 32 L25 34 L32 28 L28 20 L36 12 L42 18 Z"></path>
-</svg>
+      <!-- FORMULARIO -->
+      <div class="card-dashboard p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="text-xl text-emerald-400">📦</div>
+          <div>
+            <h3 class="title-sector">Gestionar Producto</h3>
+            <p class="text-neutral-500 text-xs">Añadir o modificar el inventario</p>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <input id="nombre" placeholder="Nombre del Producto" class="w-full rounded-lg p-2.5 text-sm">
+          <input id="descripcion" placeholder="Descripción" class="w-full rounded-lg p-2.5 text-sm">
+          <div class="grid grid-cols-2 gap-2">
+            <input id="entrada" type="number" placeholder="Entradas" class="w-full rounded-lg p-2.5 text-sm">
+            <input id="salida" type="number" placeholder="Salidas" class="w-full rounded-lg p-2.5 text-sm">
+          </div>
+          <input id="precio" type="number" placeholder="Precio ($)" class="w-full rounded-lg p-2.5 text-sm">
+          
+          <button onclick="agregarProducto()" class="btn-custom w-full mt-2 bg-gradient-to-r from-amber-500 to-yellow-600 text-black py-2.5 rounded-lg text-sm shadow-lg shadow-yellow-600/10 hover:brightness-110">
+            💾 Guardar Item
+          </button>
+        </div>
+      </div>
 
-<div class="max-w-7xl mx-auto main-card p-8">
+    </div>
 
-<!-- HEADER -->
-<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-10 border-b border-white/5 pb-6">
+    <!-- PANEL DERECHO: TABLA DE PRODUCTOS -->
+    <div class="lg:col-span-2">
+      <div class="card-dashboard p-6 h-full">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="title-sector">Listado de Existencias</h3>
+            <p class="text-neutral-500 text-xs">Valores en tiempo real</p>
+          </div>
+          <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+            Almacén Base
+          </span>
+        </div>
 
-<div>
-<h1 class="text-5xl font-black uppercase tracking-[0.2em] title-gradient leading-none">
-Inventario
-</h1>
-
-<p class="text-gray-500 mt-3 tracking-[0.2em] uppercase text-sm">
-Taller El Costa
-</p>
-</div>
-
-<div class="text-left md:text-right">
-<p class="text-gray-500 text-xs uppercase tracking-widest mb-1">
-Productos Registrados
-</p>
-
-<h2 class="text-4xl font-bold text-orange-400">
-<span id="total">0</span>
-</h2>
-</div>
-
-</div>
-
-<!-- BUSCADOR -->
-<div class="mini-card p-6 mb-8">
-
-<div class="flex items-center gap-3 mb-5">
-
-<div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.2);">
-🔍
-</div>
-
-<div>
-<h3 class="text-xl font-bold text-orange-400">
-Buscar Producto
-</h3>
-
-<p class="text-gray-500 text-sm">
-Busca rápidamente en el inventario
-</p>
-</div>
-
-</div>
-
-<input
-onkeyup="buscar()"
-id="buscador"
-placeholder="Buscar producto..."
-class="w-full rounded-xl p-4"
-/>
-
-</div>
-
-<!-- FORMULARIO -->
-<div class="mini-card p-6 mb-8">
-
-<div class="flex items-center gap-3 mb-6">
-
-<div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.2);">
-📦
-</div>
-
-<div>
-<h3 class="text-xl font-bold text-orange-400">
-Agregar / Editar Producto
-</h3>
-
-<p class="text-gray-500 text-sm">
-Administra productos del inventario
-</p>
-</div>
-
-</div>
-
-<div class="grid md:grid-cols-2 gap-4">
-
-<input id="nombre" placeholder="Nombre del Producto" class="rounded-xl p-3">
-
-<input id="descripcion" placeholder="Descripción" class="rounded-xl p-3">
-
-<input id="entrada" type="number" placeholder="Entrada" class="rounded-xl p-3">
-
-<input id="salida" type="number" placeholder="Salida" class="rounded-xl p-3">
-
-<input id="precio" type="number" placeholder="Precio" class="rounded-xl p-3 md:col-span-2">
-
-</div>
-
-<button onclick="agregarProducto()"
-class="btn btn-orange w-full mt-6">
-💾 Guardar Producto
-</button>
-
-</div>
-
-<!-- TABLA -->
-<div class="mini-card p-6">
-
-<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-
-<div>
-<h3 class="text-2xl font-bold text-orange-400">
-📋 Productos Registrados
-</h3>
-
-<p class="text-gray-500 text-sm mt-1">
-Lista completa del inventario
-</p>
-</div>
-
-<span class="badge">
-Inventario Local
-</span>
-
-</div>
-
-<div class="overflow-x-auto">
-
-<table>
-
-<thead>
-<tr>
-<th class="p-4 border border-white/5">Producto</th>
-<th class="p-4 border border-white/5">Descripción</th>
-<th class="p-4 border border-white/5">Entrada</th>
-<th class="p-4 border border-white/5">Salida</th>
-<th class="p-4 border border-white/5">Stock</th>
-<th class="p-4 border border-white/5">Precio</th>
-<th class="p-4 border border-white/5">Acciones</th>
-</tr>
-</thead>
-
-<tbody id="tablaProductos" class="bg-[#1a1a1a] text-gray-200"></tbody>
-
-</table>
-
-</div>
-
-</div>
-
+        <div class="overflow-x-auto rounded-lg border border-neutral-800">
+          <table class="w-full text-sm text-left">
+            <thead>
+              <tr class="text-center">
+                <th class="p-3 text-left">Producto</th>
+                <th class="p-3">Ent</th>
+                <th class="p-3">Sal</th>
+                <th class="p-3">Stock</th>
+                <th class="p-3">Precio</th>
+                <th class="p-3">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tablaProductos" class="divide-y divide-neutral-800 bg-[#111]"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-
-let editando = null
+let editando = null;
 
 window.onload = function(){
-
-document.getElementById("tablaProductos").innerHTML =
-localStorage.getItem("productos") || ""
-
-actualizarTotal()
-
+  document.getElementById("tablaProductos").innerHTML = localStorage.getItem("productos") || "";
+  actualizarTotal();
 }
 
-// AGREGAR / EDITAR
 function agregarProducto(){
+  let nombre = document.getElementById("nombre").value;
+  let descripcion = document.getElementById("descripcion").value;
+  let entrada = parseInt(document.getElementById("entrada").value) || 0;
+  let salida = parseInt(document.getElementById("salida").value) || 0;
+  let precio = document.getElementById("precio").value;
 
-let nombre = document.getElementById("nombre").value
-let descripcion = document.getElementById("descripcion").value
-let entrada = parseInt(document.getElementById("entrada").value) || 0
-let salida = parseInt(document.getElementById("salida").value) || 0
-let precio = document.getElementById("precio").value
+  if(nombre === "" || precio === ""){
+    alert("Por favor completa los campos principales.");
+    return;
+  }
 
-if(nombre === "" || precio === ""){
-alert("Completa los campos")
-return
+  let stock = entrada - salida;
+  let fila = `
+    <tr class="text-center hover:bg-white/5 transition border-b border-neutral-800">
+      <td class="p-3 text-left max-w-[160px] truncate">
+        <span class="block font-medium text-white">${nombre}</span>
+        <span class="text-xs text-neutral-500 block truncate">${descripcion}</span>
+      </td>
+      <td class="p-3 text-neutral-400 font-mono">${entrada}</td>
+      <td class="p-3 text-neutral-400 font-mono">${salida}</td>
+      <td class="p-3 font-bold font-mono text-amber-400">${stock}</td>
+      <td class="p-3 font-mono text-neutral-300">$${precio}</td>
+      <td class="p-3 space-x-1 whitespace-nowrap">
+        <button onclick="editarFila(this)" class="bg-neutral-800 hover:bg-neutral-700 text-amber-400 px-2 py-1 rounded text-xs transition">✏️</button>
+        <button onclick="eliminarFila(this)" class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2 py-1 rounded text-xs transition">🗑️</button>
+      </td>
+    </tr>
+  `;
+
+  if(editando){
+    editando.outerHTML = fila;
+    editando = null;
+  } else {
+    document.getElementById("tablaProductos").innerHTML += fila;
+  }
+
+  guardarDatos();
+  limpiar();
+  actualizarTotal();
 }
 
-let stock = entrada - salida
-
-let fila = `
-<tr class="text-center">
-
-<td class="border border-white/5 p-4">${nombre}</td>
-
-<td class="border border-white/5 p-4">${descripcion}</td>
-
-<td class="border border-white/5 p-4">${entrada}</td>
-
-<td class="border border-white/5 p-4">${salida}</td>
-
-<td class="border border-white/5 p-4 font-bold text-orange-400">
-${stock}
-</td>
-
-<td class="border border-white/5 p-4">
-$${precio}
-</td>
-
-<td class="border border-white/5 p-4 space-x-2">
-
-<button onclick="editarFila(this)"
-class="btn btn-yellow px-3 py-2 text-sm">
-✏️
-</button>
-
-<button onclick="eliminarFila(this)"
-class="btn btn-red px-3 py-2 text-sm">
-🗑️
-</button>
-
-</td>
-</tr>
-`
-
-if(editando){
-
-editando.outerHTML = fila
-editando = null
-
-}else{
-
-document.getElementById("tablaProductos").innerHTML += fila
-
-}
-
-guardarDatos()
-limpiar()
-actualizarTotal()
-
-}
-
-// ELIMINAR
 function eliminarFila(boton){
-
-if(confirm("¿Eliminar producto?")){
-
-boton.parentElement.parentElement.remove()
-
-guardarDatos()
-actualizarTotal()
-
+  if(confirm("¿Eliminar producto del inventario?")){
+    boton.parentElement.parentElement.remove();
+    guardarDatos();
+    actualizarTotal();
+  }
 }
 
-}
-
-// EDITAR
 function editarFila(boton){
+  let fila = boton.parentElement.parentElement;
+  let celdas = fila.children;
+  
+  document.getElementById("nombre").value = celdas[0].querySelector('span').innerText;
+  document.getElementById("descripcion").value = celdas[0].querySelectorAll('span')[1].innerText;
+  document.getElementById("entrada").value = celdas[1].innerText;
+  document.getElementById("salida").value = celdas[2].innerText;
+  document.getElementById("precio").value = celdas[4].innerText.replace("$","");
 
-let fila = boton.parentElement.parentElement
-let celdas = fila.children
-
-document.getElementById("nombre").value = celdas[0].innerText
-document.getElementById("descripcion").value = celdas[1].innerText
-document.getElementById("entrada").value = celdas[2].innerText
-document.getElementById("salida").value = celdas[3].innerText
-document.getElementById("precio").value =
-celdas[5].innerText.replace("$","")
-
-editando = fila
-
+  editando = fila;
 }
 
-// BUSCAR
 function buscar(){
-
-let filtro =
-document.getElementById("buscador").value.toLowerCase()
-
-let filas =
-document.querySelectorAll("#tablaProductos tr")
-
-filas.forEach(fila => {
-
-let texto = fila.innerText.toLowerCase()
-
-fila.style.display =
-texto.includes(filtro) ? "" : "none"
-
-})
-
+  let filtro = document.getElementById("buscador").value.toLowerCase();
+  let filas = document.querySelectorAll("#tablaProductos tr");
+  filas.forEach(fila => {
+    let texto = fila.innerText.toLowerCase();
+    fila.style.display = texto.includes(filtro) ? "" : "none";
+  });
 }
 
-// GUARDAR
 function guardarDatos(){
-
-localStorage.setItem(
-"productos",
-document.getElementById("tablaProductos").innerHTML
-)
-
+  localStorage.setItem("productos", document.getElementById("tablaProductos").innerHTML);
 }
 
-// TOTAL
 function actualizarTotal(){
-
-let total =
-document.getElementById("tablaProductos").rows.length
-
-document.getElementById("total").innerText = total
-
+  let total = document.getElementById("tablaProductos").rows.length;
+  document.getElementById("total").innerText = total;
 }
 
-// LIMPIAR
 function limpiar(){
-
-document.getElementById("nombre").value = ""
-document.getElementById("descripcion").value = ""
-document.getElementById("entrada").value = ""
-document.getElementById("salida").value = ""
-document.getElementById("precio").value = ""
-
+  document.getElementById("nombre").value = "";
+  document.getElementById("descripcion").value = "";
+  document.getElementById("entrada").value = "";
+  document.getElementById("salida").value = "" ;
+  document.getElementById("precio").value = "";
 }
-
 </script>
-
 </body>
 </html>
