@@ -1,177 +1,264 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Inventario el COSTA</title>
-<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario — Taller El Costa</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: #080808;
+      min-height: 100vh;
+      color: #e5e7eb;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(240,192,64,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,192,64,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none; z-index: 0;
+    }
+    .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 60px; }
+    
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 40px; padding-bottom: 24px;
+      border-bottom: 1px solid rgba(240,192,64,0.12);
+    }
+    .brand-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 32px; font-weight: 700; color: #F0C040;
+      letter-spacing: 0.08em; text-shadow: 0 0 24px rgba(240,192,64,0.25);
+    }
+    .card-dashboard {
+      background: #111111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+    }
+    .title-sector {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.03em;
+    }
+    input {
+      background: #0d0d0d !important;
+      border: 1px solid rgba(255,255,255,0.08) !important;
+      color: white !important;
+      transition: all 0.25s;
+    }
+    input:focus {
+      border-color: #F0C040 !important;
+      box-shadow: 0 0 0 3px rgba(240,192,64,0.15);
+      outline: none;
+    }
+    th {
+      font-family: 'Rajdhani', sans-serif;
+      color: #F0C040; font-weight: 600; font-size: 14px; letter-spacing: 0.06em;
+      text-transform: uppercase; background: #0d0d0d;
+    }
+    tr { transition: 0.2s; }
+    tr:hover { background: rgba(240,192,64,0.03); }
+    
+    .btn-custom {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      transition: all 0.2s;
+    }
+    .btn-custom:hover { transform: translateY(-1px); }
+  </style>
 </head>
+<body class="p-4 md:p-6">
 
-<body class="bg-gradient-to-r from-blue-100 to-green-100 p-10">
+<div class="wrap">
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <h1 class="brand-name">INVENTARIO</h1>
+      <p class="text-xs text-neutral-500 uppercase tracking-[0.2em] mt-1">Taller El Costa — Panel de Control</p>
+    </div>
+    <div class="text-right">
+      <p class="text-neutral-500 text-[10px] uppercase tracking-widest mb-1">Items Totales</p>
+      <h2 class="text-3xl font-bold font-['Rajdhani'] text-emerald-400" id="total">0</h2>
+    </div>
+  </header>
 
-<h1 class="text-3xl font-bold mb-6 text-center bg-blue-600 text-white p-4 rounded">
-📦 INVENTARIO EL COSTA
-</h1>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- PANEL IZQUIERDO: BUSCADOR Y REGISTRO -->
+    <div class="lg:col-span-1 space-y-6">
+      
+      <!-- BUSCADOR -->
+      <div class="card-dashboard p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="text-xl text-amber-400">🔍</div>
+          <div>
+            <h3 class="title-sector">Filtrar Catálogo</h3>
+            <p class="text-neutral-500 text-xs">Localiza piezas o repuestos</p>
+          </div>
+        </div>
+        <input onkeyup="buscar()" id="buscador" placeholder="Escribe el nombre..." class="w-full rounded-lg p-3 text-sm">
+      </div>
 
-<!-- BUSCADOR -->
-<div class="max-w-xl mx-auto mb-4">
-<input onkeyup="buscar()" id="buscador" placeholder="🔍 Buscar producto..."
-class="w-full p-2 border rounded">
-</div>
+      <!-- FORMULARIO -->
+      <div class="card-dashboard p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="text-xl text-emerald-400">📦</div>
+          <div>
+            <h3 class="title-sector">Gestionar Producto</h3>
+            <p class="text-neutral-500 text-xs">Añadir o modificar el inventario</p>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <input id="nombre" placeholder="Nombre del Producto" class="w-full rounded-lg p-2.5 text-sm">
+          <input id="descripcion" placeholder="Descripción" class="w-full rounded-lg p-2.5 text-sm">
+          <div class="grid grid-cols-2 gap-2">
+            <input id="entrada" type="number" placeholder="Entradas" class="w-full rounded-lg p-2.5 text-sm">
+            <input id="salida" type="number" placeholder="Salidas" class="w-full rounded-lg p-2.5 text-sm">
+          </div>
+          <input id="precio" type="number" placeholder="Precio ($)" class="w-full rounded-lg p-2.5 text-sm">
+          
+          <button onclick="agregarProducto()" class="btn-custom w-full mt-2 bg-gradient-to-r from-amber-500 to-yellow-600 text-black py-2.5 rounded-lg text-sm shadow-lg shadow-yellow-600/10 hover:brightness-110">
+            💾 Guardar Item
+          </button>
+        </div>
+      </div>
 
-<!-- CONTADOR -->
-<h2 class="text-center mb-4 font-bold">
-Total productos: <span id="total">0</span>
-</h2>
+    </div>
 
-<!-- FORMULARIO -->
-<div class="bg-white p-6 rounded shadow-md max-w-xl mx-auto">
+    <!-- PANEL DERECHO: TABLA DE PRODUCTOS -->
+    <div class="lg:col-span-2">
+      <div class="card-dashboard p-6 h-full">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="title-sector">Listado de Existencias</h3>
+            <p class="text-neutral-500 text-xs">Valores en tiempo real</p>
+          </div>
+          <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+            Almacén Base
+          </span>
+        </div>
 
-<h2 class="text-xl font-bold mb-4">Agregar / Editar Producto</h2>
-
-<input id="nombre" placeholder="Nombre" class="w-full border p-2 mb-2 rounded">
-<input id="descripcion" placeholder="Descripción" class="w-full border p-2 mb-2 rounded">
-<input id="entrada" type="number" placeholder="Entrada" class="w-full border p-2 mb-2 rounded">
-<input id="salida" type="number" placeholder="Salida" class="w-full border p-2 mb-2 rounded">
-<input id="precio" type="number" placeholder="Precio" class="w-full border p-2 mb-2 rounded">
-
-<button onclick="agregarProducto()" class="bg-green-500 text-white px-4 py-2 rounded w-full hover:bg-green-700">
-Guardar Producto
-</button>
-
-</div>
-
-<!-- TABLA -->
-<div class="mt-10 max-w-5xl mx-auto">
-
-<table class="w-full bg-white shadow-md rounded">
-
-<thead class="bg-blue-600 text-white">
-<tr>
-<th class="p-3">Producto</th>
-<th class="p-3">Descripción</th>
-<th class="p-3">Entrada</th>
-<th class="p-3">Salida</th>
-<th class="p-3">Stock</th>
-<th class="p-3">Precio</th>
-<th class="p-3">Acciones</th>
-</tr>
-</thead>
-
-<tbody id="tablaProductos"></tbody>
-
-</table>
-
+        <div class="overflow-x-auto rounded-lg border border-neutral-800">
+          <table class="w-full text-sm text-left">
+            <thead>
+              <tr class="text-center">
+                <th class="p-3 text-left">Producto</th>
+                <th class="p-3">Ent</th>
+                <th class="p-3">Sal</th>
+                <th class="p-3">Stock</th>
+                <th class="p-3">Precio</th>
+                <th class="p-3">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tablaProductos" class="divide-y divide-neutral-800 bg-[#111]"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
+let editando = null;
 
-let editando = null
-
-// CARGAR DATOS
 window.onload = function(){
-document.getElementById("tablaProductos").innerHTML = localStorage.getItem("productos") || ""
-actualizarTotal()
+  document.getElementById("tablaProductos").innerHTML = localStorage.getItem("productos") || "";
+  actualizarTotal();
 }
 
-// AGREGAR / EDITAR
 function agregarProducto(){
+  let nombre = document.getElementById("nombre").value;
+  let descripcion = document.getElementById("descripcion").value;
+  let entrada = parseInt(document.getElementById("entrada").value) || 0;
+  let salida = parseInt(document.getElementById("salida").value) || 0;
+  let precio = document.getElementById("precio").value;
 
-let nombre = document.getElementById("nombre").value
-let descripcion = document.getElementById("descripcion").value
-let entrada = parseInt(document.getElementById("entrada").value) || 0
-let salida = parseInt(document.getElementById("salida").value) || 0
-let precio = document.getElementById("precio").value
+  if(nombre === "" || precio === ""){
+    alert("Por favor completa los campos principales.");
+    return;
+  }
 
-if(nombre === "" || precio === ""){
-    alert("Completa los campos")
-    return
+  let stock = entrada - salida;
+  let fila = `
+    <tr class="text-center hover:bg-white/5 transition border-b border-neutral-800">
+      <td class="p-3 text-left max-w-[160px] truncate">
+        <span class="block font-medium text-white">${nombre}</span>
+        <span class="text-xs text-neutral-500 block truncate">${descripcion}</span>
+      </td>
+      <td class="p-3 text-neutral-400 font-mono">${entrada}</td>
+      <td class="p-3 text-neutral-400 font-mono">${salida}</td>
+      <td class="p-3 font-bold font-mono text-amber-400">${stock}</td>
+      <td class="p-3 font-mono text-neutral-300">$${precio}</td>
+      <td class="p-3 space-x-1 whitespace-nowrap">
+        <button onclick="editarFila(this)" class="bg-neutral-800 hover:bg-neutral-700 text-amber-400 px-2 py-1 rounded text-xs transition">✏️</button>
+        <button onclick="eliminarFila(this)" class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2 py-1 rounded text-xs transition">🗑️</button>
+      </td>
+    </tr>
+  `;
+
+  if(editando){
+    editando.outerHTML = fila;
+    editando = null;
+  } else {
+    document.getElementById("tablaProductos").innerHTML += fila;
+  }
+
+  guardarDatos();
+  limpiar();
+  actualizarTotal();
 }
 
-let stock = entrada - salida
-
-let fila = `
-<tr class="border-b text-center hover:bg-green-100">
-<td class="p-2">${nombre}</td>
-<td class="p-2">${descripcion}</td>
-<td class="p-2">${entrada}</td>
-<td class="p-2">${salida}</td>
-<td class="p-2 font-bold">${stock}</td>
-<td class="p-2">$${precio}</td>
-<td class="p-2 space-x-1">
-<button onclick="editarFila(this)" class="bg-yellow-400 px-2 py-1 rounded">✏️</button>
-<button onclick="eliminarFila(this)" class="bg-red-500 text-white px-2 py-1 rounded">🗑️</button>
-</td>
-</tr>
-`
-
-if(editando){
-editando.outerHTML = fila
-editando = null
-}else{
-document.getElementById("tablaProductos").innerHTML += fila
-}
-
-guardarDatos()
-limpiar()
-actualizarTotal()
-
-}
-
-// ELIMINAR
 function eliminarFila(boton){
-if(confirm("¿Eliminar producto?")){
-boton.parentElement.parentElement.remove()
-guardarDatos()
-actualizarTotal()
-}
+  if(confirm("¿Eliminar producto del inventario?")){
+    boton.parentElement.parentElement.remove();
+    guardarDatos();
+    actualizarTotal();
+  }
 }
 
-// EDITAR
 function editarFila(boton){
-let fila = boton.parentElement.parentElement
-let celdas = fila.children
+  let fila = boton.parentElement.parentElement;
+  let celdas = fila.children;
+  
+  document.getElementById("nombre").value = celdas[0].querySelector('span').innerText;
+  document.getElementById("descripcion").value = celdas[0].querySelectorAll('span')[1].innerText;
+  document.getElementById("entrada").value = celdas[1].innerText;
+  document.getElementById("salida").value = celdas[2].innerText;
+  document.getElementById("precio").value = celdas[4].innerText.replace("$","");
 
-document.getElementById("nombre").value = celdas[0].innerText
-document.getElementById("descripcion").value = celdas[1].innerText
-document.getElementById("entrada").value = celdas[2].innerText
-document.getElementById("salida").value = celdas[3].innerText
-document.getElementById("precio").value = celdas[5].innerText.replace("$","")
-
-editando = fila
+  editando = fila;
 }
 
-// BUSCAR
 function buscar(){
-let filtro = document.getElementById("buscador").value.toLowerCase()
-let filas = document.querySelectorAll("#tablaProductos tr")
-
-filas.forEach(fila => {
-let texto = fila.innerText.toLowerCase()
-fila.style.display = texto.includes(filtro) ? "" : "none"
-})
+  let filtro = document.getElementById("buscador").value.toLowerCase();
+  let filas = document.querySelectorAll("#tablaProductos tr");
+  filas.forEach(fila => {
+    let texto = fila.innerText.toLowerCase();
+    fila.style.display = texto.includes(filtro) ? "" : "none";
+  });
 }
 
-// GUARDAR
 function guardarDatos(){
-localStorage.setItem("productos", document.getElementById("tablaProductos").innerHTML)
+  localStorage.setItem("productos", document.getElementById("tablaProductos").innerHTML);
 }
 
-// TOTAL
 function actualizarTotal(){
-let total = document.getElementById("tablaProductos").rows.length
-document.getElementById("total").innerText = total
+  let total = document.getElementById("tablaProductos").rows.length;
+  document.getElementById("total").innerText = total;
 }
 
-// LIMPIAR
 function limpiar(){
-document.getElementById("nombre").value = ""
-document.getElementById("descripcion").value = ""
-document.getElementById("entrada").value = ""
-document.getElementById("salida").value = ""
-document.getElementById("precio").value = ""
+  document.getElementById("nombre").value = "";
+  document.getElementById("descripcion").value = "";
+  document.getElementById("entrada").value = "";
+  document.getElementById("salida").value = "" ;
+  document.getElementById("precio").value = "";
 }
-
 </script>
-
 </body>
 </html>

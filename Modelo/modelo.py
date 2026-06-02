@@ -4,7 +4,7 @@ def conectar():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="1234",
+        password="",
         database="taller_el_costa"
     )
 
@@ -501,3 +501,22 @@ def crear_atencion(id_vehiculo, id_usuario, id_rol, fecha_inicio, fecha_final):
     """, (id_vehiculo, id_usuario, id_rol, fecha_inicio, fecha_final))
     con.commit()
     con.close()
+def validar_usuario(correo, contrasena):
+
+    conexion = conectar()
+    cursor = conexion.cursor(dictionary=True)
+
+    sql = """
+        SELECT * 
+        FROM usuarios
+        WHERE correo = %s
+        AND contrasena = %s
+    """
+
+    cursor.execute(sql, (correo, contrasena))
+
+    usuario = cursor.fetchone()
+
+    conexion.close()
+
+    return usuario

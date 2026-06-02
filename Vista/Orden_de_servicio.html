@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Órdenes de Servicio — Taller El Costa</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: #080808;
+      min-height: 100vh;
+      color: #e5e7eb;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(240,192,64,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,192,64,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none; z-index: 0;
+    }
+    .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 60px; }
+    
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 32px; padding-bottom: 20px;
+      border-bottom: 1px solid rgba(240,192,64,0.12);
+    }
+    .brand-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 32px; font-weight: 700; color: #F0C040;
+      letter-spacing: 0.08em;
+    }
+    .card-dashboard {
+      background: #111111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+    }
+    
+    th {
+      font-family: 'Rajdhani', sans-serif;
+      color: #F0C040; font-weight: 600; font-size: 13px; letter-spacing: 0.05em;
+      text-transform: uppercase; background: #0d0d0d;
+    }
+    
+    .tab-btn {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px; font-weight: 600; letter-spacing: 0.04em;
+      text-transform: uppercase; transition: all 0.2s;
+    }
+    .tab-activa { 
+      color: #F0C040; 
+      border-bottom: 2px solid #F0C040;
+    }
+    .tab-inactiva { 
+      color: rgba(255,255,255,0.3); 
+    }
+    .tab-inactiva:hover { color: #fff; }
+
+    select, input, textarea {
+      background: #0d0d0d !important;
+      border: 1px solid rgba(255,255,255,0.08) !important;
+      color: white !important;
+    }
+    select:focus, input:focus, textarea:focus {
+      border-color: #F0C040 !important;
+      outline: none;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-6">
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <h1 class="brand-name">ÓRDENES DE SERVICIO</h1>
+      <p class="text-xs text-neutral-500 uppercase tracking-[0.2em] mt-1">Control técnico vehicular</p>
+    </div>
+  </header>
+
+  <!-- PESTAÑAS INTERNAS -->
+  <div class="flex gap-6 mb-6 border-b border-neutral-800 pb-px">
+    <button onclick="cambiarPestana('ordenes')" id="tab-ordenes" class="tab-btn px-2 py-3 transition tab-activa">
+      📋 Panel de Órdenes
+    </button>
+    <button onclick="cambiarPestana('atenciones')" id="tab-atenciones" class="tab-btn px-2 py-3 transition tab-inactiva">
+      🩺 Historial de Atenciones
+    </button>
+  </div>
+
+  <!-- PANEL: ÓRDENES -->
+  <div id="panel-ordenes" class="space-y-4">
+    <div class="flex justify-end">
+      <button onclick="document.getElementById('modalAgregar').classList.remove('hidden')"
+        class="font-['Rajdhani'] font-bold text-sm bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg uppercase tracking-wide transition shadow-lg shadow-blue-600/10">
+        + Generar Nueva Orden
+      </button>
+    </div>
+
+    <div class="card-dashboard p-4 overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="border-b border-neutral-800">
+            <th class="p-3">N° Orden</th>
+            <th class="p-3">Placa</th>
+            <th class="p-3">Cliente</th>
+            <th class="p-3">Estado</th>
+            <th class="p-3">Apertura</th>
+            <th class="p-3">Cierre</th>
+            <th class="p-3">Total</th>
+            <th class="p-3 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-950">
+          {% for o in ordenes %}
+          <tr class="hover:bg-white/[0.02] transition">
+            <td class="p-3 font-bold font-mono text-blue-400">{{ o.numero_orden }}</td>
+            <td class="p-3 font-medium text-white uppercase tracking-wider font-mono text-xs">{{ o.placa }}</td>
+            <td class="p-3 text-neutral-300">{{ o.cliente }}</td>
+            <td class="p-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider
+                {% if o.estado == 'En proceso' %}bg-blue-500/10 text-blue-400 border border-blue-500/20
+                {% elif o.estado == 'Finalizado' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                {% else %}bg-neutral-500/10 text-neutral-400 border border-neutral-500/20{% endif %}">
+                {{ o.estado }}
+              </span>
+            </td>
+            <td class="p-3 text-neutral-400 font-mono text-xs">{{ o.fecha_apertura }}</td>
+            <td class="p-3 text-neutral-400 font-mono text-xs">{{ o.fecha_cierre or '—' }}</td>
+            <td class="p-3 font-mono font-medium text-neutral-200">{% if o.total %}${{ "{:,.0f}".format(o.total) }}{% else %}—{% endif %}</td>
+            <td class="p-3 text-center space-x-1 whitespace-nowrap">
+              <button onclick="abrirCerrar({{ o.Id_orden }}, '{{ o.numero_orden }}')"
+                class="bg-neutral-800 hover:bg-amber-600 hover:text-black text-amber-400 px-3 py-1 rounded-md text-xs font-semibold transition">Cerrar</button>
+              <a href="/ordenes/eliminar/{{ o.Id_orden }}"
+                 onclick="return confirm('¿Eliminar la orden {{ o.numero_orden }}?')"
+                 class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2.5 py-1.5 rounded-md text-xs transition inline-block">🗑️</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="p-8 text-center text-neutral-500 font-medium">No hay órdenes de servicio en el sistema.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL: ATENCIONES -->
+  <div id="panel-atenciones" class="hidden space-y-4">
+    <div class="flex justify-end">
+      <button onclick="document.getElementById('modalAtencion').classList.remove('hidden')"
+        class="font-['Rajdhani'] font-bold text-sm bg-teal-600 hover:bg-teal-500 text-white px-5 py-2.5 rounded-lg uppercase tracking-wide transition shadow-lg shadow-teal-600/10">
+        + Registrar Atención Médica/Técnica
+      </button>
+    </div>
+
+    <div class="card-dashboard p-4 overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="border-b border-neutral-800">
+            <th class="p-3">Vehículo</th>
+            <th class="p-3">Descripción de la Atención</th>
+            <th class="p-3">Fecha Ejecución</th>
+            <th class="p-3">Mecánico Asignado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-950">
+          {% for a in atenciones %}
+          <tr class="hover:bg-white/[0.02] transition">
+            <td class="p-3 font-bold font-mono text-teal-400 uppercase tracking-wider">{{ a.placa }}</td>
+            <td class="p-3 text-neutral-300 max-w-xs md:max-w-md break-words">{{ a.descripcion }}</td>
+            <td class="p-3 text-neutral-400 font-mono text-xs">{{ a.fecha }}</td>
+            <td class="p-3 text-neutral-300 font-medium">{{ a.mecanico }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="p-8 text-center text-neutral-500 font-medium">No se han registrado atenciones preventivas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL AGREGAR -->
+<div id="modalAgregar" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-[#111] rounded-xl p-6 w-full max-w-lg border border-neutral-800 shadow-2xl">
+    <h2 class="text-xl font-bold font-['Rajdhani'] text-blue-400 mb-4 uppercase tracking-wider">Nueva Orden de Servicio</h2>
+    <form method="POST" action="/ordenes/agregar" class="space-y-4">
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Vehículo (Placa asignada)</label>
+        <select name="id_vehiculo" class="w-full rounded-lg p-2.5 text-sm" required>
+          <option value="">Seleccionar vehículo...</option>
+          {% for v in vehiculos %}
+            <option value="{{ v.IDvehiculos }}">{{ v.placa }} — {{ v.marca }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Operario Responsable</label>
+        <select name="id_usuario" class="w-full rounded-lg p-2.5 text-sm" required>
+          <option value="">Seleccionar usuario...</option>
+          {% for u in usuarios %}
+            <option value="{{ u.idUsuario }}">{{ u.nombre }} {{ u.apellido }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Código de Orden interno</label>
+        <input type="text" name="numero_orden" class="w-full rounded-lg p-2.5 text-sm" placeholder="Ej: 5006" required>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Fecha apertura</label>
+          <input type="date" name="fecha_apertura" class="w-full rounded-lg p-2.5 text-sm" required>
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Hora apertura</label>
+          <input type="time" name="hora_apertura" class="w-full rounded-lg p-2.5 text-sm">
+        </div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('modalAgregar').classList.add('hidden')"
+          class="bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-sm px-4 py-2.5 rounded-lg w-full transition">Cancelar</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-['Rajdhani'] font-bold uppercase tracking-wider text-sm px-4 py-2.5 rounded-lg w-full transition">Crear Orden</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL CERRAR -->
+<div id="modalCerrar" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-[#111] rounded-xl p-6 w-full max-w-md border border-neutral-800 shadow-2xl">
+    <h2 class="text-xl font-bold font-['Rajdhani'] text-amber-400 mb-1 uppercase tracking-wider">Cerrar Orden Técnica</h2>
+    <p id="textoOrden" class="text-neutral-500 text-xs mb-4 font-mono"></p>
+    <form method="POST" id="formCerrar" class="space-y-4">
+      <input type="hidden" name="id_estado" value="2">
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Fecha de liquidación oficial</label>
+        <input type="date" name="fecha_cierre" class="w-full rounded-lg p-2.5 text-sm" required>
+      </div>
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Costo total del servicio ($)</label>
+        <input type="number" name="total" min="0" class="w-full rounded-lg p-2.5 text-sm font-mono" placeholder="0" required>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('modalCerrar').classList.add('hidden')"
+          class="bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-sm px-4 py-2.5 rounded-lg w-full transition">Cancelar</button>
+        <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-black font-['Rajdhani'] font-bold uppercase tracking-wider text-sm px-4 py-2.5 rounded-lg w-full transition">Cerrar Operación</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL NUEVA ATENCION -->
+<div id="modalAtencion" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-[#111] rounded-xl p-6 w-full max-w-lg border border-neutral-800 shadow-2xl">
+    <h2 class="text-xl font-bold font-['Rajdhani'] text-teal-400 mb-4 uppercase tracking-wider">Nueva Atención Preventiva</h2>
+    <form method="POST" action="/atenciones/agregar" class="space-y-4">
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Vehículo receptor</label>
+        <select name="id_vehiculo" class="w-full rounded-lg p-2.5 text-sm" required>
+          <option value="">Seleccionar vehículo...</option>
+          {% for v in vehiculos %}
+            <option value="{{ v.IDvehiculos }}">{{ v.placa }} — {{ v.marca }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Mecánico a cargo</label>
+        <select name="id_usuario" class="w-full rounded-lg p-2.5 text-sm" required>
+          <option value="">Seleccionar mecánico...</option>
+          {% for u in usuarios %}
+            <option value="{{ u.idUsuario }}">{{ u.nombre }} {{ u.apellido }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Reporte de novedades / Trabajo realizado</label>
+        <textarea name="descripcion" rows="3" class="w-full rounded-lg p-2.5 text-sm" placeholder="Describe a detalle el servicio realizado..." required></textarea>
+      </div>
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Fecha de ejecución</label>
+        <input type="date" name="fecha" class="w-full rounded-lg p-2.5 text-sm" required>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('modalAtencion').classList.add('hidden')"
+          class="bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-sm px-4 py-2.5 rounded-lg w-full transition">Cancelar</button>
+        <button type="submit" class="bg-teal-600 hover:bg-teal-500 text-white font-['Rajdhani'] font-bold uppercase tracking-wider text-sm px-4 py-2.5 rounded-lg w-full transition">Registrar Evento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function cambiarPestana(cual) {
+    document.getElementById('panel-ordenes').classList.toggle('hidden', cual !== 'ordenes');
+    document.getElementById('panel-atenciones').classList.toggle('hidden', cual !== 'atenciones');
+    document.getElementById('tab-ordenes').className    = 'tab-btn px-2 py-3 transition ' + (cual === 'ordenes'    ? 'tab-activa' : 'tab-inactiva');
+    document.getElementById('tab-atenciones').className = 'tab-btn px-2 py-3 transition ' + (cual === 'atenciones' ? 'tab-activa' : 'tab-inactiva');
+  }
+
+  function abrirCerrar(id, numeroOrden) {
+    document.getElementById("formCerrar").action = "/ordenes/cerrar/" + id;
+    document.getElementById("textoOrden").textContent = "CÓDIGO DE ORDEN: N° " + numeroOrden;
+    document.getElementById("modalCerrar").classList.remove("hidden");
+  }
+</script>
+
+</body>
+</html>

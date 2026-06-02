@@ -1,8 +1,4 @@
-import sys
-import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), 'Controlador'))
-from controlador import app
+from Controlador.controlador import app
 
 if __name__ == '__main__':
     app.run(debug=True)

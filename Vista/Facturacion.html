@@ -2,87 +2,201 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Facturación - Taller</title>
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+<title>Facturación — Taller El Costa</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-800 min-h-screen flex items-center justify-center">
+<body class="bg-gray-800 min-h-screen p-8">
+<div class="max-w-5xl mx-auto">
 
-<div class="w-full max-w-4xl bg-gray-900 text-white p-10 rounded-2xl shadow-2xl">
+  <h1 class="text-3xl font-bold text-white mb-6">🧾 Facturación — Taller El Costa</h1>
 
-<h1 class="text-3xl font-bold mb-8 border-b border-gray-700 pb-3">
-🚗 Facturación - Taller Automotriz
-</h1>
+  <!-- PESTAÑAS -->
+  <div class="flex gap-2 mb-6 border-b border-gray-600">
+    <button onclick="cambiarPestana('facturas')" id="tab-facturas"
+      class="px-5 py-2 rounded-t-lg font-semibold transition tab-activa">
+      🧾 Facturas
+    </button>
+    <button onclick="cambiarPestana('movimientos')" id="tab-movimientos"
+      class="px-5 py-2 rounded-t-lg font-semibold transition tab-inactiva">
+      📦 Movimientos
+    </button>
+  </div>
 
-<form class="grid grid-cols-2 gap-6">
+  <!-- PANEL: FACTURAS -->
+  <div id="panel-facturas">
+    <div class="flex justify-end mb-4">
+      <button onclick="document.getElementById('modalFactura').classList.remove('hidden')"
+        class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl font-semibold transition">
+        + Nueva Factura
+      </button>
+    </div>
+    <div class="bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
+      <table class="w-full text-sm text-white">
+        <thead class="bg-gray-700 text-blue-300 uppercase text-xs tracking-wider">
+          <tr>
+            <th class="p-4 text-left">N° Factura</th>
+            <th class="p-4 text-left">Orden</th>
+            <th class="p-4 text-left">Método de Pago</th>
+            <th class="p-4 text-left">Fecha</th>
+            <th class="p-4 text-left">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in facturas %}
+          <tr class="border-b border-gray-700 hover:bg-gray-800 transition">
+            <td class="p-4 font-bold text-blue-400">{{ f.numero_factura }}</td>
+            <td class="p-4">Orden #{{ f.numero_orden }}</td>
+            <td class="p-4">{{ f.metodo_pago }}</td>
+            <td class="p-4">{{ f.fecha }}</td>
+            <td class="p-4 text-green-400 font-bold">${{ "{:,.0f}".format(f.total) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="p-8 text-center text-gray-400">No hay facturas registradas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-<!-- ID ORDEN -->
-<div>
-<label class="block text-sm mb-1 text-gray-300">ID Orden</label>
-<input type="number" name="Fac_id_orden"
-class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+  <!-- PANEL: MOVIMIENTOS -->
+  <div id="panel-movimientos" class="hidden">
+    <div class="flex justify-end mb-4">
+      <button onclick="document.getElementById('modalMovimiento').classList.remove('hidden')"
+        class="bg-orange-600 hover:bg-orange-500 text-white px-5 py-2 rounded-xl font-semibold transition">
+        + Nuevo Movimiento
+      </button>
+    </div>
+    <div class="bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
+      <table class="w-full text-sm text-white">
+        <thead class="bg-gray-700 text-orange-300 uppercase text-xs tracking-wider">
+          <tr>
+            <th class="p-4 text-left">Producto</th>
+            <th class="p-4 text-left">Tipo</th>
+            <th class="p-4 text-left">Cantidad</th>
+            <th class="p-4 text-left">Fecha</th>
+            <th class="p-4 text-left">Observación</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in movimientos %}
+          <tr class="border-b border-gray-700 hover:bg-gray-800 transition">
+            <td class="p-4 font-semibold">{{ m.producto }}</td>
+            <td class="p-4">
+              <span class="px-2 py-1 rounded-full text-xs font-bold
+                {% if m.tipo == 'Entrada' %}bg-green-500/20 text-green-300
+                {% else %}bg-red-500/20 text-red-300{% endif %}">
+                {{ m.tipo }}
+              </span>
+            </td>
+            <td class="p-4">{{ m.cantidad }}</td>
+            <td class="p-4 text-gray-300">{{ m.fecha }}</td>
+            <td class="p-4 text-gray-400 text-xs">{{ m.observacion or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="p-8 text-center text-gray-400">No hay movimientos registrados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
-<!-- ID USUARIO -->
-<div>
-<label class="block text-sm mb-1 text-gray-300">ID Usuario</label>
-<input type="number" name="Fac_id_usu"
-class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+<!-- MODAL: NUEVA FACTURA -->
+<div id="modalFactura" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-lg border border-gray-700 text-white">
+    <h2 class="text-xl font-bold text-blue-300 mb-6">Nueva Factura</h2>
+    <form method="POST" action="/facturacion/agregar">
+      <label class="block text-sm text-gray-300 mb-1">Orden de Servicio</label>
+      <select name="id_orden" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+        <option value="">Seleccionar orden...</option>
+        {% for o in ordenes %}
+          <option value="{{ o.Id_orden }}">Orden #{{ o.numero_orden }} — {{ o.placa }}</option>
+        {% endfor %}
+      </select>
+      <label class="block text-sm text-gray-300 mb-1">Método de Pago</label>
+      <select name="id_metodo_pago" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+        <option value="">Seleccionar método...</option>
+        {% for mp in metodos_pago %}
+          <option value="{{ mp.idMetodoPago }}">{{ mp.nombre }}</option>
+        {% endfor %}
+      </select>
+      <label class="block text-sm text-gray-300 mb-1">Número de Factura</label>
+      <input type="text" name="numero_factura" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 text-white" placeholder="Ej: 1003" required>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Fecha</label>
+          <input type="date" name="fecha" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 text-white" required>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Total ($)</label>
+          <input type="number" name="total" min="0" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 text-white" placeholder="0" required>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button type="button" onclick="document.getElementById('modalFactura').classList.add('hidden')"
+          class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg w-full">Cancelar</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg w-full font-semibold">Guardar Factura</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- NUMERO FACTURA -->
-<div>
-<label class="block text-sm mb-1 text-gray-300">Número de Factura</label>
-<input type="number" name="Fac_num_fact"
-class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+<!-- MODAL: NUEVO MOVIMIENTO -->
+<div id="modalMovimiento" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-lg border border-gray-700 text-white">
+    <h2 class="text-xl font-bold text-orange-300 mb-6">Nuevo Movimiento de Inventario</h2>
+    <form method="POST" action="/movimientos/agregar">
+      <label class="block text-sm text-gray-300 mb-1">Producto</label>
+      <select name="id_producto" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+        <option value="">Seleccionar producto...</option>
+        {% for p in productos %}
+          <option value="{{ p.idProducto }}">{{ p.nombre_producto }}</option>
+        {% endfor %}
+      </select>
+      <label class="block text-sm text-gray-300 mb-1">Tipo de Movimiento</label>
+      <select name="id_tipo_movimiento" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 text-white" required>
+        <option value="">Seleccionar tipo...</option>
+        {% for t in tipos_movimiento %}
+          <option value="{{ t.idTipoMovimiento }}">{{ t.nombre }}</option>
+        {% endfor %}
+      </select>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Cantidad</label>
+          <input type="number" name="cantidad" min="1" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 text-white" required>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Fecha</label>
+          <input type="date" name="fecha" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 text-white" required>
+        </div>
+      </div>
+      <label class="block text-sm text-gray-300 mb-1 mt-4">Observación</label>
+      <input type="text" name="observacion" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-6 text-white" placeholder="Opcional">
+      <div class="flex gap-3">
+        <button type="button" onclick="document.getElementById('modalMovimiento').classList.add('hidden')"
+          class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg w-full">Cancelar</button>
+        <button type="submit" class="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-lg w-full font-semibold">Registrar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- METODO PAGO -->
-<div>
-<label class="block text-sm mb-1 text-gray-300">Método de Pago</label>
-<select name="Fac_Met_pago"
-class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
+<style>
+  .tab-activa   { background: #1d4ed8; color: white; }
+  .tab-inactiva { background: #374151; color: #9ca3af; }
+  .tab-inactiva:hover { background: #4b5563; color: white; }
+</style>
 
-<option>Nequi</option>
-<option>Daviplata</option>
-<option>Tarjeta</option>
-<option>Efectivo</option>
-
-</select>
-</div>
-
-<!-- FECHA -->
-<div>
-<label class="block text-sm mb-1 text-gray-300">Fecha</label>
-<input type="date" name="Fac_Fecha"
-class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
-</div>
-
-<!-- TOTAL -->
-<div>
-<label class="block text-sm mb-1 text-gray-300">Total ($)</label>
-<input type="number" name="Fac_total"
-class="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:border-blue-500">
-</div>
-
-<!-- BOTONES -->
-<div class="col-span-2 flex justify-end gap-4 pt-4">
-
-<button type="reset"
-class="bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded-lg transition">
-Limpiar
-</button>
-
-<button type="submit"
-class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg transition font-semibold">
-Guardar Factura
-</button>
-
-</div>
-
-</form>
-
-</div>
-
+<script>
+  function cambiarPestana(cual) {
+    document.getElementById('panel-facturas').classList.toggle('hidden', cual !== 'facturas');
+    document.getElementById('panel-movimientos').classList.toggle('hidden', cual !== 'movimientos');
+    document.getElementById('tab-facturas').className    = 'px-5 py-2 rounded-t-lg font-semibold transition ' + (cual === 'facturas'    ? 'tab-activa' : 'tab-inactiva');
+    document.getElementById('tab-movimientos').className = 'px-5 py-2 rounded-t-lg font-semibold transition ' + (cual === 'movimientos' ? 'tab-activa' : 'tab-inactiva');
+  }
+</script>
 </body>
 </html>
