@@ -766,12 +766,14 @@ new Chart(document.getElementById('chart-monthly'), {
 });
 
 /* ── Gráfica semanal — barras rectangulares 3D ── */
+const hoyIdx = new Date().getDay();
+const diaActual = (hoyIdx === 0) ? 6 : hoyIdx - 1;
 const weekLabels = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 const weekShort  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 const weekColors = ['#f97316','#fb923c','#60a5fa','#4ade80','#c084fc','#fbbf24','#f472b6'];
-const weekData   = [18, 24, 31, 27, 35, 22, 12];
-const weekMax    = Math.max(...weekData);
-
+const weekDataRaw = {{ semana | tojson }};
+const weekData = weekDataRaw.map((v, i) => i <= diaActual ? v : 0);
+const weekMax = Math.max(...weekData.filter(v => v > 0)) || 1;
 // Plugin de barras rectangulares 3D (cajas)
 const rect3DPlugin = {
   id: 'rect3D',

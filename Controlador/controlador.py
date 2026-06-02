@@ -313,11 +313,13 @@ def estadisticas():
     lista_ord  = modelo.obtener_ordenes()
     facturas   = modelo.obtener_facturas()
     bajo_stock = modelo.obtener_productos_bajo_stock()
+    semana     = modelo.obtener_ordenes_semana_actual()
     return render_template('estadisticas.html',
                            productos=productos,
                            ordenes=lista_ord,
                            facturas=facturas,
-                           bajo_stock=bajo_stock)
+                           bajo_stock=bajo_stock,
+                           semana=semana)
 
 ## ═════════════════════════════════════════
 #  EXPORTAR EXCEL Y PDF
