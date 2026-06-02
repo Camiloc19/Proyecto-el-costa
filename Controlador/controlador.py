@@ -319,7 +319,7 @@ def estadisticas():
                            facturas=facturas,
                            bajo_stock=bajo_stock)
 
-# ═════════════════════════════════════════
+## ═════════════════════════════════════════
 #  EXPORTAR EXCEL Y PDF
 # ═════════════════════════════════════════
 from flask import send_file
@@ -335,27 +335,54 @@ from reportlab.lib.styles import getSampleStyleSheet
 def exportar_excel():
     wb = openpyxl.Workbook()
 
-    # ── Hoja 1: Productos ──
+    # ── Hoja 1: Producto más vendido ──
     ws1 = wb.active
-    ws1.title = "Inventario"
-    ws1.append(["ID", "Nombre", "Descripción", "Stock", "Stock Mínimo", "Precio Compra", "Precio Venta"])
-    for p in modelo.obtener_productos():
-        ws1.append([p['idProducto'], p['nombre_producto'], p['descripcion'],
-                    p['stock'], p['stock_minimo'], float(p['precio_compra']), float(p['precio_venta'])])
+    ws1.title = "Producto Más Vendido"
+    ws1.append(["Producto", "Ventas Totales", "Ingresos"])
+    pm = modelo.obtener_producto_mas_vendido()
+    if pm:
+        ws1.append([pm['nombre_producto'], pm['total_ventas'], float(pm['ingresos'])])
 
-    # ── Hoja 2: Órdenes ──
-    ws2 = wb.create_sheet("Órdenes")
-    ws2.append(["ID", "Número Orden", "Fecha Apertura", "Fecha Cierre", "Estado", "Total"])
+    # ── Hoja 2: Ventas por Categoría ──
+    ws2 = wb.create_sheet("Categorías")
+    ws2.append(["Categoría", "Ventas", "Ingresos"])
+    for c in modelo.obtener_ventas_por_categoria():
+        ws2.append([c['categoria'], c['total_ventas'], float(c['ingresos'])])
+
+    # ── Hoja 3: Actividad Mensual ──
+    ws3 = wb.create_sheet("Actividad Mensual")
+    meses = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',
+             7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'}
+    ws3.append(["Mes", "Órdenes"])
+    for m in modelo.obtener_actividad_mensual():
+        ws3.append([meses.get(m['mes'], m['mes']), m['total_ordenes']])
+
+    # ── Hoja 4: Ganancias y Gastos ──
+    ws4 = wb.create_sheet("Ganancias y Gastos")
+    ws4.append(["Concepto", "Total"])
+    ws4.append(["Total Ganancias", float(modelo.obtener_total_ganancias())])
+    ws4.append(["Total Gastos",    float(modelo.obtener_total_gastos())])
+
+    # ── Hoja 5: Mecánicos Destacados ──
+    ws5 = wb.create_sheet("Mecánicos")
+    ws5.append(["Mecánico", "Órdenes Atendidas"])
+    for m in modelo.obtener_mecanico_destacado():
+        ws5.append([m['mecanico'], m['total_ordenes']])
+
+    # ── Hoja 6: Órdenes ──
+    ws6 = wb.create_sheet("Órdenes")
+    ws6.append(["N° Orden", "Cliente", "Vehículo", "Fecha Apertura", "Fecha Cierre", "Estado", "Total"])
     for o in modelo.obtener_ordenes():
-        ws2.append([o['Id_orden'], o['numero_orden'], str(o['fecha_apertura']),
-                    str(o['fecha_cierre']), o['estado'], float(o['total'] or 0)])
+        ws6.append([o['numero_orden'], o['cliente'], o['placa'],
+                    str(o['fecha_apertura']), str(o['fecha_cierre']),
+                    o['estado'], float(o['total'] or 0)])
 
-    # ── Hoja 3: Facturas ──
-    ws3 = wb.create_sheet("Facturas")
-    ws3.append(["ID", "Número Factura", "Fecha", "Método Pago", "Total"])
+    # ── Hoja 7: Facturas ──
+    ws7 = wb.create_sheet("Facturas")
+    ws7.append(["N° Factura", "Orden", "Fecha", "Método Pago", "Total"])
     for f in modelo.obtener_facturas():
-        ws3.append([f['idFactura'], f['numero_factura'], str(f['fecha']),
-                    f['metodo_pago'], float(f['total'])])
+        ws7.append([f['numero_factura'], f['numero_orden'],
+                    str(f['fecha']), f['metodo_pago'], float(f['total'])])
 
     output = io.BytesIO()
     wb.save(output)
@@ -370,42 +397,94 @@ def exportar_pdf():
     styles = getSampleStyleSheet()
     elements = []
 
+    naranja = colors.HexColor('#f97316')
+
     # Título
-    elements.append(Paragraph("Reporte — Taller El Costa", styles['Title']))
+    elements.append(Paragraph("Reporte General — Taller El Costa", styles['Title']))
     elements.append(Spacer(1, 12))
 
-    # ── Tabla Productos ──
-    elements.append(Paragraph("Inventario de Productos", styles['Heading2']))
-    data = [["Nombre", "Stock", "Stock Mín.", "P. Compra", "P. Venta"]]
-    for p in modelo.obtener_productos():
-        data.append([p['nombre_producto'], p['stock'], p['stock_minimo'],
-                     f"${float(p['precio_compra']):,.0f}", f"${float(p['precio_venta']):,.0f}"])
-    t = Table(data, repeatRows=1)
+    # ── Producto más vendido ──
+    elements.append(Paragraph("Producto Más Vendido", styles['Heading2']))
+    pm = modelo.obtener_producto_mas_vendido()
+    if pm:
+        data = [["Producto", "Ventas Totales", "Ingresos"],
+                [pm['nombre_producto'], pm['total_ventas'], f"${float(pm['ingresos']):,.0f}"]]
+        t = Table(data)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), naranja),
+            ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
+            ('FONTNAME',   (0,0), (-1,0), 'Helvetica-Bold'),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5')]),
+        ]))
+        elements.append(t)
+    elements.append(Spacer(1, 12))
+
+    # ── Ventas por Categoría ──
+    elements.append(Paragraph("Ventas por Categoría", styles['Heading2']))
+    data = [["Categoría", "Ventas", "Ingresos"]]
+    for c in modelo.obtener_ventas_por_categoria():
+        data.append([c['categoria'], c['total_ventas'], f"${float(c['ingresos']):,.0f}"])
+    t = Table(data)
     t.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f97316')),
+        ('BACKGROUND', (0,0), (-1,0), naranja),
         ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
         ('FONTNAME',   (0,0), (-1,0), 'Helvetica-Bold'),
-        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5'), colors.white]),
         ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5'), colors.white]),
     ]))
     elements.append(t)
-    elements.append(Spacer(1, 16))
+    elements.append(Spacer(1, 12))
 
-    # ── Tabla Órdenes ──
-    elements.append(Paragraph("Órdenes de Servicio", styles['Heading2']))
-    data2 = [["N° Orden", "Fecha Apertura", "Fecha Cierre", "Total"]]
-    for o in modelo.obtener_ordenes():
-        data2.append([o['numero_orden'], str(o['fecha_apertura']),
-                      str(o['fecha_cierre']), f"${float(o['total'] or 0):,.0f}"])
-    t2 = Table(data2, repeatRows=1)
-    t2.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f97316')),
+    # ── Ganancias y Gastos ──
+    elements.append(Paragraph("Ganancias y Gastos", styles['Heading2']))
+    data = [["Concepto", "Total"],
+            ["Total Ganancias", f"${float(modelo.obtener_total_ganancias()):,.0f}"],
+            ["Total Gastos",    f"${float(modelo.obtener_total_gastos()):,.0f}"]]
+    t = Table(data)
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), naranja),
         ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
         ('FONTNAME',   (0,0), (-1,0), 'Helvetica-Bold'),
-        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5'), colors.white]),
         ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5'), colors.white]),
     ]))
-    elements.append(t2)
+    elements.append(t)
+    elements.append(Spacer(1, 12))
+
+    # ── Mecánicos Destacados ──
+    elements.append(Paragraph("Top Mecánicos", styles['Heading2']))
+    data = [["Mecánico", "Órdenes Atendidas"]]
+    for m in modelo.obtener_mecanico_destacado():
+        data.append([m['mecanico'], m['total_ordenes']])
+    t = Table(data)
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), naranja),
+        ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
+        ('FONTNAME',   (0,0), (-1,0), 'Helvetica-Bold'),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5'), colors.white]),
+    ]))
+    elements.append(t)
+    elements.append(Spacer(1, 12))
+
+    # ── Órdenes ──
+    elements.append(Paragraph("Órdenes de Servicio", styles['Heading2']))
+    data = [["N° Orden", "Cliente", "Placa", "Fecha", "Estado", "Total"]]
+    for o in modelo.obtener_ordenes():
+        data.append([o['numero_orden'], o['cliente'], o['placa'],
+                     str(o['fecha_apertura']), o['estado'],
+                     f"${float(o['total'] or 0):,.0f}"])
+    t = Table(data)
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), naranja),
+        ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
+        ('FONTNAME',   (0,0), (-1,0), 'Helvetica-Bold'),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5'), colors.white]),
+        ('FONTSIZE', (0,0), (-1,-1), 8),
+    ]))
+    elements.append(t)
 
     doc.build(elements)
     buffer.seek(0)
