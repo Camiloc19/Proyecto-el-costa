@@ -1055,8 +1055,8 @@ function toast(msg) {
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 3500);
 }
-function exportPDF()   { toast('📄 Exportación a PDF próximamente disponible.'); }
-function exportExcel() { toast('📊 Exportación a Excel próximamente disponible.'); }
+function exportPDF()   { window.location.href = '/exportar-pdf'; }
+function exportExcel() { window.location.href = '/exportar-excel'; }
 </script>
 </body>
 </html>

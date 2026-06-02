@@ -318,3 +318,95 @@ def estadisticas():
                            ordenes=lista_ord,
                            facturas=facturas,
                            bajo_stock=bajo_stock)
+
+# ═════════════════════════════════════════
+#  EXPORTAR EXCEL Y PDF
+# ═════════════════════════════════════════
+from flask import send_file
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+@app.route('/exportar-excel')
+def exportar_excel():
+    wb = openpyxl.Workbook()
+
+    # ── Hoja 1: Productos ──
+    ws1 = wb.active
+    ws1.title = "Inventario"
+    ws1.append(["ID", "Nombre", "Descripción", "Stock", "Stock Mínimo", "Precio Compra", "Precio Venta"])
+    for p in modelo.obtener_productos():
+        ws1.append([p['idProducto'], p['nombre_producto'], p['descripcion'],
+                    p['stock'], p['stock_minimo'], float(p['precio_compra']), float(p['precio_venta'])])
+
+    # ── Hoja 2: Órdenes ──
+    ws2 = wb.create_sheet("Órdenes")
+    ws2.append(["ID", "Número Orden", "Fecha Apertura", "Fecha Cierre", "Estado", "Total"])
+    for o in modelo.obtener_ordenes():
+        ws2.append([o['Id_orden'], o['numero_orden'], str(o['fecha_apertura']),
+                    str(o['fecha_cierre']), o['estado'], float(o['total'] or 0)])
+
+    # ── Hoja 3: Facturas ──
+    ws3 = wb.create_sheet("Facturas")
+    ws3.append(["ID", "Número Factura", "Fecha", "Método Pago", "Total"])
+    for f in modelo.obtener_facturas():
+        ws3.append([f['idFactura'], f['numero_factura'], str(f['fecha']),
+                    f['metodo_pago'], float(f['total'])])
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, download_name="reporte_taller_el_costa.xlsx", as_attachment=True)
+
+
+@app.route('/exportar-pdf')
+def exportar_pdf():
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # Título
+    elements.append(Paragraph("Reporte — Taller El Costa", styles['Title']))
+    elements.append(Spacer(1, 12))
+
+    # ── Tabla Productos ──
+    elements.append(Paragraph("Inventario de Productos", styles['Heading2']))
+    data = [["Nombre", "Stock", "Stock Mín.", "P. Compra", "P. Venta"]]
+    for p in modelo.obtener_productos():
+        data.append([p['nombre_producto'], p['stock'], p['stock_minimo'],
+                     f"${float(p['precio_compra']):,.0f}", f"${float(p['precio_venta']):,.0f}"])
+    t = Table(data, repeatRows=1)
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f97316')),
+        ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
+        ('FONTNAME',   (0,0), (-1,0), 'Helvetica-Bold'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5'), colors.white]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+    ]))
+    elements.append(t)
+    elements.append(Spacer(1, 16))
+
+    # ── Tabla Órdenes ──
+    elements.append(Paragraph("Órdenes de Servicio", styles['Heading2']))
+    data2 = [["N° Orden", "Fecha Apertura", "Fecha Cierre", "Total"]]
+    for o in modelo.obtener_ordenes():
+        data2.append([o['numero_orden'], str(o['fecha_apertura']),
+                      str(o['fecha_cierre']), f"${float(o['total'] or 0):,.0f}"])
+    t2 = Table(data2, repeatRows=1)
+    t2.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f97316')),
+        ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
+        ('FONTNAME',   (0,0), (-1,0), 'Helvetica-Bold'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f5f5f5'), colors.white]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+    ]))
+    elements.append(t2)
+
+    doc.build(elements)
+    buffer.seek(0)
+    return send_file(buffer, download_name="reporte_taller_el_costa.pdf", as_attachment=True)
