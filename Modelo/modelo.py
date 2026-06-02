@@ -603,3 +603,23 @@ def obtener_mecanico_destacado():
     resultado = cursor.fetchall()
     con.close()
     return resultado
+
+def obtener_ordenes_semana_actual():
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT DAYOFWEEK(fecha_apertura) AS dia, COUNT(*) AS total
+        FROM orden_servicio
+        WHERE YEARWEEK(fecha_apertura, 1) = YEARWEEK(CURDATE(), 1)
+        GROUP BY DAYOFWEEK(fecha_apertura)
+    """)
+    resultado = cursor.fetchall()
+    con.close()
+    datos = [0] * 7
+    for r in resultado:
+        dia = r['dia']
+        if dia == 1:
+            datos[6] = r['total']
+        else:
+            datos[dia - 2] = r['total']
+    return datos

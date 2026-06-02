@@ -766,36 +766,10 @@ new Chart(document.getElementById('chart-monthly'), {
 });
 
 /* ── Gráfica semanal — barras rectangulares 3D ── */
-function getSemanaActual() {
-  const hoy = new Date();
-  const diaSemana = hoy.getDay();
-  const diffLunes = (diaSemana === 0) ? -6 : 1 - diaSemana;
-  const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() + diffLunes);
-
-  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const diasNombre = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const diasLargo  = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-
-  const labels = [];
-  const shorts = [];
-
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(lunes);
-    d.setDate(lunes.getDate() + i);
-    const dia = d.getDate();
-    const mes = meses[d.getMonth()];
-    labels.push(i <= diaActual ? `${diasLargo[i]} ${dia} ${mes}` : '');
-    shorts.push(`${diasNombre[i]}<br>${dia} ${mes}`);
-  }
-  return { labels, shorts };
-}
-
-const { labels: weekLabels, shorts: weekShort } = getSemanaActual();
+const weekLabels = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const weekShort  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 const weekColors = ['#f97316','#fb923c','#60a5fa','#4ade80','#c084fc','#fbbf24','#f472b6'];
-const hoyIdx = new Date().getDay();
-const diaActual = (hoyIdx === 0) ? 6 : hoyIdx - 1;
-const weekData = [18, 24, 31, 27, 35, 22, 12].map((v, i) => i <= diaActual ? v : 0);
+const weekData   = [18, 24, 31, 27, 35, 22, 12];
 const weekMax    = Math.max(...weekData);
 
 // Plugin de barras rectangulares 3D (cajas)
@@ -878,7 +852,7 @@ weekShort.forEach((day, i) => {
       </div>
       <!-- Día debajo -->
       <p style="font-size:0.55rem;color:${isMax ? weekColors[i] : '#6b7280'};
-                font-weight:${isMax ? 700 : 400};line-height:1.3;margin-top:2px;">${day}</p>
+                font-weight:${isMax ? 700 : 400};line-height:1;margin-top:2px;">${day}</p>
       ${isMax ? `<span style="font-size:0.42rem;background:${weekColors[i]};color:#000;border-radius:99px;padding:1px 4px;font-weight:800;">MAX</span>` : ''}
     </div>
   `;
@@ -1081,8 +1055,8 @@ function toast(msg) {
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 3500);
 }
-function exportPDF()   { window.location.href = '/exportar-pdf'; }
-function exportExcel() { window.location.href = '/exportar-excel'; }
+  function exportPDF()   { window.location.href = '/exportar-pdf'; }
+  function exportExcel() { window.location.href = '/exportar-excel'; }
 </script>
 </body>
 </html>
