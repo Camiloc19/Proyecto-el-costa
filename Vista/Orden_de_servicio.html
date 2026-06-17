@@ -305,7 +305,19 @@
     document.getElementById('tab-ordenes').className    = 'tab-btn px-2 py-3 transition ' + (cual === 'ordenes'    ? 'tab-activa' : 'tab-inactiva');
     document.getElementById('tab-atenciones').className = 'tab-btn px-2 py-3 transition ' + (cual === 'atenciones' ? 'tab-activa' : 'tab-inactiva');
   }
-
+// Fecha de apertura: solo permite el día de hoy
+  (function () {
+    const f = new Date();
+    const hoy = f.getFullYear() + '-' +
+                String(f.getMonth() + 1).padStart(2, '0') + '-' +
+                String(f.getDate()).padStart(2, '0');
+    const campo = document.querySelector('input[name="fecha_apertura"]');
+    if (campo) {
+      campo.min = hoy;    // no permite días anteriores
+      campo.max = hoy;    // no permite días posteriores
+      campo.value = hoy;  // la deja en hoy
+    }
+  })();
   function abrirCerrar(id, numeroOrden) {
     document.getElementById("formCerrar").action = "/ordenes/cerrar/" + id;
     document.getElementById("textoOrden").textContent = "CÓDIGO DE ORDEN: N° " + numeroOrden;
