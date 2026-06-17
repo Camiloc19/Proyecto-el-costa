@@ -1,0 +1,39 @@
+# Query: <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+# ContextLines: 1
+
+7 results - 7 files
+
+Vista\dashboard.html:
+  4    <meta charset="UTF-8"/>
+  5:   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  6    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+Vista\estadisticas.html:
+  4    <meta charset="UTF-8" />
+  5:   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  6    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+Vista\Facturacion.html:
+  4    <meta charset="UTF-8">
+  5:   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  6    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+Vista\inventario.html:
+  4    <meta charset="UTF-8">
+  5:   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  6    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+Vista\login.html:
+  4    <meta charset="UTF-8"/>
+  5:   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  6    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+Vista\Orden_de_servicio.html:
+  4    <meta charset="UTF-8">
+  5:   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  6    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+Vista\proveedores.html:
+  4    <meta charset="UTF-8"/>
+  5:   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  6    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
