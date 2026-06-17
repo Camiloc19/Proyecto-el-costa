@@ -236,9 +236,11 @@
 
   <p class="section-label">Módulos principales</p>
 
-  <!-- FILA 1: 2 tarjetas grandes -->
+<!-- FILA 1: 2 tarjetas grandes -->
+  {% if 'inventario' in modulos or 'ordenes' in modulos %}
   <div class="grid-main">
 
+    {% if 'inventario' in modulos %}
     <a href="/inventario" class="card c-inventario">
       <div class="card-accent bg-inventario"></div>
       <div class="card-icon">📦</div>
@@ -249,7 +251,9 @@
         <span class="card-arrow">→</span>
       </div>
     </a>
+    {% endif %}
 
+    {% if 'ordenes' in modulos %}
     <a href="/ordenes" class="card c-ordenes">
       <div class="card-accent bg-ordenes"></div>
       <div class="card-icon">🔧</div>
@@ -260,12 +264,16 @@
         <span class="card-arrow">→</span>
       </div>
     </a>
+    {% endif %}
 
   </div>
+  {% endif %}
 
   <!-- FILA 2: 2 tarjetas medianas -->
+  {% if 'facturacion' in modulos or 'proveedores' in modulos %}
   <div class="grid-main" style="margin-bottom:12px">
 
+    {% if 'facturacion' in modulos %}
     <a href="/facturacion" class="card c-facturacion">
       <div class="card-accent bg-facturacion"></div>
       <div class="card-icon">🧾</div>
@@ -276,7 +284,9 @@
         <span class="card-arrow">→</span>
       </div>
     </a>
+    {% endif %}
 
+    {% if 'proveedores' in modulos %}
     <a href="/proveedores" class="card c-proveedores">
       <div class="card-accent bg-proveedores"></div>
       <div class="card-icon">🏭</div>
@@ -287,10 +297,13 @@
         <span class="card-arrow">→</span>
       </div>
     </a>
+    {% endif %}
 
   </div>
+  {% endif %}
 
   <!-- FILA 3: estadísticas ancha -->
+  {% if 'estadisticas' in modulos %}
   <div class="grid-secondary">
     <a href="/estadisticas" class="card c-estadisticas card-wide">
       <div class="card-icon">📊</div>
@@ -304,6 +317,7 @@
       </div>
     </a>
   </div>
+  {% endif %}
 
   <div class="divider"></div>
   <p class="footer">TALLER EL COSTA &copy; 2026</p>
