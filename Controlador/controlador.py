@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import sys
 import os
+from datetime import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Modelo'))
 import modelo
@@ -192,12 +193,15 @@ def ordenes():
 
 @app.route('/ordenes/agregar', methods=['POST'])
 def agregar_orden():
-    id_vehiculo    = request.form.get('id_vehiculo')
-    id_usuario     = request.form.get('id_usuario')
-    id_estado      = request.form.get('id_estado', 1)
-    numero_orden   = request.form.get('numero_orden')
-    hora_apertura  = request.form.get('hora_apertura')
-    fecha_apertura = request.form.get('fecha_apertura')
+    id_vehiculo  = request.form.get('id_vehiculo')
+    id_usuario   = request.form.get('id_usuario')
+    id_estado    = request.form.get('id_estado', 1)
+    numero_orden = request.form.get('numero_orden')
+
+    ahora = datetime.now()
+    fecha_apertura = ahora.strftime('%Y-%m-%d')   # fecha de hoy
+    hora_apertura  = ahora.strftime('%H:%M')      # hora actual en 24h
+
     modelo.crear_orden(id_vehiculo, id_usuario, id_estado, numero_orden, hora_apertura, fecha_apertura)
     return redirect(url_for('ordenes'))
 
