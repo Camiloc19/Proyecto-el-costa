@@ -41,10 +41,20 @@ def logout():
 #  DASHBOARD
 # ═════════════════════════════════════════
 
+
+MODULOS_POR_ROL = {
+    1: ['inventario', 'ordenes', 'facturacion', 'proveedores'],  
+    2: ['inventario', 'ordenes', 'facturacion', 'proveedores'],  
+    3: [],                                                        
+    4: ['ordenes'], 
+}                                             
+
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
-
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    permitidos = MODULOS_POR_ROL.get(session.get('id_rol'), [])
+    return render_template('dashboard.html', modulos=permitidos)
 
 # ═════════════════════════════════════════
 #  USUARIOS
