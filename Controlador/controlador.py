@@ -41,13 +41,12 @@ def logout():
 #  DASHBOARD
 # ═════════════════════════════════════════
 
-
 MODULOS_POR_ROL = {
-    1: ['inventario', 'ordenes', 'facturacion', 'proveedores'],  
-    2: ['inventario', 'ordenes', 'facturacion', 'proveedores'],  
-    3: [],                                                        
-    4: ['ordenes'], 
-}                                             
+    1: ['inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Super_administrador
+    2: ['inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Administrador
+    3: [],                                                                         # Cliente (sin acceso)
+    4: ['ordenes'],                                                                # Mecánico
+}
 
 @app.route('/dashboard')
 def dashboard():
