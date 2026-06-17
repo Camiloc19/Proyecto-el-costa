@@ -319,17 +319,33 @@ def eliminar_proveedor(id):
 
 @app.route('/estadisticas')
 def estadisticas():
-    productos  = modelo.obtener_productos()
-    lista_ord  = modelo.obtener_ordenes()
-    facturas   = modelo.obtener_facturas()
-    bajo_stock = modelo.obtener_productos_bajo_stock()
-    semana     = modelo.obtener_ordenes_semana_actual()
+    productos    = modelo.obtener_productos()
+    lista_ord    = modelo.obtener_ordenes()
+    facturas     = modelo.obtener_facturas()
+    bajo_stock   = modelo.obtener_productos_bajo_stock()
+    semana       = modelo.obtener_ordenes_semana_actual()
+
+    # ── Datos reales para las tarjetas ──
+    producto_top = modelo.obtener_producto_mas_vendido()   # {nombre_producto, total_ventas, ingresos}
+    mecanicos    = modelo.obtener_mecanico_destacado()     # top 3 [{mecanico, total_ordenes}]
+    ventas_cat   = modelo.obtener_ventas_por_categoria()
+
+    # % del total y precio promedio del producto más vendido
+    total_global = sum(c['total_ventas'] for c in ventas_cat) or 1
+    if producto_top:
+        producto_top['pct_total']   = round(producto_top['total_ventas'] / total_global * 100)
+        producto_top['precio_prom'] = (producto_top['ingresos'] / producto_top['total_ventas']) if producto_top['total_ventas'] else 0
+
+    # % de cada mecánico respecto al #1 (para las barritas)
+    if mecanicos:
+        tope = mecanicos[0]['total_ordenes'] or 1
+        for m in mecanicos:
+            m['pct'] = round(m['total_ordenes'] / tope * 100)
+
     return render_template('estadisticas.html',
-                           productos=productos,
-                           ordenes=lista_ord,
-                           facturas=facturas,
-                           bajo_stock=bajo_stock,
-                           semana=semana)
+                           productos=productos, ordenes=lista_ord, facturas=facturas,
+                           bajo_stock=bajo_stock, semana=semana,
+                           producto_top=producto_top, mecanicos=mecanicos, ventas_cat=ventas_cat)
 
 ## ═════════════════════════════════════════
 #  EXPORTAR EXCEL Y PDF
