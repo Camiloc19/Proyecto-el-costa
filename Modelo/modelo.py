@@ -113,11 +113,63 @@ def crear_vehiculo(id_usuario, id_marca, placa, modelo, anio, color, tipo):
     con = conectar()
     cursor = con.cursor()
     cursor.execute("""
-        INSERT INTO vehiculos (id_Usuario_fk, id_Marca_fk, placa, modelo, año, color, tipo) 
+        INSERT INTO vehiculos (id_Usuario_fk, id_Marca_fk, placa, modelo, año, color, tipo)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, (id_usuario, id_marca, placa, modelo, anio, color, tipo))
     con.commit()
+    nuevo_id = cursor.lastrowid
     con.close()
+    return nuevo_id
+
+def obtener_vehiculo_por_placa(placa):
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM vehiculos WHERE placa = %s", (placa,))
+    resultado = cursor.fetchone()
+    con.close()
+    return resultado
+
+def obtener_o_crear_cliente(nombre_completo):
+    # Busca un cliente (rol 3) por nombre completo; si no existe, lo crea. Devuelve idUsuario
+    nombre_completo = (nombre_completo or '').strip()
+    partes = nombre_completo.split(' ', 1)
+    nombre   = partes[0]
+    apellido = partes[1] if len(partes) > 1 else ''
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("""
+        SELECT idUsuario FROM usuarios
+        WHERE id_Rol_fk = 3
+          AND LOWER(TRIM(CONCAT(COALESCE(nombre,''), ' ', COALESCE(apellido,'')))) = LOWER(%s)
+        LIMIT 1
+    """, (nombre_completo,))
+    fila = cursor.fetchone()
+    if fila:
+        id_usuario = fila[0]
+    else:
+        cursor.execute(
+            "INSERT INTO usuarios (nombre, apellido, id_Rol_fk) VALUES (%s, %s, 3)",
+            (nombre, apellido)
+        )
+        con.commit()
+        id_usuario = cursor.lastrowid
+    con.close()
+    return id_usuario
+
+def obtener_o_crear_marca(nombre):
+    # Devuelve el idMarca; si la marca no existe (por nombre) la crea
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("SELECT idMarca FROM marca_vehiculo WHERE LOWER(nombre) = LOWER(%s)", (nombre,))
+    fila = cursor.fetchone()
+    if fila:
+        id_marca = fila[0]
+    else:
+        cursor.execute("INSERT INTO marca_vehiculo (nombre) VALUES (%s)", (nombre,))
+        con.commit()
+        id_marca = cursor.lastrowid
+    con.close()
+    return id_marca
 
 def actualizar_vehiculo(id, id_usuario, id_marca, placa, modelo, anio, color, tipo):
     con = conectar()
@@ -184,6 +236,15 @@ def obtener_orden_por_id(id):
     resultado = cursor.fetchone()
     con.close()
     return resultado
+
+def obtener_siguiente_numero_orden():
+    # Devuelve el mayor numero_orden numérico existente + 1 (empieza en 1001 si no hay)
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("SELECT MAX(CAST(numero_orden AS UNSIGNED)) FROM orden_servicio")
+    maximo = cursor.fetchone()[0]
+    con.close()
+    return (maximo or 1000) + 1
 
 def crear_orden(id_vehiculo, id_usuario, id_estado, numero_orden, hora_apertura, fecha_apertura):
     con = conectar()

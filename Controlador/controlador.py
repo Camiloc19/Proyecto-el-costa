@@ -184,23 +184,44 @@ def ordenes():
     lista_usu  = modelo.obtener_usuarios()
     estados    = modelo.obtener_estados_orden()
     atenciones = modelo.obtener_atenciones()
+    siguiente  = modelo.obtener_siguiente_numero_orden()
+    marcas     = modelo.obtener_marcas()
     return render_template('Orden_de_servicio.html',
                            ordenes=lista,
                            vehiculos=lista_veh,
                            usuarios=lista_usu,
                            estados=estados,
-                           atenciones=atenciones)
+                           atenciones=atenciones,
+                           siguiente_orden=siguiente,
+                           marcas=marcas)
 
 @app.route('/ordenes/agregar', methods=['POST'])
 def agregar_orden():
-    id_vehiculo  = request.form.get('id_vehiculo')
-    id_usuario   = request.form.get('id_usuario')    # cliente (rol 3)
     id_mecanico  = request.form.get('id_mecanico')   # mecánico a cargo (rol 4)
     id_estado    = request.form.get('id_estado', 1)
-    numero_orden = request.form.get('numero_orden')
+    # Se genera en el servidor para garantizar que no se repita
+    numero_orden = modelo.obtener_siguiente_numero_orden()
+
+    # Cliente: se busca por nombre; si no existe, se registra como nuevo (rol 3)
+    cliente_nombre = (request.form.get('cliente') or '').strip()
+    id_usuario = modelo.obtener_o_crear_cliente(cliente_nombre)
+
+    # Vehículo: se busca por placa; si no existe, se registra como carro nuevo
+    placa        = (request.form.get('placa') or '').strip().upper()
+    marca_nombre = (request.form.get('marca') or '').strip()
+    modelo_txt   = (request.form.get('modelo') or '').strip()
+
+    vehiculo = modelo.obtener_vehiculo_por_placa(placa)
+    if vehiculo:
+        id_vehiculo = vehiculo['IDvehiculos']
+    else:
+        id_marca = modelo.obtener_o_crear_marca(marca_nombre)
+        # color es NOT NULL en la BD; tipo por defecto 'Automóvil' (solo carros)
+        id_vehiculo = modelo.crear_vehiculo(id_usuario, id_marca, placa, modelo_txt, None, '', 'Automóvil')
 
     ahora = datetime.now()
-    fecha_apertura = ahora.strftime('%Y-%m-%d')
+    # Fecha enviada desde el formulario; si no llega, usa la de hoy
+    fecha_apertura = request.form.get('fecha_apertura') or ahora.strftime('%Y-%m-%d')
     hora_apertura  = ahora.strftime('%H:%M')
 
     # 1) Crea la orden (id_usuario = cliente)

@@ -72,6 +72,29 @@
       border-color: #F0C040 !important;
       outline: none;
     }
+
+    /* Combobox buscable personalizado */
+    .combo { position: relative; }
+    .combo-panel {
+      position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+      background: #0d0d0d;
+      border: 1px solid rgba(240,192,64,0.25);
+      border-radius: 10px;
+      max-height: 220px; overflow-y: auto;
+      z-index: 60; padding: 4px;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.65);
+    }
+    .combo-opt {
+      padding: 9px 12px; border-radius: 7px;
+      font-size: 14px; color: #e5e7eb; cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .combo-opt:hover, .combo-opt.activo {
+      background: rgba(240,192,64,0.12); color: #F0C040;
+    }
+    .combo-empty { padding: 10px 12px; font-size: 13px; color: #6b7280; }
+    .combo-panel::-webkit-scrollbar { width: 8px; }
+    .combo-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
   </style>
 </head>
 <body class="p-4 md:p-6">
@@ -188,16 +211,71 @@
 
 </div>
 
-<div>
+<!-- MODAL NUEVA ORDEN -->
+<div id="modalAgregar" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-[#111] rounded-xl p-6 w-full max-w-lg border border-neutral-800 shadow-2xl">
+    <h2 class="text-xl font-bold font-['Rajdhani'] text-blue-400 mb-4 uppercase tracking-wider">Generar Nueva Orden</h2>
+    <form method="POST" action="/ordenes/agregar" id="formAgregar" class="space-y-4">
+      <input type="hidden" name="id_estado" value="1">
+
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">N° de Orden (automático)</label>
+        <input type="text" name="numero_orden" value="{{ siguiente_orden }}" readonly
+               class="w-full rounded-lg p-2.5 text-sm font-mono text-neutral-400 cursor-not-allowed">
+      </div>
+
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Fecha de apertura</label>
+        <input type="date" name="fecha_apertura" class="w-full rounded-lg p-2.5 text-sm font-mono" required>
+      </div>
+
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Marca</label>
+        <div class="combo" id="comboMarca">
+          <input type="text" name="marca" autocomplete="off"
+                 class="w-full rounded-lg p-2.5 text-sm" placeholder="Busca o escribe la marca..." required>
+          <div class="combo-panel hidden">
+            {% for m in marcas %}
+            <div class="combo-opt" data-label="{{ m.nombre }}">{{ m.nombre }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Modelo</label>
+        <div class="combo" id="comboModelo">
+          <input type="text" name="modelo" autocomplete="off"
+                 class="w-full rounded-lg p-2.5 text-sm" placeholder="Busca o escribe el modelo..." required>
+          <div class="combo-panel hidden">
+            {% for mod in vehiculos|map(attribute='modelo')|select|unique %}
+            <div class="combo-opt" data-label="{{ mod }}">{{ mod }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Placa</label>
+        <input type="text" name="placa" autocomplete="off"
+               class="w-full rounded-lg p-2.5 text-sm font-mono uppercase" placeholder="Ej: ABC123" required>
+        <p class="text-[11px] text-neutral-500 mt-1">Si la placa no existe, se registra como carro nuevo con el cliente como dueño.</p>
+      </div>
+
+      <div>
         <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Cliente</label>
-        <select name="id_usuario" class="w-full rounded-lg p-2.5 text-sm" required>
-          <option value="">Seleccionar cliente...</option>
-          {% for u in usuarios %}
-            {% if u.id_Rol_fk|int == 3 %}
-            <option value="{{ u.idUsuario }}">{{ u.nombre }} {{ u.apellido }}</option>
-            {% endif %}
-          {% endfor %}
-        </select>
+        <div class="combo" id="comboCliente">
+          <input type="text" name="cliente" autocomplete="off"
+                 class="w-full rounded-lg p-2.5 text-sm" placeholder="Busca o escribe el cliente..." required>
+          <div class="combo-panel hidden">
+            {% for u in usuarios %}
+              {% if u.id_Rol_fk|int == 3 %}
+              <div class="combo-opt" data-label="{{ u.nombre }} {{ u.apellido }}">{{ u.nombre }} {{ u.apellido }}</div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <p class="text-[11px] text-neutral-500 mt-1">Si el cliente no existe, se registra como nuevo (nombre y apellido).</p>
       </div>
 
       <div>
@@ -211,6 +289,15 @@
           {% endfor %}
         </select>
       </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('modalAgregar').classList.add('hidden')"
+          class="bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-sm px-4 py-2.5 rounded-lg w-full transition">Cancelar</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-['Rajdhani'] font-bold uppercase tracking-wider text-sm px-4 py-2.5 rounded-lg w-full transition">Generar Orden</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- MODAL CERRAR -->
 <div id="modalCerrar" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -301,6 +388,50 @@
     document.getElementById("textoOrden").textContent = "CÓDIGO DE ORDEN: N° " + numeroOrden;
     document.getElementById("modalCerrar").classList.remove("hidden");
   }
+
+  // Combobox buscable: escribes para filtrar y puedes elegir una sugerencia
+  // o escribir un valor nuevo (cliente/marca/modelo nuevos se crean al guardar).
+  function initCombo(comboId) {
+    const combo = document.getElementById(comboId);
+    if (!combo) return;
+    const input = combo.querySelector('input[type="text"]');
+    const panel = combo.querySelector('.combo-panel');
+    const opciones = Array.from(panel.querySelectorAll('.combo-opt'));
+
+    function filtrar() {
+      const q = input.value.trim().toLowerCase();
+      let visibles = 0;
+      opciones.forEach(function (o) {
+        const match = o.dataset.label.toLowerCase().includes(q);
+        o.classList.toggle('hidden', !match);
+        if (match) visibles++;
+      });
+      let vacio = panel.querySelector('.combo-empty');
+      if (!visibles) {
+        if (!vacio) { vacio = document.createElement('div'); vacio.className = 'combo-empty'; panel.appendChild(vacio); }
+        vacio.textContent = q ? 'Sin coincidencias — se creará como nuevo' : 'Escribe para buscar...';
+        vacio.classList.remove('hidden');
+      } else if (vacio) {
+        vacio.classList.add('hidden');
+      }
+    }
+
+    input.addEventListener('focus', function () { panel.classList.remove('hidden'); filtrar(); });
+    input.addEventListener('input', function () { panel.classList.remove('hidden'); filtrar(); });
+    opciones.forEach(function (o) {
+      o.addEventListener('mousedown', function (e) {
+        e.preventDefault();               // evita que el blur cierre antes del click
+        input.value = o.dataset.label;
+        panel.classList.add('hidden');
+      });
+    });
+    document.addEventListener('click', function (e) {
+      if (!combo.contains(e.target)) panel.classList.add('hidden');
+    });
+  }
+  initCombo('comboCliente');
+  initCombo('comboMarca');
+  initCombo('comboModelo');
 </script>
 
 </body>
