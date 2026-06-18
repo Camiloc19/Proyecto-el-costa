@@ -194,15 +194,22 @@ def ordenes():
 @app.route('/ordenes/agregar', methods=['POST'])
 def agregar_orden():
     id_vehiculo  = request.form.get('id_vehiculo')
-    id_usuario   = request.form.get('id_usuario')
+    id_usuario   = request.form.get('id_usuario')    # cliente (rol 3)
+    id_mecanico  = request.form.get('id_mecanico')   # mecánico a cargo (rol 4)
     id_estado    = request.form.get('id_estado', 1)
     numero_orden = request.form.get('numero_orden')
 
     ahora = datetime.now()
-    fecha_apertura = ahora.strftime('%Y-%m-%d')   # fecha de hoy
-    hora_apertura  = ahora.strftime('%H:%M')      # hora actual en 24h
+    fecha_apertura = ahora.strftime('%Y-%m-%d')
+    hora_apertura  = ahora.strftime('%H:%M')
 
+    # 1) Crea la orden (id_usuario = cliente)
     modelo.crear_orden(id_vehiculo, id_usuario, id_estado, numero_orden, hora_apertura, fecha_apertura)
+
+    # 2) Crea la atención con el mecánico (rol 4) -> aparece en el Historial de Atenciones
+    if id_mecanico:
+        modelo.crear_atencion(id_vehiculo, id_mecanico, 4, fecha_apertura, None)
+
     return redirect(url_for('ordenes'))
 
 @app.route('/ordenes/cerrar/<int:id>', methods=['POST'])
