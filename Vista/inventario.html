@@ -5,7 +5,7 @@
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventario — Taller El Costa</title>
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -26,7 +26,7 @@
       pointer-events: none; z-index: 0;
     }
     .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px 60px; }
-    
+
     .header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 40px; padding-bottom: 24px;
@@ -46,13 +46,13 @@
       font-family: 'Rajdhani', sans-serif;
       font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.03em;
     }
-    input {
+    input, select {
       background: #0d0d0d !important;
       border: 1px solid rgba(255,255,255,0.08) !important;
       color: white !important;
       transition: all 0.25s;
     }
-    input:focus {
+    input:focus, select:focus {
       border-color: #F0C040 !important;
       box-shadow: 0 0 0 3px rgba(240,192,64,0.15);
       outline: none;
@@ -64,13 +64,14 @@
     }
     tr { transition: 0.2s; }
     tr:hover { background: rgba(240,192,64,0.03); }
-    
+
     .btn-custom {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
       transition: all 0.2s;
     }
     .btn-custom:hover { transform: translateY(-1px); }
+    .stock-bajo { color: #f87171 !important; }
   </style>
 </head>
 <body class="p-4 md:p-6">
@@ -84,14 +85,14 @@
     </div>
     <div class="text-right">
       <p class="text-neutral-500 text-[10px] uppercase tracking-widest mb-1">Items Totales</p>
-      <h2 class="text-3xl font-bold font-['Rajdhani'] text-emerald-400" id="total">0</h2>
+      <h2 class="text-3xl font-bold font-['Rajdhani'] text-emerald-400" id="total">{{ productos|length }}</h2>
     </div>
   </header>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- PANEL IZQUIERDO: BUSCADOR Y REGISTRO -->
     <div class="lg:col-span-1 space-y-6">
-      
+
       <!-- BUSCADOR -->
       <div class="card-dashboard p-5">
         <div class="flex items-center gap-3 mb-4">
@@ -109,23 +110,38 @@
         <div class="flex items-center gap-3 mb-4">
           <div class="text-xl text-emerald-400">📦</div>
           <div>
-            <h3 class="title-sector">Gestionar Producto</h3>
+            <h3 class="title-sector" id="tituloForm">Gestionar Producto</h3>
             <p class="text-neutral-500 text-xs">Añadir o modificar el inventario</p>
           </div>
         </div>
-        <div class="space-y-3">
-          <input id="nombre" placeholder="Nombre del Producto" class="w-full rounded-lg p-2.5 text-sm">
-          <input id="descripcion" placeholder="Descripción" class="w-full rounded-lg p-2.5 text-sm">
+
+        <form id="formProducto" method="POST" action="{{ url_for('agregar_producto') }}" class="space-y-3">
+          <input id="nombre" name="nombre" placeholder="Nombre del Producto" class="w-full rounded-lg p-2.5 text-sm" required>
+          <input id="descripcion" name="descripcion" placeholder="Descripción" class="w-full rounded-lg p-2.5 text-sm">
+
+          <select id="id_categoria" name="id_categoria" class="w-full rounded-lg p-2.5 text-sm" required>
+            <option value="">Selecciona categoría...</option>
+            {% for c in categorias %}
+              <option value="{{ c.idCategoria }}">{{ c.nombre }}</option>
+            {% endfor %}
+          </select>
+
           <div class="grid grid-cols-2 gap-2">
-            <input id="entrada" type="number" placeholder="Entradas" class="w-full rounded-lg p-2.5 text-sm">
-            <input id="salida" type="number" placeholder="Salidas" class="w-full rounded-lg p-2.5 text-sm">
+            <input id="stock" name="stock" type="number" placeholder="Stock" class="w-full rounded-lg p-2.5 text-sm" required>
+            <input id="stock_minimo" name="stock_minimo" type="number" placeholder="Stock mínimo" class="w-full rounded-lg p-2.5 text-sm" required>
           </div>
-          <input id="precio" type="number" placeholder="Precio ($)" class="w-full rounded-lg p-2.5 text-sm">
-          
-          <button onclick="agregarProducto()" class="btn-custom w-full mt-2 bg-gradient-to-r from-amber-500 to-yellow-600 text-black py-2.5 rounded-lg text-sm shadow-lg shadow-yellow-600/10 hover:brightness-110">
+          <div class="grid grid-cols-2 gap-2">
+            <input id="precio_compra" name="precio_compra" type="number" step="0.01" placeholder="Precio compra ($)" class="w-full rounded-lg p-2.5 text-sm" required>
+            <input id="precio_venta" name="precio_venta" type="number" step="0.01" placeholder="Precio venta ($)" class="w-full rounded-lg p-2.5 text-sm" required>
+          </div>
+
+          <button type="submit" id="btnGuardar" class="btn-custom w-full mt-2 bg-gradient-to-r from-amber-500 to-yellow-600 text-black py-2.5 rounded-lg text-sm shadow-lg shadow-yellow-600/10 hover:brightness-110">
             💾 Guardar Item
           </button>
-        </div>
+          <button type="button" onclick="cancelarEdicion()" id="btnCancelar" class="btn-custom w-full bg-neutral-800 text-neutral-300 py-2 rounded-lg text-xs hover:bg-neutral-700 hidden">
+            Cancelar edición
+          </button>
+        </form>
       </div>
 
     </div>
@@ -136,7 +152,7 @@
         <div class="flex justify-between items-center mb-4">
           <div>
             <h3 class="title-sector">Listado de Existencias</h3>
-            <p class="text-neutral-500 text-xs">Valores en tiempo real</p>
+            <p class="text-neutral-500 text-xs">Datos en vivo desde la base de datos</p>
           </div>
           <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
             Almacén Base
@@ -148,14 +164,41 @@
             <thead>
               <tr class="text-center">
                 <th class="p-3 text-left">Producto</th>
-                <th class="p-3">Ent</th>
-                <th class="p-3">Sal</th>
+                <th class="p-3">Categoría</th>
                 <th class="p-3">Stock</th>
-                <th class="p-3">Precio</th>
+                <th class="p-3">P. Compra</th>
+                <th class="p-3">P. Venta</th>
                 <th class="p-3">Acción</th>
               </tr>
             </thead>
-            <tbody id="tablaProductos" class="divide-y divide-neutral-800 bg-[#111]"></tbody>
+            <tbody id="tablaProductos" class="divide-y divide-neutral-800 bg-[#111]">
+              {% for p in productos %}
+              <tr class="text-center hover:bg-white/5 transition border-b border-neutral-800"
+                  data-id="{{ p.idProducto }}"
+                  data-nombre="{{ p.nombre_producto }}"
+                  data-descripcion="{{ p.descripcion or '' }}"
+                  data-categoria-id="{{ p.id_Categoria_fk }}"
+                  data-stock="{{ p.stock }}"
+                  data-stock-minimo="{{ p.stock_minimo }}"
+                  data-precio-compra="{{ p.precio_compra }}"
+                  data-precio-venta="{{ p.precio_venta }}">
+                <td class="p-3 text-left max-w-[160px] truncate">
+                  <span class="block font-medium text-white">{{ p.nombre_producto }}</span>
+                  <span class="text-xs text-neutral-500 block truncate">{{ p.descripcion or '' }}</span>
+                </td>
+                <td class="p-3 text-neutral-400">{{ p.categoria or '-' }}</td>
+                <td class="p-3 font-bold font-mono {{ 'stock-bajo' if p.stock <= p.stock_minimo else 'text-amber-400' }}">{{ p.stock }}</td>
+                <td class="p-3 font-mono text-neutral-300">${{ '{:,.0f}'.format(p.precio_compra) }}</td>
+                <td class="p-3 font-mono text-neutral-300">${{ '{:,.0f}'.format(p.precio_venta) }}</td>
+                <td class="p-3 space-x-1 whitespace-nowrap">
+                  <button type="button" onclick="editarProducto(this.closest('tr'))" class="bg-neutral-800 hover:bg-neutral-700 text-amber-400 px-2 py-1 rounded text-xs transition">✏️</button>
+                  <a href="{{ url_for('eliminar_producto', id=p.idProducto) }}" onclick="return confirm('¿Eliminar producto del inventario?')" class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2 py-1 rounded text-xs transition inline-block">🗑️</a>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" class="p-6 text-center text-neutral-500">No hay productos registrados todavía.</td></tr>
+              {% endfor %}
+            </tbody>
           </table>
         </div>
       </div>
@@ -164,100 +207,45 @@
 </div>
 
 <script>
-let editando = null;
+function editarProducto(fila) {
+  const d = fila.dataset;
 
-window.onload = function(){
-  document.getElementById("tablaProductos").innerHTML = localStorage.getItem("productos") || "";
-  actualizarTotal();
+  document.getElementById("nombre").value = d.nombre;
+  document.getElementById("descripcion").value = d.descripcion;
+  document.getElementById("id_categoria").value = d.categoriaId;
+  document.getElementById("stock").value = d.stock;
+  document.getElementById("stock_minimo").value = d.stockMinimo;
+  document.getElementById("precio_compra").value = d.precioCompra;
+  document.getElementById("precio_venta").value = d.precioVenta;
+
+  // Cambia el formulario para que apunte a la ruta de edición de este producto
+  const form = document.getElementById("formProducto");
+  form.action = "/inventario/editar/" + d.id;
+
+  document.getElementById("tituloForm").textContent = "Editar Producto";
+  document.getElementById("btnGuardar").textContent = "💾 Actualizar Item";
+  document.getElementById("btnCancelar").classList.remove("hidden");
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function agregarProducto(){
-  let nombre = document.getElementById("nombre").value;
-  let descripcion = document.getElementById("descripcion").value;
-  let entrada = parseInt(document.getElementById("entrada").value) || 0;
-  let salida = parseInt(document.getElementById("salida").value) || 0;
-  let precio = document.getElementById("precio").value;
+function cancelarEdicion() {
+  const form = document.getElementById("formProducto");
+  form.reset();
+  form.action = "{{ url_for('agregar_producto') }}";
 
-  if(nombre === "" || precio === ""){
-    alert("Por favor completa los campos principales.");
-    return;
-  }
-
-  let stock = entrada - salida;
-  let fila = `
-    <tr class="text-center hover:bg-white/5 transition border-b border-neutral-800">
-      <td class="p-3 text-left max-w-[160px] truncate">
-        <span class="block font-medium text-white">${nombre}</span>
-        <span class="text-xs text-neutral-500 block truncate">${descripcion}</span>
-      </td>
-      <td class="p-3 text-neutral-400 font-mono">${entrada}</td>
-      <td class="p-3 text-neutral-400 font-mono">${salida}</td>
-      <td class="p-3 font-bold font-mono text-amber-400">${stock}</td>
-      <td class="p-3 font-mono text-neutral-300">$${precio}</td>
-      <td class="p-3 space-x-1 whitespace-nowrap">
-        <button onclick="editarFila(this)" class="bg-neutral-800 hover:bg-neutral-700 text-amber-400 px-2 py-1 rounded text-xs transition">✏️</button>
-        <button onclick="eliminarFila(this)" class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2 py-1 rounded text-xs transition">🗑️</button>
-      </td>
-    </tr>
-  `;
-
-  if(editando){
-    editando.outerHTML = fila;
-    editando = null;
-  } else {
-    document.getElementById("tablaProductos").innerHTML += fila;
-  }
-
-  guardarDatos();
-  limpiar();
-  actualizarTotal();
+  document.getElementById("tituloForm").textContent = "Gestionar Producto";
+  document.getElementById("btnGuardar").textContent = "💾 Guardar Item";
+  document.getElementById("btnCancelar").classList.add("hidden");
 }
 
-function eliminarFila(boton){
-  if(confirm("¿Eliminar producto del inventario?")){
-    boton.parentElement.parentElement.remove();
-    guardarDatos();
-    actualizarTotal();
-  }
-}
-
-function editarFila(boton){
-  let fila = boton.parentElement.parentElement;
-  let celdas = fila.children;
-  
-  document.getElementById("nombre").value = celdas[0].querySelector('span').innerText;
-  document.getElementById("descripcion").value = celdas[0].querySelectorAll('span')[1].innerText;
-  document.getElementById("entrada").value = celdas[1].innerText;
-  document.getElementById("salida").value = celdas[2].innerText;
-  document.getElementById("precio").value = celdas[4].innerText.replace("$","");
-
-  editando = fila;
-}
-
-function buscar(){
-  let filtro = document.getElementById("buscador").value.toLowerCase();
-  let filas = document.querySelectorAll("#tablaProductos tr");
+function buscar() {
+  const filtro = document.getElementById("buscador").value.toLowerCase();
+  const filas = document.querySelectorAll("#tablaProductos tr");
   filas.forEach(fila => {
-    let texto = fila.innerText.toLowerCase();
+    const texto = fila.innerText.toLowerCase();
     fila.style.display = texto.includes(filtro) ? "" : "none";
   });
-}
-
-function guardarDatos(){
-  localStorage.setItem("productos", document.getElementById("tablaProductos").innerHTML);
-}
-
-function actualizarTotal(){
-  let total = document.getElementById("tablaProductos").rows.length;
-  document.getElementById("total").innerText = total;
-}
-
-function limpiar(){
-  document.getElementById("nombre").value = "";
-  document.getElementById("descripcion").value = "";
-  document.getElementById("entrada").value = "";
-  document.getElementById("salida").value = "" ;
-  document.getElementById("precio").value = "";
 }
 </script>
 </body>
