@@ -1,2 +1,5 @@
 Controlador/__pycache__/controlador.cpython-314.pyc
 /Controlador
+
+# Artefactos de despliegue (solo locales, no van al repo compartido)
+deploy/
