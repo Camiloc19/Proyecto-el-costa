@@ -8,18 +8,24 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
+    :root { --sidebar: 248px; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body { height: 100%; }
     body {
       font-family: 'Barlow', sans-serif;
       background: #080808;
-      min-height: 100vh;
       color: #e5e7eb;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
-    /* Grid de fondo */
-    body::before {
-      content: ''; position: fixed; inset: 0;
+    /* ════════════════ LAYOUT 2 COLUMNAS ════════════════ */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* Grid de fondo (solo en la columna de inicio) */
+    .home-view::before {
+      content: ''; position: absolute; inset: 0;
       background-image:
         linear-gradient(rgba(240,192,64,0.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(240,192,64,0.025) 1px, transparent 1px);
@@ -27,304 +33,399 @@
       pointer-events: none; z-index: 0;
     }
 
-    .wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 40px 24px 60px; }
+    /* ── Barra de scroll personalizada ── */
+    html { scrollbar-width: thin; scrollbar-color: rgba(240,192,64,0.22) transparent; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(240,192,64,0.16);
+      border-radius: 10px;
+      border: 3px solid transparent;
+      background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(240,192,64,0.34); background-clip: padding-box; }
+    .side-nav { scrollbar-width: thin; scrollbar-color: rgba(240,192,64,0.18) transparent; }
+    .side-nav::-webkit-scrollbar { width: 5px; }
+    .side-nav::-webkit-scrollbar-thumb { background: rgba(240,192,64,0.2); border: none; }
 
-    /* ── HEADER ── */
-    .header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 52px;
-      padding-bottom: 28px;
-      border-bottom: 1px solid rgba(240,192,64,0.12);
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid rgba(240,192,64,0.65);
+      outline-offset: 2px;
     }
 
-    .brand { display: flex; align-items: center; gap: 14px; }
+    /* ════════════════ SIDEBAR (COLUMNA IZQUIERDA, FIJA) ════════════════ */
+    .sidebar {
+      position: sticky; top: 0; align-self: flex-start;
+      height: 100vh; width: var(--sidebar); flex-shrink: 0; z-index: 20;
+      display: flex; flex-direction: column;
+      padding: 20px 14px;
+      background: linear-gradient(180deg, #0f0f0f, #090909);
+      border-right: 1px solid rgba(240,192,64,0.12);
+      box-shadow: 1px 0 0 rgba(0,0,0,0.5), 14px 0 40px -28px rgba(0,0,0,0.9);
+    }
 
-    .gear { width: 46px; height: 46px; animation: spin 18s linear infinite; flex-shrink: 0; }
+    .side-brand { display: flex; align-items: center; gap: 11px; padding: 2px 8px 16px; }
+    .gear { width: 34px; height: 34px; animation: spin 18s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
+    @keyframes spinRev { to { transform: rotate(-360deg); } }
+    .brand-text { line-height: 1; }
     .brand-name {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 28px; font-weight: 700;
-      color: #F0C040;
-      letter-spacing: 0.1em;
+      font-family: 'Rajdhani', sans-serif; font-size: 21px; font-weight: 700;
+      color: #F0C040; letter-spacing: 0.1em;
       text-shadow: 0 0 24px rgba(240,192,64,0.25);
-      line-height: 1;
     }
     .brand-sub {
-      font-size: 10px; color: rgba(255,255,255,0.25);
-      letter-spacing: 0.22em; text-transform: uppercase; margin-top: 3px;
+      font-size: 8px; color: rgba(255,255,255,0.3);
+      letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px;
     }
 
-    .user-zone { display: flex; align-items: center; gap: 12px; }
-
-    .avatar-pill {
-      display: flex; align-items: center; gap: 10px;
-      background: rgba(240,192,64,0.06);
-      border: 1px solid rgba(240,192,64,0.18);
-      border-radius: 100px; padding: 6px 14px 6px 6px;
+    .side-user {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 16px 12px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 12px;
     }
-    .avatar-circle {
-      width: 30px; height: 30px; border-radius: 50%;
+    .user-avatar {
+      width: 50px; height: 50px; border-radius: 50%;
       background: linear-gradient(135deg, #A06808, #F0C040);
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 700; font-size: 14px; color: #000;
+      font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 21px; color: #000;
+      box-shadow: 0 0 0 4px rgba(240,192,64,0.08), 0 6px 18px -6px rgba(240,192,64,0.4);
     }
-    .avatar-name { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 500; }
+    .user-name { font-size: 13.5px; color: #fff; font-weight: 600; text-align: center; line-height: 1.3; }
+    .user-role {
+      font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(240,192,64,0.7); background: rgba(240,192,64,0.08);
+      border: 1px solid rgba(240,192,64,0.18); border-radius: 100px;
+      padding: 3px 10px;
+    }
 
-    .btn-logout {
-      padding: 7px 16px;
-      border: 1px solid rgba(240,192,64,0.25);
-      border-radius: 8px; background: transparent;
-      color: rgba(240,192,64,0.7); font-size: 12px;
-      font-family: 'Barlow', sans-serif; cursor: pointer;
-      text-decoration: none; transition: all 0.2s; letter-spacing: 0.04em;
+    .nav-label {
+      font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase;
+      color: rgba(255,255,255,0.3); padding: 0 12px 8px;
     }
+    .side-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow-y: auto; padding-right: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 12px; border-radius: 9px;
+      color: rgba(255,255,255,0.58); text-decoration: none;
+      font-size: 13.5px; font-weight: 500; letter-spacing: 0.01em;
+      position: relative; cursor: pointer;
+      transition: background 0.2s cubic-bezier(0.22,1,0.36,1), color 0.2s;
+    }
+    .nav-item svg { width: 19px; height: 19px; flex-shrink: 0; stroke-width: 1.8; }
+    .nav-item:hover { background: rgba(255,255,255,0.045); color: #fff; }
+    .nav-item.active { background: rgba(240,192,64,0.1); color: #F0C040; }
+    .nav-item.active::before {
+      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 20px; border-radius: 0 3px 3px 0; background: #F0C040;
+    }
+
+    .side-foot { padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .btn-logout {
+      display: flex; align-items: center; gap: 13px; width: 100%;
+      padding: 11px 13px; border-radius: 10px;
+      border: 1px solid rgba(240,192,64,0.16); background: transparent;
+      color: rgba(240,192,64,0.75); font-size: 13px; font-weight: 500;
+      font-family: 'Barlow', sans-serif; cursor: pointer; text-decoration: none;
+      transition: all 0.18s;
+    }
+    .btn-logout svg { width: 18px; height: 18px; stroke-width: 1.8; }
     .btn-logout:hover { background: rgba(240,192,64,0.08); color: #F0C040; border-color: #F0C040; }
 
-    /* ── SALUDO ── */
-    .greeting {
-      margin-bottom: 40px;
+    /* ════════════════ COLUMNA DERECHA (CONTENIDO DINÁMICO) ════════════════ */
+    .main { flex: 1; min-width: 0; position: relative; }
+
+    /* Visor: aquí se carga cada módulo sin recargar la página */
+    .viewer {
+      display: none; width: 100%; height: 100vh; border: 0;
+      background: #080808;
     }
-    .greeting h2 {
+
+    /* ── Vista de inicio (bienvenida animada) ── */
+    .home-view { position: relative; min-height: 100vh; overflow: hidden; }
+
+    .scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .bg-gear { position: absolute; opacity: 0.07; filter: drop-shadow(0 0 30px rgba(200,144,10,0.35)); }
+    .bg-gear--1 { top: -70px; right: -50px; width: 300px; height: 300px; animation: spin 46s linear infinite; }
+    .bg-gear--2 { bottom: 120px; left: -60px; width: 220px; height: 220px; animation: spinRev 36s linear infinite; opacity: 0.06; }
+    .bg-gear--3 { top: 34%; right: 16%; width: 130px; height: 130px; animation: spin 26s linear infinite; opacity: 0.05; }
+
+    .road {
+      position: absolute; left: 0; right: 0; bottom: 86px; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(240,192,64,0.18), rgba(240,192,64,0.18), transparent);
+    }
+    .road::after {
+      content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+      background: repeating-linear-gradient(90deg, rgba(240,192,64,0.25) 0 16px, transparent 16px 40px);
+      animation: dash 1.1s linear infinite;
+    }
+    @keyframes dash { to { background-position: -40px 0; } }
+
+    .car {
+      position: absolute; bottom: 78px; left: 0; width: 210px;
+      animation: drive 13s linear infinite;
+      filter: drop-shadow(0 10px 14px rgba(0,0,0,0.55));
+    }
+    .car svg { width: 100%; height: auto; display: block; }
+    @keyframes drive {
+      0%   { transform: translateX(-260px); }
+      100% { transform: translateX(calc(100vw - var(--sidebar) + 60px)); }
+    }
+    .wheel { transform-box: fill-box; transform-origin: center; animation: spin 0.9s linear infinite; }
+
+    .wrap {
+      position: relative; z-index: 1;
+      max-width: 1040px; margin: 0 auto;
+      padding: 56px 40px 40px;
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+
+    .home-hero { flex: 1; display: flex; align-items: center; }
+    .hero-inner { max-width: 560px; animation: rise 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .hero-welcome {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; letter-spacing: 0.06em;
+      color: rgba(240,192,64,0.85); font-weight: 600;
+      background: rgba(240,192,64,0.07); border: 1px solid rgba(240,192,64,0.18);
+      border-radius: 100px; padding: 6px 14px; margin-bottom: 22px;
+    }
+    .hero-title {
       font-family: 'Rajdhani', sans-serif;
-      font-size: 26px; font-weight: 600; color: #fff;
-      letter-spacing: 0.02em;
+      font-size: clamp(34px, 5.2vw, 56px); font-weight: 700;
+      color: #fff; line-height: 1.04; letter-spacing: -0.01em; text-wrap: balance;
     }
-    .greeting p { font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 4px; }
-
-    /* ── LABEL DE SECCIÓN ── */
-    .section-label {
-      font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
-      color: rgba(255,255,255,0.2); margin-bottom: 16px;
+    .hero-title span { color: #F0C040; text-shadow: 0 0 30px rgba(240,192,64,0.3); }
+    .hero-text {
+      font-size: 15px; line-height: 1.65; color: rgba(255,255,255,0.55);
+      margin-top: 18px; max-width: 48ch;
     }
 
-    /* ── GRID PRINCIPAL (2 columnas) ── */
-    .grid-main {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
+    .hero-clock {
+      display: flex; align-items: baseline; gap: 16px; margin-top: 34px;
+      padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    #clock {
+      font-family: 'Rajdhani', sans-serif; font-size: 38px; font-weight: 700;
+      color: #F0C040; letter-spacing: 0.05em; line-height: 1;
+      font-variant-numeric: tabular-nums; text-shadow: 0 0 24px rgba(240,192,64,0.25);
+    }
+    #date { font-size: 13.5px; color: rgba(255,255,255,0.5); text-transform: capitalize; }
+
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(240,192,64,0.1), transparent); margin: 28px 0 18px; }
+    .footer { text-align: center; font-size: 11px; color: rgba(255,255,255,0.22); letter-spacing: 0.12em; }
+
+    /* ════════════════ RESPONSIVE ════════════════ */
+    @media (max-width: 900px) {
+      :root { --sidebar: 74px; }
+      .sidebar { padding: 22px 12px; align-items: center; }
+      .brand-text, .user-name, .user-role, .nav-label, .nav-text, .logout-text { display: none; }
+      .side-brand { justify-content: center; padding: 0 0 18px; }
+      .user-avatar { width: 44px; height: 44px; font-size: 18px; }
+      .nav-item, .btn-logout { justify-content: center; padding: 12px 0; gap: 0; }
+      .nav-item.active::before { display: none; }
+    }
+    @media (max-width: 620px) {
+      .wrap { padding: 40px 22px 32px; }
+      .hero-clock { flex-direction: column; gap: 6px; align-items: flex-start; }
+      .bg-gear--3 { display: none; }
     }
 
-    /* ── GRID SECUNDARIO (3 columnas) ── */
-    .grid-secondary {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
+    @media (prefers-reduced-motion: reduce) {
+      .gear, .bg-gear, .car, .wheel, .road::after, .hero-inner { animation: none; }
+      * { transition: none !important; }
     }
-
-    /* ── TARJETA BASE ── */
-    .card {
-      position: relative;
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 14px;
-      padding: 28px 24px;
-      text-decoration: none; color: inherit;
-      overflow: hidden;
-      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-      display: flex; flex-direction: column; gap: 10px;
-      animation: up 0.45s ease both;
-    }
-
-    .card:nth-child(1){animation-delay:.04s} .card:nth-child(2){animation-delay:.08s}
-    .card:nth-child(3){animation-delay:.12s} .card:nth-child(4){animation-delay:.16s}
-    .card:nth-child(5){animation-delay:.20s}
-
-    @keyframes up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-
-    /* Línea de color superior */
-    .card::after {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: var(--accent, linear-gradient(90deg, transparent, rgba(240,192,64,0.4), transparent));
-      opacity: 0; transition: opacity 0.25s;
-    }
-    .card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-    .card:hover::after { opacity: 1; }
-
-    .card-accent { position: absolute; top: 0; right: 0; width: 80px; height: 80px; border-radius: 0 14px 0 80px; opacity: 0.04; }
-
-    .card-icon { font-size: 28px; line-height: 1; }
-    .card-title { font-family: 'Rajdhani', sans-serif; font-size: 19px; font-weight: 700; color: #fff; letter-spacing: 0.03em; }
-    .card-desc  { font-size: 12px; color: rgba(255,255,255,0.3); line-height: 1.55; flex: 1; }
-
-    .card-footer {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-top: 6px; padding-top: 12px;
-      border-top: 1px solid rgba(255,255,255,0.05);
-    }
-    .card-tag {
-      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: rgba(255,255,255,0.18); font-weight: 600;
-    }
-    .card-arrow {
-      font-size: 16px; color: rgba(255,255,255,0.2);
-      transition: color 0.2s, transform 0.2s;
-    }
-    .card:hover .card-arrow { color: #F0C040; transform: translateX(3px); }
-
-    /* Colores por módulo */
-    .c-inventario  { --accent: linear-gradient(90deg, transparent, rgba(34,197,94,0.5),  transparent); }
-    .c-ordenes     { --accent: linear-gradient(90deg, transparent, rgba(59,130,246,0.5),  transparent); }
-    .c-facturacion { --accent: linear-gradient(90deg, transparent, rgba(168,85,247,0.5),  transparent); }
-    .c-proveedores { --accent: linear-gradient(90deg, transparent, rgba(251,191,36,0.5),  transparent); }
-    .c-estadisticas{ --accent: linear-gradient(90deg, transparent, rgba(240,192,64,0.6),  transparent); }
-
-    .bg-inventario  { background: #22c55e; }
-    .bg-ordenes     { background: #3b82f6; }
-    .bg-facturacion { background: #a855f7; }
-    .bg-proveedores { background: #fbbf24; }
-    .bg-estadisticas{ background: #F0C040; }
-
-    /* Tarjeta estadísticas ancha */
-    .card-wide {
-      grid-column: span 3;
-      flex-direction: row; align-items: center; gap: 20px; padding: 24px 28px;
-    }
-    .card-wide .card-icon { font-size: 36px; flex-shrink: 0; }
-    .card-wide .card-desc { max-width: 400px; }
-    .card-wide .card-footer { border: none; padding: 0; margin: 0; flex-direction: column; align-items: flex-end; gap: 4px; margin-left: auto; }
-    .card-wide .card-arrow { font-size: 22px; }
-
-    /* ── DIVIDER ── */
-    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(240,192,64,0.1), transparent); margin: 44px 0 20px; }
-
-    /* ── FOOTER ── */
-    .footer { text-align: center; font-size: 11px; color: rgba(255,255,255,0.1); letter-spacing: 0.12em; }
   </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="brand">
-      <svg class="gear" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="gl" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#7A4E08"/>
-            <stop offset="45%" stop-color="#F0C040"/>
-            <stop offset="100%" stop-color="#B07010"/>
-          </linearGradient>
-        </defs>
-        <path id="gp" fill="url(#gl)" fill-rule="evenodd"/>
-      </svg>
-      <div>
-        <div class="brand-name">EL COSTA</div>
-        <div class="brand-sub">Sistema de Gestión</div>
+  <div class="layout">
+
+    <!-- ══════════ COLUMNA IZQUIERDA: SIDEBAR FIJO ══════════ -->
+    <aside class="sidebar">
+
+      <div class="side-brand">
+        <svg class="gear" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gl" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7A4E08"/>
+              <stop offset="45%" stop-color="#F0C040"/>
+              <stop offset="100%" stop-color="#B07010"/>
+            </linearGradient>
+          </defs>
+          <path id="gp" fill="url(#gl)" fill-rule="evenodd"/>
+        </svg>
+        <div class="brand-text">
+          <div class="brand-name">EL COSTA</div>
+          <div class="brand-sub">Sistema de Gestión</div>
+        </div>
       </div>
-    </div>
 
-    <div class="user-zone">
       {% if session.usuario %}
-      <div class="avatar-pill">
-        <div class="avatar-circle">{{ session.usuario[0] }}</div>
-        <span class="avatar-name">{{ session.usuario }}</span>
+      <div class="side-user">
+        <div class="user-avatar">{{ session.usuario[0] }}</div>
+        <div class="user-name">{{ session.usuario }}</div>
+        <span class="user-role">Sesión activa</span>
       </div>
       {% endif %}
-      <a href="/logout" class="btn-logout">Cerrar sesión</a>
-    </div>
-  </header>
 
-  <!-- SALUDO -->
-  <div class="greeting">
-    <h2>Bienvenido{% if session.usuario %}, {{ session.usuario.split(' ')[0] }}{% endif %} 👋</h2>
-    <p>Selecciona un módulo para comenzar a trabajar.</p>
+      <p class="nav-label">Menú</p>
+      <nav class="side-nav">
+
+        <a href="/dashboard" class="nav-item active" data-key="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span class="nav-text">Dashboard</span>
+        </a>
+
+        {% if 'inventario' in modulos %}
+        <a href="/inventario" class="nav-item" data-key="inventario" data-src="/inventario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+            <path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>
+          </svg>
+          <span class="nav-text">Inventario</span>
+        </a>
+        {% endif %}
+
+        {% if 'ordenes' in modulos %}
+        <a href="/ordenes" class="nav-item" data-key="ordenes" data-src="/ordenes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+          <span class="nav-text">Órdenes de Servicio</span>
+        </a>
+        {% endif %}
+
+        {% if 'facturacion' in modulos %}
+        <a href="/facturacion" class="nav-item" data-key="facturacion" data-src="/facturacion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/>
+            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>
+          </svg>
+          <span class="nav-text">Facturación</span>
+        </a>
+        {% endif %}
+
+        {% if 'proveedores' in modulos %}
+        <a href="/proveedores" class="nav-item" data-key="proveedores" data-src="/proveedores">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+            <path d="M7 18h.01"/><path d="M12 18h.01"/><path d="M17 18h.01"/>
+          </svg>
+          <span class="nav-text">Proveedores</span>
+        </a>
+        {% endif %}
+
+        {% if 'estadisticas' in modulos %}
+        <a href="/estadisticas" class="nav-item" data-key="estadisticas" data-src="/estadisticas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+          </svg>
+          <span class="nav-text">Estadísticas</span>
+        </a>
+        {% endif %}
+
+      </nav>
+
+      <div class="side-foot">
+        <a href="/logout" class="btn-logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>
+          </svg>
+          <span class="logout-text">Cerrar sesión</span>
+        </a>
+      </div>
+
+    </aside>
+
+    <!-- ══════════ COLUMNA DERECHA: CONTENIDO DINÁMICO ══════════ -->
+    <main class="main">
+
+      <!-- Visor de módulos (se llena al hacer clic, sin recargar) -->
+      <iframe id="viewer" class="viewer" title="Contenido del módulo"></iframe>
+
+      <!-- Vista de inicio: bienvenida animada -->
+      <section id="homeView" class="home-view">
+
+        <div class="scene" aria-hidden="true">
+          <svg class="bg-gear bg-gear--1" viewBox="0 0 100 100"><path id="bg1" fill="url(#gl)" fill-rule="evenodd"/></svg>
+          <svg class="bg-gear bg-gear--2" viewBox="0 0 100 100"><path id="bg2" fill="url(#gl)" fill-rule="evenodd"/></svg>
+          <svg class="bg-gear bg-gear--3" viewBox="0 0 100 100"><path id="bg3" fill="url(#gl)" fill-rule="evenodd"/></svg>
+
+          <div class="road"></div>
+
+          <div class="car">
+            <svg viewBox="0 0 220 96" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="carBody" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#1c1c1c"/>
+                  <stop offset="100%" stop-color="#0d0d0d"/>
+                </linearGradient>
+              </defs>
+              <path d="M8 64 C8 56 14 54 22 53 L42 52 C49 37 63 31 82 31 L132 31
+                       C151 31 163 38 173 52 L197 55 C207 56 213 60 213 66 L213 70
+                       C213 73 211 74 207 74 L14 74 C10 74 8 72 8 68 Z"
+                    fill="url(#carBody)" stroke="#F0C040" stroke-opacity="0.55" stroke-width="1.5"/>
+              <path d="M58 51 C62 41 72 37 84 37 L100 37 L100 51 Z" fill="#F0C040" fill-opacity="0.16"/>
+              <path d="M108 37 L128 37 C142 37 150 42 156 51 L108 51 Z" fill="#F0C040" fill-opacity="0.16"/>
+              <line x1="104" y1="37" x2="104" y2="51" stroke="#F0C040" stroke-opacity="0.4" stroke-width="1.4"/>
+              <path d="M196 58 l12 1" stroke="#F0C040" stroke-opacity="0.7" stroke-width="2.5" stroke-linecap="round"/>
+              <g class="wheel">
+                <circle cx="62" cy="74" r="16" fill="#0a0a0a" stroke="#F0C040" stroke-opacity="0.55" stroke-width="2.5"/>
+                <circle cx="62" cy="74" r="6.5" fill="none" stroke="#F0C040" stroke-opacity="0.55" stroke-width="2"/>
+                <g stroke="#F0C040" stroke-opacity="0.45" stroke-width="2">
+                  <line x1="62" y1="61" x2="62" y2="87"/><line x1="49" y1="74" x2="75" y2="74"/>
+                  <line x1="53" y1="65" x2="71" y2="83"/><line x1="71" y1="65" x2="53" y2="83"/>
+                </g>
+              </g>
+              <g class="wheel">
+                <circle cx="160" cy="74" r="16" fill="#0a0a0a" stroke="#F0C040" stroke-opacity="0.55" stroke-width="2.5"/>
+                <circle cx="160" cy="74" r="6.5" fill="none" stroke="#F0C040" stroke-opacity="0.55" stroke-width="2"/>
+                <g stroke="#F0C040" stroke-opacity="0.45" stroke-width="2">
+                  <line x1="160" y1="61" x2="160" y2="87"/><line x1="147" y1="74" x2="173" y2="74"/>
+                  <line x1="151" y1="65" x2="169" y2="83"/><line x1="169" y1="65" x2="151" y2="83"/>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="wrap">
+          <section class="home-hero">
+            <div class="hero-inner">
+              <span class="hero-welcome">
+                Bienvenido{% if session.usuario %}, {{ session.usuario.split(' ')[0] }}{% endif %}
+              </span>
+              <h1 class="hero-title">Tu taller,<br><span>bajo control</span></h1>
+              <p class="hero-text">
+                Usa el menú lateral para gestionar inventario, órdenes de servicio,
+                facturación, proveedores y estadísticas. Todo el taller en un solo lugar.
+              </p>
+              <div class="hero-clock">
+                <span id="clock">--:--:--</span>
+                <span id="date">&nbsp;</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="divider"></div>
+          <p class="footer">TALLER EL COSTA &copy; 2026</p>
+        </div>
+
+      </section>
+
+    </main>
+
   </div>
-
-  <p class="section-label">Módulos principales</p>
-
-<!-- FILA 1: 2 tarjetas grandes -->
-  {% if 'inventario' in modulos or 'ordenes' in modulos %}
-  <div class="grid-main">
-
-    {% if 'inventario' in modulos %}
-    <a href="/inventario" class="card c-inventario">
-      <div class="card-accent bg-inventario"></div>
-      <div class="card-icon">📦</div>
-      <div class="card-title">Inventario</div>
-      <div class="card-desc">Gestión de productos, stock mínimo y precios de compra y venta.</div>
-      <div class="card-footer">
-        <span class="card-tag">Productos</span>
-        <span class="card-arrow">→</span>
-      </div>
-    </a>
-    {% endif %}
-
-    {% if 'ordenes' in modulos %}
-    <a href="/ordenes" class="card c-ordenes">
-      <div class="card-accent bg-ordenes"></div>
-      <div class="card-icon">🔧</div>
-      <div class="card-title">Órdenes de Servicio</div>
-      <div class="card-desc">Apertura, seguimiento y cierre de órdenes. Registro de atenciones a vehículos.</div>
-      <div class="card-footer">
-        <span class="card-tag">Servicios</span>
-        <span class="card-arrow">→</span>
-      </div>
-    </a>
-    {% endif %}
-
-  </div>
-  {% endif %}
-
-  <!-- FILA 2: 2 tarjetas medianas -->
-  {% if 'facturacion' in modulos or 'proveedores' in modulos %}
-  <div class="grid-main" style="margin-bottom:12px">
-
-    {% if 'facturacion' in modulos %}
-    <a href="/facturacion" class="card c-facturacion">
-      <div class="card-accent bg-facturacion"></div>
-      <div class="card-icon">🧾</div>
-      <div class="card-title">Facturación</div>
-      <div class="card-desc">Registro de facturas, métodos de pago y movimientos de inventario.</div>
-      <div class="card-footer">
-        <span class="card-tag">Pagos</span>
-        <span class="card-arrow">→</span>
-      </div>
-    </a>
-    {% endif %}
-
-    {% if 'proveedores' in modulos %}
-    <a href="/proveedores" class="card c-proveedores">
-      <div class="card-accent bg-proveedores"></div>
-      <div class="card-icon">🏭</div>
-      <div class="card-title">Proveedores</div>
-      <div class="card-desc">Directorio de proveedores con NIT, teléfono y dirección de contacto.</div>
-      <div class="card-footer">
-        <span class="card-tag">Contactos</span>
-        <span class="card-arrow">→</span>
-      </div>
-    </a>
-    {% endif %}
-
-  </div>
-  {% endif %}
-
-  <!-- FILA 3: estadísticas ancha -->
-  {% if 'estadisticas' in modulos %}
-  <div class="grid-secondary">
-    <a href="/estadisticas" class="card c-estadisticas card-wide">
-      <div class="card-icon">📊</div>
-      <div>
-        <div class="card-title">Estadísticas</div>
-        <div class="card-desc">Resumen general: ingresos totales, órdenes recientes, productos con stock bajo y más.</div>
-      </div>
-      <div class="card-footer">
-        <span class="card-tag">Reportes</span>
-        <span class="card-arrow">→</span>
-      </div>
-    </a>
-  </div>
-  {% endif %}
-
-  <div class="divider"></div>
-  <p class="footer">TALLER EL COSTA &copy; 2026</p>
-
-</div>
 
 <script>
+  /* ── Generador de engranajes ── */
   const f = n => n.toFixed(3);
   function buildGear(cx, cy, n, rOut, rRoot, rInner) {
     const step=(2*Math.PI)/n, th=step*0.20, ch=1.20;
@@ -342,7 +443,62 @@
     d+=`Z M ${f(cx+rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx-rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx+rInner)} ${f(cy)} Z`;
     return d;
   }
-  document.getElementById('gp').setAttribute('d', buildGear(50,50,16,50,42,30));
+  document.getElementById('gp').setAttribute('d',  buildGear(50,50,16,50,42,30));
+  document.getElementById('bg1').setAttribute('d', buildGear(50,50,18,50,42,28));
+  document.getElementById('bg2').setAttribute('d', buildGear(50,50,12,50,40,26));
+  document.getElementById('bg3').setAttribute('d', buildGear(50,50,22,50,43,30));
+
+  /* ── Navegación interna: carga módulos en el visor sin recargar ── */
+  (function(){
+    const viewer   = document.getElementById('viewer');
+    const homeView = document.getElementById('homeView');
+    const items    = Array.from(document.querySelectorAll('.nav-item'));
+
+    function activate(key){
+      items.forEach(n => n.classList.toggle('active', n.dataset.key === key));
+    }
+    function openKey(key, push){
+      let item = items.find(n => n.dataset.key === key);
+      if (!item) { item = items.find(n => n.dataset.key === 'home'); key = 'home'; }
+      activate(key);
+      if (key === 'home') {
+        viewer.style.display = 'none';
+        viewer.removeAttribute('src');
+        homeView.style.display = 'block';
+      } else {
+        homeView.style.display = 'none';
+        viewer.style.display = 'block';
+        if (viewer.getAttribute('src') !== item.dataset.src) viewer.src = item.dataset.src;
+      }
+      if (push) location.hash = (key === 'home' ? '' : key);
+    }
+
+    items.forEach(item => {
+      item.addEventListener('click', e => {
+        e.preventDefault();
+        openKey(item.dataset.key, true);
+      });
+    });
+    window.addEventListener('hashchange', () => openKey(location.hash.replace('#',''), false));
+
+    // Estado inicial (respeta el #hash si recargan dentro de un módulo)
+    openKey(location.hash.replace('#','') || 'home', false);
+  })();
+
+  /* ── Reloj en vivo ── */
+  (function(){
+    const clk = document.getElementById('clock');
+    const dt  = document.getElementById('date');
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    function p(n){ return String(n).padStart(2,'0'); }
+    function tick(){
+      const d = new Date();
+      clk.textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+      dt.textContent  = `${dias[d.getDay()]}, ${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+    }
+    tick(); setInterval(tick, 1000);
+  })();
 </script>
 </body>
 </html>
