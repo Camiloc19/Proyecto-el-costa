@@ -17,6 +17,15 @@
     input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); color: #F0C040; -webkit-text-fill-color: #F0C040; font-size: 13px; width: 100%; padding: 6px 2px; transition: border-color 0.2s; font-family: 'Inter', sans-serif; }
     input::placeholder { color: rgba(255,255,255,0.35); }
     input:focus { outline: none; border-bottom-color: #F0C040; }
+    /* Neutraliza el fondo claro que pone el autocompletar de Chrome y mantiene el texto dorado */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-text-fill-color: #F0C040 !important;
+      caret-color: #F0C040;
+      transition: background-color 9999s ease-in-out 0s;
+    }
 
     .login-btn {
       width: 100%; padding: 8px 0; border-radius: 30px; border: none; cursor: pointer;
