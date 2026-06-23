@@ -566,6 +566,7 @@ def estadisticas():
     semana       = modelo.obtener_ordenes_semana_actual()
     mensual      = modelo.obtener_actividad_mensual_anio()   # órdenes por mes del año actual
     anio_actual  = datetime.now().year
+    ordenes_pendientes = modelo.obtener_ordenes_sin_finalizar()
 
     # ── Datos reales para las tarjetas ──
     producto_top = modelo.obtener_producto_mas_vendido()   # {nombre_producto, total_ventas, ingresos}
@@ -587,6 +588,7 @@ def estadisticas():
     return render_template('estadisticas.html',
                            productos=productos, ordenes=lista_ord, facturas=facturas,
                            bajo_stock=bajo_stock, semana=semana, mensual=mensual, anio_actual=anio_actual,
+                           ordenes_pendientes=ordenes_pendientes,
                            producto_top=producto_top, mecanicos=mecanicos, ventas_cat=ventas_cat)
 
 ## ═════════════════════════════════════════

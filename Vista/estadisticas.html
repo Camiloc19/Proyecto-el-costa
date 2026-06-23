@@ -514,10 +514,10 @@
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
       <div>
         <h3 class="text-white font-bold text-base">📋 Órdenes de Servicio</h3>
-        <p class="text-gray-500 text-xs">Registro detallado de trabajos realizados</p>
+        <p class="text-gray-500 text-xs">Órdenes sin finalizar (en proceso)</p>
       </div>
       <span class="text-xs font-semibold px-3 py-1 rounded-full"
-            style="background:rgba(249,115,22,0.12);color:#f97316;">4 órdenes recientes</span>
+            style="background:rgba(249,115,22,0.12);color:#f97316;">{{ ordenes_pendientes|length }} sin finalizar</span>
     </div>
 
     <div class="space-y-3" id="orders-list">
@@ -880,52 +880,8 @@ document.getElementById('weekNext').addEventListener('click', () => { if (weekOf
 /* ════════════════════════════
    ÓRDENES DE SERVICIO
 ════════════════════════════ */
-const ordenes = [
-  {
-    id: 'OS-0041',
-    mecanico:  'Carlos Pérez',
-    cliente:   'Juan Rodríguez',
-    marca:     'Chevrolet Spark',
-    placa:     'ABC-123',
-    productos: ['Aceite 10W-40 (1L)', 'Filtro de aceite', 'Mano de obra cambio aceite'],
-    total:     '$85,000',
-    estado:    'completado',
-    fecha:     '2026-04-04',
-  },
-  {
-    id: 'OS-0042',
-    mecanico:  'Luis Martínez',
-    cliente:   'María González',
-    marca:     'Renault Logan',
-    placa:     'XYZ-789',
-    productos: ['Pastillas de freno delanteras', 'Disco freno delantero x2', 'Líquido de frenos DOT4', 'Mano de obra'],
-    total:     '$320,000',
-    estado:    'entregado',
-    fecha:     '2026-04-04',
-  },
-  {
-    id: 'OS-0043',
-    mecanico:  'Carlos Pérez',
-    cliente:   'Pedro Sánchez',
-    marca:     'Mazda 3',
-    placa:     'LMN-456',
-    productos: ['Bujías x4', 'Filtro de aire', 'Correa de distribución', 'Mano de obra motor'],
-    total:     '$540,000',
-    estado:    'en_proceso',
-    fecha:     '2026-04-05',
-  },
-  {
-    id: 'OS-0044',
-    mecanico:  'Andrés Torres',
-    cliente:   'Sofía Ramírez',
-    marca:     'Toyota Corolla',
-    placa:     'QRS-321',
-    productos: ['Amortiguadores traseros x2', 'Rodamiento rueda trasera', 'Mano de obra suspensión'],
-    total:     '$480,000',
-    estado:    'pendiente',
-    fecha:     '2026-04-05',
-  },
-];
+// Órdenes reales SIN FINALIZAR (vienen de la base de datos)
+const ordenes = {{ ordenes_pendientes | tojson }};
 
 const estadoBadge = {
   completado: { bg:'rgba(74,222,128,0.12)',  color:'#4ade80',  label:'✅ Completado'  },
@@ -935,6 +891,9 @@ const estadoBadge = {
 };
 
 const ordersList = document.getElementById('orders-list');
+if (!ordenes.length) {
+  ordersList.innerHTML = '<div style="text-align:center;padding:40px 16px;color:#6b7280;">✅ No hay órdenes sin finalizar.</div>';
+}
 ordenes.forEach((o, idx) => {
   const badge = estadoBadge[o.estado];
   ordersList.innerHTML += `

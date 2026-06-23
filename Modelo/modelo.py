@@ -307,6 +307,57 @@ def eliminar_orden(id):
     con.commit()
     con.close()
 
+def obtener_ordenes_sin_finalizar():
+    # Órdenes cuyo estado NO es 'Finalizado' (las que siguen abiertas / en proceso),
+    # listas para mostrar en tarjetas (mecánico, cliente, vehículo, productos, total).
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT os.Id_orden, os.numero_orden, os.fecha_apertura, os.total,
+               v.placa, v.modelo, m.nombre AS marca,
+               CONCAT(cu.nombre, ' ', COALESCE(cu.apellido, '')) AS cliente,
+               e.nombre AS estado,
+               (SELECT CONCAT(mu.nombre, ' ', COALESCE(mu.apellido, ''))
+                  FROM atencion_vehiculo av
+                  JOIN usuarios mu ON av.id_Usuario_fk = mu.idUsuario
+                  WHERE av.id_Vehiculo_fk = os.id_Vehiculo_fk
+                  ORDER BY av.idAtencion DESC LIMIT 1) AS mecanico
+        FROM orden_servicio os
+        LEFT JOIN vehiculos v      ON os.id_Vehiculo_fk = v.IDvehiculos
+        LEFT JOIN marca_vehiculo m ON v.id_Marca_fk     = m.idMarca
+        LEFT JOIN usuarios cu      ON os.id_Usuario_fk  = cu.idUsuario
+        LEFT JOIN estado_orden e   ON os.id_Estado_fk   = e.idEstado
+        WHERE e.nombre IS NULL OR e.nombre <> 'Finalizado'
+        ORDER BY os.fecha_apertura DESC, os.Id_orden DESC
+    """)
+    filas = cursor.fetchall()
+    resultado = []
+    for f in filas:
+        cursor.execute("""
+            SELECT DISTINCT p.nombre_producto
+            FROM detalle_orden d
+            LEFT JOIN producto p ON d.id_Producto_fk = p.idProducto
+            WHERE d.id_Orden_fk = %s AND p.nombre_producto IS NOT NULL
+        """, (f['Id_orden'],))
+        productos = [r['nombre_producto'] for r in cursor.fetchall()]
+        vehiculo = ((f['marca'] or '') + ' ' + (f['modelo'] or '')).strip() or 'Vehículo'
+        total = f['total']
+        total_str = ('$' + format(int(total), ',')) if total not in (None, '') else '—'
+        resultado.append({
+            'id': 'OS-' + str(f['numero_orden']),
+            'mecanico': (f['mecanico'] or '').strip() or 'Sin asignar',
+            'cliente': (f['cliente'] or '').strip() or '—',
+            'marca': vehiculo,
+            'placa': f['placa'] or '—',
+            'productos': productos,
+            'total': total_str,
+            'estado': 'en_proceso',
+            'fecha': str(f['fecha_apertura']) if f['fecha_apertura'] else '',
+        })
+    con.close()
+    return resultado
+
+
 def obtener_estados_orden():
     con = conectar()
     cursor = con.cursor(dictionary=True)
