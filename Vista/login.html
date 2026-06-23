@@ -1,124 +1,91 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-hasmsg="{{ '1' if (error or exito) else '0' }}">
 <head>
   <meta charset="UTF-8"/>
-  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>El Costa</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@700&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #0f0f0f; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
 
-    @keyframes gearSpin { to { transform: rotate(360deg); } }
-    .gear-spin { animation: gearSpin 14s linear infinite; }
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}"/>
 
-    input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); color: #F0C040; -webkit-text-fill-color: #F0C040; font-size: 13px; width: 100%; padding: 6px 2px; transition: border-color 0.2s; font-family: 'Inter', sans-serif; }
-    input::placeholder { color: rgba(255,255,255,0.35); }
-    input:focus { outline: none; border-bottom-color: #F0C040; }
-    /* Neutraliza el fondo claro que pone el autocompletar de Chrome y mantiene el texto dorado */
-    input:-webkit-autofill,
-    input:-webkit-autofill:hover,
-    input:-webkit-autofill:focus,
-    input:-webkit-autofill:active {
-      -webkit-text-fill-color: #F0C040 !important;
-      caret-color: #F0C040;
-      transition: background-color 9999s ease-in-out 0s;
-    }
+  <!-- Decide ANTES de pintar si toca reproducir la intro (evita parpadeos).
+       Solo 1 vez por sesión, nunca con reduce-motion ni si hay error/éxito. -->
+  <script>
+    (function () {
+      try {
+        var hasMsg = document.documentElement.getAttribute('data-hasmsg') === '1';
+        var played = sessionStorage.getItem('introPlayed');
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!played && !reduce && !hasMsg) document.documentElement.classList.add('intro');
+      } catch (e) {}
+    })();
+  </script>
 
-    .login-btn {
-      width: 100%; padding: 8px 0; border-radius: 30px; border: none; cursor: pointer;
-      font-weight: 700; font-size: 13px; color: #fff;
-      background: linear-gradient(90deg, #facc15, #f97316, #ef4444);
-      box-shadow: 0 4px 18px rgba(249,115,22,0.4);
-      transition: opacity 0.15s, transform 0.1s; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;
-    }
-    .login-btn:hover { opacity: 0.88; }
-    .login-btn:active { transform: scale(0.97); }
-    .link { color: rgba(255,255,255,0.35); font-size: 11px; text-decoration: none; transition: color 0.2s; }
-    .link:hover { color: #F0C040; }
-    .glow { position: absolute; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, rgba(200,140,10,0.18) 0%, transparent 70%); pointer-events: none; }
-    .error-msg { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; font-size: 11px; padding: 6px 10px; border-radius: 8px; text-align: center; width: 100%; }
-  </style>
+  <!-- GSAP 3.13. defer preserva el orden con login.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js" defer></script>
+  <script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
 </head>
 <body>
 
-  <div style="position:relative;width:420px;height:420px;display:flex;align-items:center;justify-content:center;">
+  <!-- ───── BOTÓN SALTAR INTRO ───── -->
+  <button id="skipIntro" class="skip-btn" type="button">Saltar intro →</button>
+
+  <!-- ───── LOGIN (engranaje + formulario) — entrada elegante ───── -->
+  <div id="reveal">
 
     <div class="glow"></div>
 
-    <svg class="gear-spin" style="position:absolute;top:0;left:0;width:420px;height:420px;"
-         viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stop-color="#3D2600"/>
-          <stop offset="15%"  stop-color="#A06808"/>
-          <stop offset="35%"  stop-color="#F0C040"/>
-          <stop offset="52%"  stop-color="#E8A818"/>
-          <stop offset="68%"  stop-color="#B07010"/>
-          <stop offset="85%"  stop-color="#C88010"/>
-          <stop offset="100%" stop-color="#5A3800"/>
-        </linearGradient>
-        <filter id="gs">
-          <feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#C8900A" flood-opacity="0.4"/>
-        </filter>
-      </defs>
-      <path id="gearPath" fill="url(#gold)" fill-rule="evenodd"
-            stroke="#6B4400" stroke-width="0.6" filter="url(#gs)"/>
-    </svg>
+    <!-- Engranaje dorado (la envoltura se anima; el SVG gira con CSS) -->
+    <div class="gear-wrap">
+      <svg class="gear-spin" style="width:100%;height:100%;"
+           viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3D2600"/><stop offset="15%" stop-color="#A06808"/><stop offset="35%" stop-color="#F0C040"/>
+            <stop offset="52%" stop-color="#E8A818"/><stop offset="68%" stop-color="#B07010"/><stop offset="85%" stop-color="#C88010"/><stop offset="100%" stop-color="#5A3800"/>
+          </linearGradient>
+          <filter id="gs"><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#C8900A" flood-opacity="0.4"/></filter>
+        </defs>
+        <path id="gearPath" fill="url(#gold)" fill-rule="evenodd" stroke="#6B4400" stroke-width="0.6" filter="url(#gs)"/>
+      </svg>
+    </div>
 
-    <!-- ✅ FORM conectado con Flask -->
-    <form method="POST" action="/login"
+    <!-- Pasada de luz dorada -->
+    <div class="sweep"></div>
+
+    <!-- ✅ FORM conectado con Flask (contrato intacto) -->
+    <form method="POST" action="{{ url_for('login') }}"
           style="position:relative;z-index:10;width:200px;display:flex;flex-direction:column;align-items:center;gap:14px;">
 
-      <h1 style="color:#fff;font-size:22px;font-weight:700;letter-spacing:0.12em;text-shadow:0 0 18px rgba(240,192,64,0.5);font-family:'Orbitron', sans-serif;">
+      <h1 class="stagger" style="color:#fff;font-size:22px;font-weight:700;letter-spacing:0.12em;text-shadow:0 0 18px rgba(240,192,64,0.5);font-family:'Orbitron', sans-serif;">
         El Costa
       </h1>
 
       {% if error %}
         <div class="error-msg">{{ error }}</div>
       {% endif %}
+      {% if exito %}
+        <div class="ok-msg">{{ exito }}</div>
+      {% endif %}
 
-      <div style="width:100%;display:flex;flex-direction:column;gap:14px;">
-        <!-- ✅ name="correo" es lo que lee el controlador -->
-        <input type="text" name="correo" placeholder="Correo" required/>
-        <!-- ✅ name="contrasena" es lo que lee el controlador -->
-        <input type="password" name="contrasena" placeholder="Contraseña" required/>
+      <div class="stagger" style="width:100%;display:flex;flex-direction:column;gap:14px;">
+        <div class="field">
+          <input type="text" name="correo" placeholder="Correo" value="{{ correo or '' }}" required/>
+        </div>
+        <div class="field">
+          <input type="password" name="contrasena" placeholder="Contraseña" required/>
+        </div>
       </div>
 
-      <!-- ✅ type="submit" envía el formulario -->
-      <button type="submit" class="login-btn">Ingresar</button>
+      <button type="submit" class="login-btn stagger">Ingresar</button>
 
-      <div style="display:flex;justify-content:center;width:100%;padding:0 2px;">
-        <a href="#" class="link">¿olvidaste tu contraseña?</a>
+      <div class="stagger" style="display:flex;justify-content:center;width:100%;padding:0 2px;">
+        <a href="{{ url_for('recuperar') }}" class="link">¿olvidaste tu contraseña?</a>
       </div>
 
     </form>
   </div>
 
-  <script>
-    const f = n => n.toFixed(3);
-    function buildGear(cx, cy, n, rOut, rRoot, rInner) {
-      const step = (2 * Math.PI) / n;
-      const th = step * 0.20, ch = 1.20;
-      const px = (r,a) => cx + r * Math.cos(a);
-      const py = (r,a) => cy + r * Math.sin(a);
-      let d = '';
-      for (let i = 0; i < n; i++) {
-        const a = i * step - Math.PI / 2;
-        const aRL = a - th * ch, aTL = a - th * 0.78, aTR = a + th * 0.78, aRR = a + th * ch;
-        d += `${i===0?'M':'L'} ${f(px(rRoot,aRL))} ${f(py(rRoot,aRL))} `;
-        d += `L ${f(px(rOut,aTL))}  ${f(py(rOut,aTL))}  `;
-        d += `L ${f(px(rOut,aTR))}  ${f(py(rOut,aTR))}  `;
-        d += `L ${f(px(rRoot,aRR))} ${f(py(rRoot,aRR))} `;
-        const next = (i+1)*step - Math.PI/2 - th*ch;
-        d += `A ${rRoot} ${rRoot} 0 0 1 ${f(px(rRoot,next))} ${f(py(rRoot,next))} `;
-      }
-      d += `Z M ${f(cx+rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx-rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx+rInner)} ${f(cy)} Z`;
-      return d;
-    }
-    document.getElementById('gearPath').setAttribute('d', buildGear(210,210,26,208,180,142));
-  </script>
 </body>
 </html>

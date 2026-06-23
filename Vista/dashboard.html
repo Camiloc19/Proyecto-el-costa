@@ -85,7 +85,30 @@
       border-top: 1px solid rgba(255,255,255,0.05);
       border-bottom: 1px solid rgba(255,255,255,0.05);
       margin-bottom: 12px;
+      position: relative; cursor: pointer;
+      transition: background 0.18s;
     }
+    .side-user:hover { background: rgba(255,255,255,0.025); }
+    .user-caret { width: 13px; height: 13px; color: rgba(255,255,255,0.4); transition: transform 0.22s; }
+    .side-user.open .user-caret { transform: rotate(180deg); }
+    .user-menu {
+      position: absolute; top: 100%; left: 10px; right: 10px; z-index: 50;
+      background: #1a1a1a; border: 1px solid rgba(240,192,64,0.22);
+      border-radius: 12px; padding: 6px; margin-top: 6px;
+      box-shadow: 0 10px 30px -8px rgba(0,0,0,0.7);
+      opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    .side-user.open .user-menu { opacity: 1; transform: translateY(0); pointer-events: all; }
+    .user-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      color: rgba(255,255,255,0.8); font-size: 12.5px; text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .user-menu-item svg { width: 16px; height: 16px; flex-shrink: 0; stroke-width: 1.8; }
+    .user-menu-item:hover { background: rgba(240,192,64,0.1); color: #F0C040; }
+    .user-menu-item.danger:hover { background: rgba(248,113,113,0.1); color: #f87171; }
     .user-avatar {
       width: 50px; height: 50px; border-radius: 50%;
       background: linear-gradient(135deg, #A06808, #F0C040);
@@ -265,10 +288,22 @@
       </div>
 
       {% if session.usuario %}
-      <div class="side-user">
+      <div class="side-user" id="profileToggle" title="Opciones de cuenta">
         <div class="user-avatar">{{ session.usuario[0] }}</div>
         <div class="user-name">{{ session.usuario }}</div>
         <span class="user-role">Sesión activa</span>
+        <svg class="user-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+
+        <div class="user-menu" id="profileMenu">
+          <a href="/seguridad" class="user-menu-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            Seguridad (2FA)
+          </a>
+          <a href="/logout" class="user-menu-item danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Cerrar sesión
+          </a>
+        </div>
       </div>
       {% endif %}
 
@@ -282,6 +317,16 @@
           </svg>
           <span class="nav-text">Dashboard</span>
         </a>
+
+        {% if 'empleados' in modulos %}
+        <a href="/usuarios" class="nav-item" data-key="usuarios" data-src="/usuarios">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span class="nav-text">Empleados</span>
+        </a>
+        {% endif %}
 
         {% if 'inventario' in modulos %}
         <a href="/inventario" class="nav-item" data-key="inventario" data-src="/inventario">
@@ -447,6 +492,20 @@
   document.getElementById('bg1').setAttribute('d', buildGear(50,50,18,50,42,28));
   document.getElementById('bg2').setAttribute('d', buildGear(50,50,12,50,40,26));
   document.getElementById('bg3').setAttribute('d', buildGear(50,50,22,50,43,30));
+
+  /* ── Menú de perfil (Seguridad 2FA / Cerrar sesión) ── */
+  (function(){
+    const toggle = document.getElementById('profileToggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', (e) => {
+      // No cierres si se hizo click en una opción del menú (deja que el enlace navegue)
+      if (e.target.closest('.user-menu-item')) return;
+      toggle.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!toggle.contains(e.target)) toggle.classList.remove('open');
+    });
+  })();
 
   /* ── Navegación interna: carga módulos en el visor sin recargar ── */
   (function(){

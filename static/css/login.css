@@ -1,0 +1,96 @@
+/* ============================================================
+   Taller El Costa — Login (grúa) + micro-interacciones
+   Mantiene el look de la grúa; añade comportamiento profesional.
+   Solo se animan transform/opacity (60fps).
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #0f0f0f; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+/* Engranaje en loop CSS infinito (barato, GPU) */
+@keyframes gearSpin { to { transform: rotate(360deg); } }
+.gear-spin { animation: gearSpin 14s linear infinite; will-change: transform; }
+
+/* ---------- Inputs ---------- */
+input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); color: #F0C040; -webkit-text-fill-color: #F0C040; font-size: 13px; width: 100%; padding: 6px 2px; transition: border-color 0.2s; font-family: 'Inter', sans-serif; }
+input::placeholder { color: rgba(255,255,255,0.35); }
+input:focus { outline: none; border-bottom-color: rgba(240,192,64,0.5); }
+/* Neutraliza el fondo claro del autocompletar de Chrome */
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active {
+  -webkit-text-fill-color: #F0C040 !important; caret-color: #F0C040; transition: background-color 9999s ease-in-out 0s;
+}
+/* Micro-interacción: línea dorada animada en foco (scaleX, no width) */
+.field { position: relative; width: 100%; }
+.field::after {
+  content: ''; position: absolute; left: 0; bottom: 0; height: 2px; width: 100%;
+  background: #F0C040; transform: scaleX(0); transform-origin: left;
+  transition: transform 0.28s ease; pointer-events: none;
+}
+.field:focus-within::after { transform: scaleX(1); }
+
+/* ---------- Botón ---------- */
+.login-btn {
+  position: relative; width: 100%; padding: 8px 0; border-radius: 30px; border: none; cursor: pointer;
+  font-weight: 700; font-size: 13px; color: #fff;
+  background: linear-gradient(90deg, #facc15, #f97316, #ef4444);
+  box-shadow: 0 4px 18px rgba(249,115,22,0.4);
+  transition: transform 0.12s, box-shadow 0.2s, opacity 0.15s;
+  font-family: 'Inter', sans-serif; letter-spacing: 0.05em;
+}
+.login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(249,115,22,0.55); opacity: 0.96; }
+.login-btn:active { transform: translateY(0) scale(0.98); }
+/* Estado cargando: spinner y bloqueo de doble envío */
+.login-btn.loading { pointer-events: none; color: transparent; }
+.login-btn.loading::after {
+  content: ''; position: absolute; top: 50%; left: 50%; width: 15px; height: 15px; margin: -8px 0 0 -8px;
+  border: 2px solid rgba(255,255,255,0.45); border-top-color: #fff; border-radius: 50%;
+  animation: btnSpin 0.6s linear infinite;
+}
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+
+.link { color: rgba(255,255,255,0.35); font-size: 11px; text-decoration: none; transition: color 0.2s; }
+.link:hover { color: #F0C040; }
+.glow { position: absolute; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, rgba(200,140,10,0.18) 0%, transparent 70%); pointer-events: none; }
+
+/* ---------- Mensajes (con shake en error) ---------- */
+.error-msg { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; font-size: 11px; padding: 6px 10px; border-radius: 8px; text-align: center; width: 100%; animation: shake 0.35s ease; }
+.ok-msg { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #86efac; font-size: 11px; padding: 6px 10px; border-radius: 8px; text-align: center; width: 100%; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-4px); } 40%,80% { transform: translateX(4px); } }
+
+/* ---------- ESCENA: carretera + grúa ---------- */
+/* Ya no usamos carro ni carretera */
+.road, .car, #carLottie { display: none; }
+
+/* Envoltura del engranaje: la animamos (escala/opacidad) sin pelear con el giro CSS */
+.gear-wrap { position: absolute; top: 0; left: 0; width: 420px; height: 420px; will-change: transform, opacity; }
+
+/* Pasada de luz dorada (sweep) durante la intro */
+.sweep {
+  position: absolute; top: -10%; left: 0; width: 130px; height: 120%;
+  background: linear-gradient(90deg, transparent, rgba(240,192,64,0.22), transparent);
+  opacity: 0; pointer-events: none; mix-blend-mode: screen; z-index: 9;
+}
+
+#reveal { position: relative; width: 420px; height: 420px; display: flex; align-items: center; justify-content: center; z-index: 10; }
+
+/* ---------- Botón "Saltar intro" ---------- */
+.skip-btn {
+  position: fixed; top: 18px; right: 20px; z-index: 50;
+  padding: 7px 15px; border-radius: 20px; cursor: pointer;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.45); font-size: 11.5px; font-family: 'Inter', sans-serif;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.skip-btn:hover { color: #F0C040; border-color: rgba(240,192,64,0.3); background: rgba(240,192,64,0.1); }
+.skip-btn[hidden] { display: none; }
+
+/* Estados iniciales de la intro (ocultos hasta que GSAP los revele).
+   La clase .intro la pone un script en <head> ANTES del pintado (sin parpadeo). */
+html.intro .gear-wrap,
+html.intro .glow,
+html.intro .stagger { opacity: 0; }
+
+/* Accesibilidad: sin animaciones de adorno si el usuario lo pide */
+@media (prefers-reduced-motion: reduce) {
+  .gear-spin, .error-msg { animation: none; }
+}

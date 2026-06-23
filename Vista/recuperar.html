@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recuperar contraseña — El Costa</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #0f0f0f; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+    @keyframes gearSpin { to { transform: rotate(360deg); } }
+    .gear-spin { animation: gearSpin 14s linear infinite; }
+
+    input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); color: #F0C040; -webkit-text-fill-color: #F0C040; font-size: 13px; width: 100%; padding: 6px 2px; transition: border-color 0.2s; font-family: 'Inter', sans-serif; }
+    input::placeholder { color: rgba(255,255,255,0.35); }
+    input:focus { outline: none; border-bottom-color: #F0C040; }
+    input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #F0C040 !important; caret-color: #F0C040; transition: background-color 9999s ease-in-out 0s;
+    }
+
+    .login-btn { width: 100%; padding: 8px 0; border-radius: 30px; border: none; cursor: pointer; font-weight: 700; font-size: 13px; color: #fff; background: linear-gradient(90deg, #facc15, #f97316, #ef4444); box-shadow: 0 4px 18px rgba(249,115,22,0.4); transition: opacity 0.15s, transform 0.1s; font-family: 'Inter', sans-serif; letter-spacing: 0.05em; }
+    .login-btn:hover { opacity: 0.88; }
+    .login-btn:active { transform: scale(0.97); }
+    .link { color: rgba(255,255,255,0.35); font-size: 11px; text-decoration: none; transition: color 0.2s; }
+    .link:hover { color: #F0C040; }
+    .glow { position: absolute; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, rgba(200,140,10,0.18) 0%, transparent 70%); pointer-events: none; }
+    .error-msg { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; font-size: 11px; padding: 6px 10px; border-radius: 8px; text-align: center; width: 100%; }
+    .ok-msg { background: rgba(34,197,94,0.13); border: 1px solid rgba(34,197,94,0.4); color: #86efac; font-size: 11px; padding: 7px 10px; border-radius: 8px; text-align: center; width: 100%; line-height: 1.5; }
+    .subtitle { color: rgba(255,255,255,0.45); font-size: 11px; text-align: center; line-height: 1.5; }
+
+    /* ── OTP estilo authenticator ── */
+    .otp-wrap { display: flex; gap: 8px; justify-content: center; width: 100%; }
+    .otp-box {
+      width: 38px; height: 48px; text-align: center;
+      font-size: 22px; font-weight: 700; font-family: 'Orbitron', sans-serif;
+      color: #F0C040; -webkit-text-fill-color: #F0C040;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(240,192,64,0.3);
+      border-bottom: 1px solid rgba(240,192,64,0.3);
+      border-radius: 10px; padding: 0;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .otp-box:focus { outline: none; border-color: #F0C040; box-shadow: 0 0 14px rgba(240,192,64,0.35); }
+  </style>
+</head>
+<body>
+
+  <div style="position:relative;width:420px;height:420px;display:flex;align-items:center;justify-content:center;">
+    <div class="glow"></div>
+    <svg class="gear-spin" style="position:absolute;top:0;left:0;width:420px;height:420px;" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#3D2600"/><stop offset="15%" stop-color="#A06808"/><stop offset="35%" stop-color="#F0C040"/>
+          <stop offset="52%" stop-color="#E8A818"/><stop offset="68%" stop-color="#B07010"/><stop offset="85%" stop-color="#C88010"/><stop offset="100%" stop-color="#5A3800"/>
+        </linearGradient>
+        <filter id="gs"><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#C8900A" flood-opacity="0.4"/></filter>
+      </defs>
+      <path id="gearPath" fill="url(#gold)" fill-rule="evenodd" stroke="#6B4400" stroke-width="0.6" filter="url(#gs)"/>
+    </svg>
+
+    <div style="position:relative;z-index:10;width:230px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+
+      <h1 style="color:#fff;font-size:20px;font-weight:700;letter-spacing:0.12em;text-shadow:0 0 18px rgba(240,192,64,0.5);font-family:'Orbitron',sans-serif;">El Costa</h1>
+
+      {% if error %}<div class="error-msg">{{ error }}</div>{% endif %}
+      {% if aviso %}<div class="ok-msg">{{ aviso }}</div>{% endif %}
+
+      {% if paso == 1 %}
+      <!-- ── PASO 1: PEDIR CORREO ── -->
+      <p class="subtitle">Escribe tu correo y te enviaremos un código de verificación.</p>
+      <form method="POST" action="/recuperar" style="width:100%;display:flex;flex-direction:column;gap:16px;align-items:center;">
+        <input type="email" name="correo" placeholder="Tu correo" value="{{ correo or '' }}" required autofocus/>
+        <button type="submit" class="login-btn">Enviar código</button>
+      </form>
+
+      {% elif paso == 2 %}
+      <!-- ── PASO 2: CÓDIGO ESTILO AUTHENTICATOR ── -->
+      <p class="subtitle">Ingresa el código de 6 dígitos que enviamos a<br><span style="color:#F0C040;">{{ correo }}</span></p>
+      <form method="POST" action="/recuperar/codigo" id="otpForm" style="width:100%;display:flex;flex-direction:column;gap:18px;align-items:center;">
+        <div class="otp-wrap">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" autofocus/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off"/>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off"/>
+        </div>
+        <input type="hidden" name="codigo" id="codigoHidden"/>
+        <button type="submit" class="login-btn">Verificar código</button>
+      </form>
+      <form method="POST" action="/recuperar" style="width:100%;">
+        <input type="hidden" name="correo" value="{{ correo }}"/>
+        <button type="submit" class="link" style="background:none;border:none;cursor:pointer;width:100%;">Reenviar código</button>
+      </form>
+
+      {% elif paso == 3 %}
+      <!-- ── PASO 3: NUEVA CONTRASEÑA ── -->
+      <p class="subtitle">Código verificado ✓<br>Crea tu nueva contraseña.</p>
+      <form method="POST" action="/recuperar/nueva" style="width:100%;display:flex;flex-direction:column;gap:16px;align-items:center;">
+        <input type="password" name="contrasena" placeholder="Nueva contraseña" required autofocus/>
+        <input type="password" name="confirmar" placeholder="Confirmar contraseña" required/>
+        <button type="submit" class="login-btn">Guardar contraseña</button>
+      </form>
+      {% endif %}
+
+      <a href="/login" class="link">← Volver a iniciar sesión</a>
+    </div>
+  </div>
+
+  <script>
+    const f = n => n.toFixed(3);
+    function buildGear(cx, cy, n, rOut, rRoot, rInner) {
+      const step = (2 * Math.PI) / n;
+      const th = step * 0.20, ch = 1.20;
+      const px = (r,a) => cx + r * Math.cos(a);
+      const py = (r,a) => cy + r * Math.sin(a);
+      let d = '';
+      for (let i = 0; i < n; i++) {
+        const a = i * step - Math.PI / 2;
+        const aRL = a - th * ch, aTL = a - th * 0.78, aTR = a + th * 0.78, aRR = a + th * ch;
+        d += `${i===0?'M':'L'} ${f(px(rRoot,aRL))} ${f(py(rRoot,aRL))} `;
+        d += `L ${f(px(rOut,aTL))}  ${f(py(rOut,aTL))}  `;
+        d += `L ${f(px(rOut,aTR))}  ${f(py(rOut,aTR))}  `;
+        d += `L ${f(px(rRoot,aRR))} ${f(py(rRoot,aRR))} `;
+        const next = (i+1)*step - Math.PI/2 - th*ch;
+        d += `A ${rRoot} ${rRoot} 0 0 1 ${f(px(rRoot,next))} ${f(py(rRoot,next))} `;
+      }
+      d += `Z M ${f(cx+rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx-rInner)} ${f(cy)} A ${rInner} ${rInner} 0 1 0 ${f(cx+rInner)} ${f(cy)} Z`;
+      return d;
+    }
+    document.getElementById('gearPath').setAttribute('d', buildGear(210,210,26,208,180,142));
+
+    /* ── Lógica de las casillas OTP ── */
+    const boxes = document.querySelectorAll('.otp-box');
+    if (boxes.length) {
+      const hidden = document.getElementById('codigoHidden');
+      const form = document.getElementById('otpForm');
+      const sync = () => { hidden.value = Array.from(boxes).map(b => b.value).join(''); };
+      boxes.forEach((box, i) => {
+        box.addEventListener('input', () => {
+          box.value = box.value.replace(/[^0-9]/g, '');
+          if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+          sync();
+        });
+        box.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+        });
+        box.addEventListener('paste', e => {
+          e.preventDefault();
+          const txt = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 6);
+          txt.split('').forEach((ch, k) => { if (boxes[k]) boxes[k].value = ch; });
+          sync();
+          if (txt.length) boxes[Math.min(txt.length, boxes.length) - 1].focus();
+        });
+      });
+      form.addEventListener('submit', sync);
+    }
+  </script>
+</body>
+</html>

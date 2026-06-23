@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seguridad — El Costa</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #0f0f0f; color: #f0f0f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: #131313; border: 1px solid rgba(240,192,64,0.22); border-radius: 18px; width: 100%; max-width: 440px; padding: 34px; position: relative; overflow: hidden; }
+    .card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at top, rgba(240,192,64,0.07) 0%, transparent 55%); pointer-events: none; }
+    h1 { font-family: 'Orbitron', sans-serif; font-size: 17px; color: #F0C040; letter-spacing: .08em; margin-bottom: 6px; text-shadow: 0 0 18px rgba(240,192,64,.3); }
+    .sub { color: rgba(255,255,255,0.42); font-size: 12px; line-height: 1.55; margin-bottom: 24px; }
+    .estado { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 20px; margin-bottom: 22px; }
+    .on  { color:#4ade80; background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.25); }
+    .off { color:#fca5a5; background:rgba(248,113,113,.07); border:1px solid rgba(248,113,113,.22); }
+    .dot { width:7px; height:7px; border-radius:50%; }
+    .dot-on { background:#4ade80; box-shadow:0 0 7px #4ade80; } .dot-off { background:#f87171; }
+    .btn { width:100%; padding:11px 0; border-radius:10px; border:none; cursor:pointer; font-weight:700; font-size:13px; font-family:'Inter',sans-serif; letter-spacing:.04em; transition: opacity .15s, transform .1s; }
+    .btn-on { color:#111; background: linear-gradient(90deg,#facc15,#f97316,#ef4444); box-shadow:0 4px 18px rgba(249,115,22,.35); }
+    .btn-off { color:#fca5a5; background:transparent; border:1px solid rgba(248,113,113,.35); }
+    .btn:hover { opacity:.9; } .btn:active { transform: scale(.98); }
+    .link { display:inline-block; margin-top:20px; color: rgba(255,255,255,0.4); font-size:12px; text-decoration:none; }
+    .link:hover { color:#F0C040; }
+    .msg { font-size:12px; padding:9px 12px; border-radius:8px; margin-bottom:18px; text-align:center; }
+    .msg-ok { background:rgba(34,197,94,.13); border:1px solid rgba(34,197,94,.4); color:#86efac; }
+    .msg-err{ background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.4); color:#fca5a5; }
+    .qr-box { background:#fff; padding:12px; border-radius:12px; width:fit-content; margin:0 auto 16px; }
+    .steps { font-size:12px; color: rgba(255,255,255,0.55); line-height:1.7; margin-bottom:18px; padding-left:18px; }
+    .secret { font-family:'Courier New',monospace; font-size:12px; color:#F0C040; background:rgba(240,192,64,.07); border:1px dashed rgba(240,192,64,.35); border-radius:8px; padding:8px; text-align:center; word-break:break-all; margin-bottom:20px; }
+    .otp-wrap { display:flex; gap:7px; justify-content:center; margin-bottom:18px; }
+    .otp-box { width:36px; height:46px; text-align:center; font-size:20px; font-weight:700; font-family:'Orbitron',sans-serif; color:#F0C040; -webkit-text-fill-color:#F0C040; background:rgba(255,255,255,0.03); border:1px solid rgba(240,192,64,0.3); border-radius:9px; }
+    .otp-box:focus { outline:none; border-color:#F0C040; box-shadow:0 0 12px rgba(240,192,64,.35); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔐 Seguridad de la cuenta</h1>
+    <p class="sub">Verificación en 2 pasos con Google Authenticator (o cualquier app TOTP como Microsoft Authenticator / Authy).</p>
+
+    {% if exito %}<div class="msg msg-ok">{{ exito }}</div>{% endif %}
+    {% if error %}<div class="msg msg-err">{{ error }}</div>{% endif %}
+
+    {% if configurando %}
+      <!-- ── PASO: ESCANEAR QR Y CONFIRMAR ── -->
+      <div class="estado off"><span class="dot dot-off"></span>Configurando…</div>
+      <ol class="steps">
+        <li>Abre <b style="color:#F0C040;">Google Authenticator</b> en tu celular</li>
+        <li>Toca <b>+</b> → <b>Escanear código QR</b></li>
+        <li>Apunta al código de abajo</li>
+        <li>Escribe el código de 6 dígitos que aparece en la app</li>
+      </ol>
+      <div class="qr-box"><div id="qr"></div></div>
+      <p class="sub" style="text-align:center;margin-bottom:8px;">¿No puedes escanear? Ingresa esta clave manualmente:</p>
+      <div class="secret">{{ secret }}</div>
+
+      <form method="POST" action="/seguridad/confirmar" id="otpForm">
+        <div class="otp-wrap">
+          {% for i in range(6) %}<input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" {% if i==0 %}autofocus{% endif %}/>{% endfor %}
+        </div>
+        <input type="hidden" name="codigo" id="codigoHidden"/>
+        <button type="submit" class="btn btn-on">Activar 2FA</button>
+      </form>
+
+    {% elif activo %}
+      <!-- ── 2FA ACTIVO ── -->
+      <div class="estado on"><span class="dot dot-on"></span>Verificación en 2 pasos ACTIVADA</div>
+      <p class="sub">Tu cuenta está protegida. Al iniciar sesión te pediremos el código de tu app.</p>
+      <form method="POST" action="/seguridad/desactivar" onsubmit="return confirm('¿Seguro que quieres desactivar la verificación en 2 pasos?');">
+        <button type="submit" class="btn btn-off">Desactivar 2FA</button>
+      </form>
+
+    {% else %}
+      <!-- ── 2FA DESACTIVADO ── -->
+      <div class="estado off"><span class="dot dot-off"></span>Verificación en 2 pasos desactivada</div>
+      <p class="sub">Agrega una capa extra de seguridad: además de tu contraseña, pedirá un código que cambia cada 30 segundos.</p>
+      <form method="POST" action="/seguridad/activar">
+        <button type="submit" class="btn btn-on">Activar 2FA</button>
+      </form>
+    {% endif %}
+
+    <a href="/dashboard" class="link">← Volver al panel</a>
+  </div>
+
+  <script>
+    {% if configurando %}
+    const uri = {{ uri | tojson }};
+    new QRCode(document.getElementById('qr'), { text: uri, width: 190, height: 190, correctLevel: QRCode.CorrectLevel.M });
+
+    const boxes = document.querySelectorAll('.otp-box');
+    const hidden = document.getElementById('codigoHidden');
+    const formO = document.getElementById('otpForm');
+    const sync = () => { hidden.value = Array.from(boxes).map(b => b.value).join(''); };
+    boxes.forEach((box, i) => {
+      box.addEventListener('input', () => {
+        box.value = box.value.replace(/[^0-9]/g, '');
+        if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+        sync();
+      });
+      box.addEventListener('keydown', e => { if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus(); });
+      box.addEventListener('paste', e => {
+        e.preventDefault();
+        const txt = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 6);
+        txt.split('').forEach((ch, k) => { if (boxes[k]) boxes[k].value = ch; });
+        sync();
+      });
+    });
+    formO.addEventListener('submit', sync);
+    {% endif %}
+  </script>
+</body>
+</html>

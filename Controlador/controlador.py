@@ -1,12 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import sys
 import os
+import ssl
+import time
+import random
+import hashlib
+import smtplib
+import pyotp
+from email.mime.text import MIMEText
 from datetime import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Modelo'))
 import modelo
 
-app = Flask(__name__, template_folder='../Vista')
+app = Flask(__name__, template_folder='../Vista', static_folder='../static')
 app.secret_key = 'taller_el_costa_2026'
 
 
@@ -25,12 +32,41 @@ def login():
         contrasena = request.form.get('contrasena')
         usuario    = modelo.login_usuario(correo, contrasena)
         if usuario:
-            session['usuario'] = usuario['nombre'] + ' ' + usuario['apellido']
-            session['id_rol']  = usuario['id_Rol_fk']     
+            if usuario.get('totp_secret'):
+                # Tiene 2FA activo: pedir el código de la app antes de entrar
+                session['pre2fa_id'] = usuario['idUsuario']
+                return redirect(url_for('login_2fa'))
+            iniciar_sesion(usuario)
             return redirect(url_for('dashboard'))
         else:
-            return render_template('login.html', error='Correo o contraseña incorrectos')
+            return render_template('login.html', error='Correo o contraseña incorrectos', correo=correo)
     return render_template('login.html')
+
+
+def iniciar_sesion(usuario):
+    """Marca la sesión como autenticada con los datos del usuario."""
+    session.pop('pre2fa_id', None)
+    session['usuario']    = usuario['nombre'] + ' ' + (usuario['apellido'] or '')
+    session['id_rol']     = usuario['id_Rol_fk']
+    session['id_usuario'] = usuario['idUsuario']
+    session['correo']     = usuario.get('correo')
+
+
+@app.route('/login/2fa', methods=['GET', 'POST'])
+def login_2fa():
+    uid = session.get('pre2fa_id')
+    if not uid:
+        return redirect(url_for('login'))
+    usuario = modelo.obtener_usuario_por_id(uid)
+    if not usuario or not usuario.get('totp_secret'):
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        codigo = (request.form.get('codigo') or '').strip()
+        if pyotp.TOTP(usuario['totp_secret']).verify(codigo, valid_window=1):
+            iniciar_sesion(usuario)
+            return redirect(url_for('dashboard'))
+        return render_template('login_2fa.html', error='Código incorrecto. Revisa tu app Authenticator.')
+    return render_template('login_2fa.html')
 
 @app.route('/logout')
 def logout():
@@ -39,15 +75,160 @@ def logout():
 
 
 # ═════════════════════════════════════════
+#  RECUPERAR CONTRASEÑA (código por correo)
+# ═════════════════════════════════════════
+
+def enviar_codigo_correo(destino, codigo):
+    """Envía el código por Gmail si hay credenciales (MAIL_USER/MAIL_PASSWORD);
+    si no, lo imprime en consola (modo demo). Devuelve True si se envió por correo real."""
+    mail_user = os.environ.get('MAIL_USER')
+    mail_pass = os.environ.get('MAIL_PASSWORD')
+    cuerpo = (
+        f"Hola,\n\nTu código para recuperar la contraseña de Taller El Costa es:\n\n"
+        f"    {codigo}\n\nEste código vence en 10 minutos. Si no fuiste tú, ignora este correo."
+    )
+    if not mail_user or not mail_pass:
+        print(f"[DEMO] Código de recuperación para {destino}: {codigo}")
+        return False
+    msg = MIMEText(cuerpo)
+    msg['Subject'] = 'Código de recuperación — Taller El Costa'
+    msg['From'] = mail_user
+    msg['To'] = destino
+    contexto = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=contexto) as servidor:
+        servidor.login(mail_user, mail_pass)
+        servidor.sendmail(mail_user, destino, msg.as_string())
+    return True
+
+
+def _hash_codigo(codigo):
+    return hashlib.sha256((app.secret_key + codigo).encode()).hexdigest()
+
+
+@app.route('/recuperar', methods=['GET', 'POST'])
+def recuperar():
+    if request.method == 'POST':
+        correo = (request.form.get('correo') or '').strip()
+        usuario = modelo.obtener_usuario_por_correo(correo)
+        if not usuario:
+            return render_template('recuperar.html', paso=1, error='No existe una cuenta con ese correo', correo=correo)
+        codigo = '%06d' % random.randint(0, 999999)
+        session['rec_correo'] = correo
+        session['rec_hash']   = _hash_codigo(codigo)
+        session['rec_exp']    = time.time() + 600  # 10 minutos
+        session.pop('rec_ok', None)
+        enviado = enviar_codigo_correo(correo, codigo)
+        aviso = None if enviado else f'Modo demo: tu código es {codigo} (revisa la consola del servidor)'
+        return render_template('recuperar.html', paso=2, correo=correo, aviso=aviso)
+    return render_template('recuperar.html', paso=1)
+
+
+@app.route('/recuperar/codigo', methods=['POST'])
+def recuperar_codigo():
+    correo = session.get('rec_correo')
+    if not correo:
+        return redirect(url_for('recuperar'))
+    codigo = (request.form.get('codigo') or '').strip()
+    if time.time() > session.get('rec_exp', 0):
+        return render_template('recuperar.html', paso=1, error='El código venció. Solicítalo de nuevo.')
+    if _hash_codigo(codigo) != session.get('rec_hash'):
+        return render_template('recuperar.html', paso=2, correo=correo, error='Código incorrecto')
+    session['rec_ok'] = correo
+    return render_template('recuperar.html', paso=3, correo=correo)
+
+
+@app.route('/recuperar/nueva', methods=['POST'])
+def recuperar_nueva():
+    correo = session.get('rec_ok')
+    if not correo:
+        return redirect(url_for('recuperar'))
+    nueva = request.form.get('contrasena') or ''
+    confirmar = request.form.get('confirmar') or ''
+    if len(nueva) < 4:
+        return render_template('recuperar.html', paso=3, correo=correo, error='La contraseña debe tener al menos 4 caracteres')
+    if nueva != confirmar:
+        return render_template('recuperar.html', paso=3, correo=correo, error='Las contraseñas no coinciden')
+    modelo.actualizar_contrasena_por_correo(correo, nueva)
+    for k in ('rec_correo', 'rec_hash', 'rec_exp', 'rec_ok'):
+        session.pop(k, None)
+    return render_template('login.html', exito='Contraseña actualizada. Ya puedes iniciar sesión.')
+
+
+# ═════════════════════════════════════════
+#  SEGURIDAD — 2FA (Google Authenticator)
+# ═════════════════════════════════════════
+
+ISSUER_2FA = 'Taller El Costa'
+
+
+@app.route('/seguridad')
+def seguridad():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    usuario = modelo.obtener_usuario_por_id(session.get('id_usuario'))
+    activo = bool(usuario and usuario.get('totp_secret'))
+    return render_template('seguridad.html', activo=activo)
+
+
+@app.route('/seguridad/activar', methods=['POST'])
+def seguridad_activar():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    usuario = modelo.obtener_usuario_por_id(session.get('id_usuario'))
+    secret = pyotp.random_base32()
+    session['pending_totp'] = secret
+    etiqueta = (usuario.get('correo') if usuario else None) or session.get('usuario')
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(name=etiqueta, issuer_name=ISSUER_2FA)
+    return render_template('seguridad.html', activo=False, configurando=True, secret=secret, uri=uri)
+
+
+@app.route('/seguridad/confirmar', methods=['POST'])
+def seguridad_confirmar():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    secret = session.get('pending_totp')
+    if not secret:
+        return redirect(url_for('seguridad'))
+    codigo = (request.form.get('codigo') or '').strip()
+    if pyotp.TOTP(secret).verify(codigo, valid_window=1):
+        modelo.actualizar_totp_secret(session.get('id_usuario'), secret)
+        session.pop('pending_totp', None)
+        return render_template('seguridad.html', activo=True,
+                               exito='¡Verificación en 2 pasos activada! Ahora se pedirá el código al iniciar sesión.')
+    etiqueta = session.get('correo') or session.get('usuario')
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(name=etiqueta, issuer_name=ISSUER_2FA)
+    return render_template('seguridad.html', activo=False, configurando=True, secret=secret, uri=uri,
+                           error='Código incorrecto, inténtalo de nuevo.')
+
+
+@app.route('/seguridad/desactivar', methods=['POST'])
+def seguridad_desactivar():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    modelo.actualizar_totp_secret(session.get('id_usuario'), None)
+    session.pop('pending_totp', None)
+    return render_template('seguridad.html', activo=False, exito='Verificación en 2 pasos desactivada.')
+
+
+# ═════════════════════════════════════════
 #  DASHBOARD
 # ═════════════════════════════════════════
 
 MODULOS_POR_ROL = {
-    1: ['inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Super_administrador
-    2: ['inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Administrador
-    3: [],                                                                         # Cliente (sin acceso)
-    4: ['ordenes'],                                                                # Mecánico
+    1: ['empleados', 'inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Super_administrador
+    2: ['inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],               # Administrador
+    3: [],                                                                                     # Cliente (sin acceso)
+    4: ['ordenes'],                                                                            # Mecánico
 }
+
+
+def solo_superadmin():
+    # Devuelve un redirect si el usuario no es Super_administrador (rol 1); None si tiene permiso.
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    if session.get('id_rol') != 1:
+        return redirect(url_for('dashboard'))
+    return None
 
 @app.route('/dashboard')
 def dashboard():
@@ -62,12 +243,16 @@ def dashboard():
 
 @app.route('/usuarios')
 def usuarios():
+    guard = solo_superadmin()
+    if guard: return guard
     lista = modelo.obtener_usuarios()
     roles = modelo.obtener_roles()
     return render_template('usuarios.html', usuarios=lista, roles=roles)
 
 @app.route('/usuarios/agregar', methods=['POST'])
 def agregar_usuario():
+    guard = solo_superadmin()
+    if guard: return guard
     nombre     = request.form.get('nombre')
     apellido   = request.form.get('apellido')
     contrasena = request.form.get('contrasena')
@@ -78,6 +263,8 @@ def agregar_usuario():
 
 @app.route('/usuarios/editar/<int:id>', methods=['POST'])
 def editar_usuario(id):
+    guard = solo_superadmin()
+    if guard: return guard
     nombre     = request.form.get('nombre')
     apellido   = request.form.get('apellido')
     contrasena = request.form.get('contrasena')
@@ -88,6 +275,8 @@ def editar_usuario(id):
 
 @app.route('/usuarios/eliminar/<int:id>')
 def eliminar_usuario(id):
+    guard = solo_superadmin()
+    if guard: return guard
     modelo.eliminar_usuario(id)
     return redirect(url_for('usuarios'))
 

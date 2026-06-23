@@ -39,6 +39,39 @@ def login_usuario(correo, contrasena):
     con.close()
     return resultado
 
+def obtener_usuario_por_correo(correo):
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM usuarios WHERE correo = %s", (correo,))
+    resultado = cursor.fetchone()
+    con.close()
+    return resultado
+
+def obtener_usuario_por_id(id):
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM usuarios WHERE idUsuario = %s", (id,))
+    resultado = cursor.fetchone()
+    con.close()
+    return resultado
+
+def actualizar_totp_secret(id, secret):
+    # secret = cadena base32 para activar 2FA, o None para desactivarlo
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("UPDATE usuarios SET totp_secret=%s WHERE idUsuario=%s", (secret, id))
+    con.commit()
+    con.close()
+
+def actualizar_contrasena_por_correo(correo, nueva_contrasena):
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("UPDATE usuarios SET contraseña=%s WHERE correo=%s", (nueva_contrasena, correo))
+    con.commit()
+    filas = cursor.rowcount
+    con.close()
+    return filas
+
 def crear_usuario(nombre, apellido, contrasena, correo, id_rol):
     con = conectar()
     cursor = con.cursor()
