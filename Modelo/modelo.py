@@ -300,6 +300,14 @@ def actualizar_estado_orden(id, id_estado, fecha_cierre, total):
     con.commit()
     con.close()
 
+def actualizar_precio_orden(id, total):
+    # Pone/actualiza solo el precio (total) de la orden, sin cerrarla.
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("UPDATE orden_servicio SET total=%s WHERE Id_orden=%s", (total, id))
+    con.commit()
+    con.close()
+
 def eliminar_orden(id):
     con = conectar()
     cursor = con.cursor()
@@ -743,6 +751,42 @@ def obtener_actividad_mensual():
     resultado = cursor.fetchall()
     con.close()
     return resultado
+
+def obtener_finanzas_mes(offset=0):
+    # Finanzas de un mes (offset relativo al actual): ganancias (facturado ese mes),
+    # gastos (entradas de inventario valoradas a precio_compra, con fecha de su factura),
+    # y conteos de órdenes y facturas del mes.
+    con = conectar()
+    cur = con.cursor(dictionary=True)
+    cur.execute(
+        "SELECT MONTH(DATE_ADD(CURDATE(), INTERVAL %s MONTH)) AS m, "
+        "YEAR(DATE_ADD(CURDATE(), INTERVAL %s MONTH)) AS a", (offset, offset))
+    r = cur.fetchone()
+    mes, anio = r['m'], r['a']
+
+    cur.execute("SELECT COALESCE(SUM(total),0) AS s, COUNT(*) AS c FROM factura "
+                "WHERE MONTH(fecha)=%s AND YEAR(fecha)=%s", (mes, anio))
+    g = cur.fetchone()
+    ganancias = int(g['s'] or 0)
+    facturas = g['c']
+
+    cur.execute("SELECT COUNT(*) AS c FROM orden_servicio "
+                "WHERE MONTH(fecha_apertura)=%s AND YEAR(fecha_apertura)=%s", (mes, anio))
+    ordenes = cur.fetchone()['c']
+
+    cur.execute("""
+        SELECT COALESCE(SUM(dm.cantidad * p.precio_compra),0) AS s
+        FROM detalle_movimiento dm
+        JOIN factura f                  ON dm.id_Factura_fk = f.idFactura
+        LEFT JOIN producto_proveedor pp ON dm.id_ProductoProveedor_fk = pp.idProductoProveedor
+        LEFT JOIN producto p            ON pp.id_Producto_fk = p.idProducto
+        WHERE MONTH(f.fecha)=%s AND YEAR(f.fecha)=%s
+    """, (mes, anio))
+    gastos = int(cur.fetchone()['s'] or 0)
+    con.close()
+    return {'mes': mes, 'anio': anio, 'ganancias': ganancias, 'gastos': gastos,
+            'ordenes': ordenes, 'facturas': facturas}
+
 
 def obtener_total_ganancias():
     con = conectar()

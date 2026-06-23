@@ -433,77 +433,78 @@
     </div>
   </div>
 
-  <!-- ══ Total Ganancias y Gastos ══ -->
-  <div class="grid sm:grid-cols-2 gap-5 mt-6 anim-6">
+  <!-- ══ Finanzas del mes (Ganancias y Gastos) — datos reales ══ -->
+  <div class="mt-6 anim-6">
 
-    <!-- Ganancias -->
-    <div class="card" style="border:1px solid rgba(74,222,128,0.2);">
-      <div class="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
-           style="background:radial-gradient(circle,rgba(74,222,128,0.08),transparent);transform:translate(40%,-40%);"></div>
-      <div class="flex items-center gap-3 mb-5">
-        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-             style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.2);">💵</div>
-        <div>
-          <p class="text-gray-400 text-xs uppercase tracking-widest">Total Ganancias</p>
-          <p class="text-green-400 font-bold text-2xl leading-tight" style="font-family:'Oswald',sans-serif;">$19.4M</p>
-        </div>
-      </div>
-      <div class="grid grid-cols-3 gap-2">
-        <div class="rounded-xl p-3 text-center" style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);">
-          <p class="text-green-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">$6.6M</p>
-          <p class="text-gray-500 text-xs mt-0.5">Este mes</p>
-        </div>
-        <div class="rounded-xl p-3 text-center" style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);">
-          <p class="text-green-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">$1.6M</p>
-          <p class="text-gray-500 text-xs mt-0.5">Esta semana</p>
-        </div>
-        <div class="rounded-xl p-3 text-center" style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);">
-          <p class="text-green-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">446</p>
-          <p class="text-gray-500 text-xs mt-0.5">Órdenes</p>
-        </div>
-      </div>
-      <div class="mt-4">
-        <div class="flex justify-between text-xs text-gray-500 mb-1">
-          <span>Progreso meta mensual</span><span class="text-green-400 font-semibold">82%</span>
-        </div>
-        <div class="prog-bar">
-          <div class="prog-fill" style="width:82%;background:linear-gradient(90deg,#4ade80,#16a34a);"></div>
-        </div>
-      </div>
+    <!-- Navegación de mes -->
+    <div class="flex items-center justify-center gap-3 mb-4">
+      <button id="finPrev" type="button" title="Mes anterior"
+              style="width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#9ca3af;cursor:pointer;">◄</button>
+      <span id="finLabel" class="text-sm font-bold px-4 py-1.5 rounded-full"
+            style="background:rgba(255,255,255,0.06);color:#e5e7eb;min-width:160px;text-align:center;">{{ finanzas.label }}</span>
+      <button id="finNext" type="button" title="Mes siguiente"
+              style="width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#9ca3af;cursor:pointer;opacity:0.35;">►</button>
     </div>
 
-    <!-- Gastos -->
-    <div class="card" style="border:1px solid rgba(248,113,113,0.2);">
-      <div class="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
-           style="background:radial-gradient(circle,rgba(248,113,113,0.08),transparent);transform:translate(40%,-40%);"></div>
-      <div class="flex items-center gap-3 mb-5">
-        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-             style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.2);">🧾</div>
-        <div>
-          <p class="text-gray-400 text-xs uppercase tracking-widest">Total Gastos</p>
-          <p class="text-red-400 font-bold text-2xl leading-tight" style="font-family:'Oswald',sans-serif;">$8.1M</p>
+    <div class="grid sm:grid-cols-2 gap-5">
+
+      <!-- Ganancias -->
+      <div class="card" style="border:1px solid rgba(74,222,128,0.2);">
+        <div class="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
+             style="background:radial-gradient(circle,rgba(74,222,128,0.08),transparent);transform:translate(40%,-40%);"></div>
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
+               style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.2);">💵</div>
+          <div>
+            <p class="text-gray-400 text-xs uppercase tracking-widest">Ganancias del mes</p>
+            <p id="finGan" class="text-green-400 font-bold text-2xl leading-tight" style="font-family:'Oswald',sans-serif;">${{ '{:,}'.format(finanzas.ganancias) }}</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="rounded-xl p-3 text-center" style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);">
+            <p id="finOrdenes" class="text-green-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">{{ finanzas.ordenes }}</p>
+            <p class="text-gray-500 text-xs mt-0.5">Órdenes</p>
+          </div>
+          <div class="rounded-xl p-3 text-center" style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);">
+            <p id="finFacturas" class="text-green-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">{{ finanzas.facturas }}</p>
+            <p class="text-gray-500 text-xs mt-0.5">Facturas</p>
+          </div>
+          <div class="rounded-xl p-3 text-center" style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);">
+            <p id="finNeta" class="text-green-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">${{ '{:,}'.format(finanzas.neta) }}</p>
+            <p class="text-gray-500 text-xs mt-0.5">Ganancia neta</p>
+          </div>
         </div>
       </div>
-      <div class="grid grid-cols-3 gap-2">
-        <div class="rounded-xl p-3 text-center" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.15);">
-          <p class="text-red-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">$2.8M</p>
-          <p class="text-gray-500 text-xs mt-0.5">Este mes</p>
+
+      <!-- Gastos -->
+      <div class="card" style="border:1px solid rgba(248,113,113,0.2);">
+        <div class="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
+             style="background:radial-gradient(circle,rgba(248,113,113,0.08),transparent);transform:translate(40%,-40%);"></div>
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
+               style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.2);">🧾</div>
+          <div>
+            <p class="text-gray-400 text-xs uppercase tracking-widest">Gastos del mes</p>
+            <p id="finGas" class="text-red-400 font-bold text-2xl leading-tight" style="font-family:'Oswald',sans-serif;">${{ '{:,}'.format(finanzas.gastos) }}</p>
+          </div>
         </div>
-        <div class="rounded-xl p-3 text-center" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.15);">
-          <p class="text-red-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">$620K</p>
-          <p class="text-gray-500 text-xs mt-0.5">Esta semana</p>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="rounded-xl p-3 text-center" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.15);">
+            <p id="finPct" class="text-red-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">{{ finanzas.pct_gastos }}%</p>
+            <p class="text-gray-500 text-xs mt-0.5">Del ingreso</p>
+          </div>
+          <div class="rounded-xl p-3 text-center" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.15);">
+            <p id="finNeta2" class="text-red-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">${{ '{:,}'.format(finanzas.neta) }}</p>
+            <p class="text-gray-500 text-xs mt-0.5">Ganancia neta</p>
+          </div>
         </div>
-        <div class="rounded-xl p-3 text-center" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.15);">
-          <p class="text-red-400 font-bold text-lg" style="font-family:'Oswald',sans-serif;">42%</p>
-          <p class="text-gray-500 text-xs mt-0.5">Del ingreso</p>
-        </div>
-      </div>
-      <div class="mt-4">
-        <div class="flex justify-between text-xs text-gray-500 mb-1">
-          <span>Gastos vs Ganancias</span><span class="text-red-400 font-semibold">42%</span>
-        </div>
-        <div class="prog-bar">
-          <div class="prog-fill" style="width:42%;background:linear-gradient(90deg,#f87171,#dc2626);"></div>
+        <div class="mt-4">
+          <div class="flex justify-between text-xs text-gray-500 mb-1">
+            <span>Gastos vs Ganancias</span><span id="finPctTxt" class="text-red-400 font-semibold">{{ finanzas.pct_gastos }}%</span>
+          </div>
+          <div class="prog-bar">
+            <div id="finBar" class="prog-fill" style="width:{{ finanzas.pct_gastos if finanzas.pct_gastos <= 100 else 100 }}%;background:linear-gradient(90deg,#f87171,#dc2626);"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -876,6 +877,32 @@ function cargarSemana(off) {
 }
 document.getElementById('weekPrev').addEventListener('click', () => cargarSemana(weekOffset - 1));
 document.getElementById('weekNext').addEventListener('click', () => { if (weekOffset < 0) cargarSemana(weekOffset + 1); });
+
+/* ── Finanzas por mes (◄ ►) — números enteros completos, datos reales ── */
+const fmtMoneda = n => '$' + Number(n || 0).toLocaleString('en-US');
+let finOffset = 0;
+function cargarFinanzas(off) {
+  off = Math.min(0, off);
+  fetch('/api/finanzas-mes?offset=' + off)
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById('finLabel').textContent  = d.label;
+      document.getElementById('finGan').textContent    = fmtMoneda(d.ganancias);
+      document.getElementById('finOrdenes').textContent  = d.ordenes;
+      document.getElementById('finFacturas').textContent = d.facturas;
+      document.getElementById('finNeta').textContent   = fmtMoneda(d.neta);
+      document.getElementById('finGas').textContent    = fmtMoneda(d.gastos);
+      document.getElementById('finPct').textContent    = d.pct_gastos + '%';
+      document.getElementById('finNeta2').textContent  = fmtMoneda(d.neta);
+      document.getElementById('finPctTxt').textContent = d.pct_gastos + '%';
+      document.getElementById('finBar').style.width    = Math.min(100, d.pct_gastos) + '%';
+      document.getElementById('finNext').style.opacity = d.esActual ? 0.35 : 1;
+      finOffset = d.offset;
+    })
+    .catch(() => {});
+}
+document.getElementById('finPrev').addEventListener('click', () => cargarFinanzas(finOffset - 1));
+document.getElementById('finNext').addEventListener('click', () => { if (finOffset < 0) cargarFinanzas(finOffset + 1); });
 
 /* ════════════════════════════
    ÓRDENES DE SERVICIO

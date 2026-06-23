@@ -430,6 +430,13 @@ def cerrar_orden(id):
     modelo.actualizar_estado_orden(id, id_estado, fecha_cierre, total)
     return redirect(url_for('ordenes'))
 
+@app.route('/ordenes/precio/<int:id>', methods=['POST'])
+def precio_orden(id):
+    # Solo registra el precio a cobrar (no cierra la orden; eso pasa al facturar)
+    total = request.form.get('total', 0)
+    modelo.actualizar_precio_orden(id, total)
+    return redirect(url_for('ordenes'))
+
 @app.route('/ordenes/eliminar/<int:id>')
 def eliminar_orden(id):
     modelo.eliminar_orden(id)
@@ -488,6 +495,9 @@ def agregar_factura():
     fecha          = request.form.get('fecha')
     total          = request.form.get('total')
     modelo.crear_factura(id_orden, id_metodo_pago, numero_factura, fecha, total)
+    # Al facturar, la orden ya terminó -> se cierra automáticamente (Finalizado)
+    if id_orden:
+        modelo.actualizar_estado_orden(id_orden, 2, fecha, total)
     return redirect(url_for('facturacion'))
 
 @app.route('/movimientos/agregar', methods=['POST'])
@@ -538,6 +548,32 @@ def eliminar_proveedor(id):
 #  ESTADÍSTICAS
 # ═════════════════════════════════════════
 
+MESES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+
+def _finanzas_con_extra(offset):
+    d = modelo.obtener_finanzas_mes(offset)
+    d['label'] = '%s %d' % (MESES_ES[d['mes'] - 1], d['anio'])
+    d['neta'] = d['ganancias'] - d['gastos']
+    d['pct_gastos'] = round(d['gastos'] / d['ganancias'] * 100) if d['ganancias'] else 0
+    d['offset'] = offset
+    d['esActual'] = offset == 0
+    return d
+
+
+@app.route('/api/finanzas-mes')
+def api_finanzas_mes():
+    if 'usuario' not in session:
+        return jsonify({'error': 'no autorizado'}), 401
+    try:
+        offset = int(request.args.get('offset', 0))
+    except (TypeError, ValueError):
+        offset = 0
+    offset = max(-600, min(0, offset))   # solo meses pasados y el actual
+    return jsonify(_finanzas_con_extra(offset))
+
+
 @app.route('/api/actividad-semanal')
 def api_actividad_semanal():
     if 'usuario' not in session:
@@ -567,6 +603,7 @@ def estadisticas():
     mensual      = modelo.obtener_actividad_mensual_anio()   # órdenes por mes del año actual
     anio_actual  = datetime.now().year
     ordenes_pendientes = modelo.obtener_ordenes_sin_finalizar()
+    finanzas     = _finanzas_con_extra(0)   # finanzas del mes actual
 
     # ── Datos reales para las tarjetas ──
     producto_top = modelo.obtener_producto_mas_vendido()   # {nombre_producto, total_ventas, ingresos}
@@ -588,7 +625,7 @@ def estadisticas():
     return render_template('estadisticas.html',
                            productos=productos, ordenes=lista_ord, facturas=facturas,
                            bajo_stock=bajo_stock, semana=semana, mensual=mensual, anio_actual=anio_actual,
-                           ordenes_pendientes=ordenes_pendientes,
+                           ordenes_pendientes=ordenes_pendientes, finanzas=finanzas,
                            producto_top=producto_top, mecanicos=mecanicos, ventas_cat=ventas_cat)
 
 ## ═════════════════════════════════════════

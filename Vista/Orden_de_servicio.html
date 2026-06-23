@@ -159,8 +159,6 @@
             <td class="p-3 text-neutral-400 font-mono text-xs">{{ o.fecha_cierre or '—' }}</td>
             <td class="p-3 font-mono font-medium text-neutral-200">{% if o.total %}${{ "{:,.0f}".format(o.total) }}{% else %}—{% endif %}</td>
             <td class="p-3 text-center space-x-1 whitespace-nowrap">
-              <button onclick="abrirCerrar({{ o.Id_orden }}, '{{ o.numero_orden }}')"
-                class="bg-neutral-800 hover:bg-amber-600 hover:text-black text-amber-400 px-3 py-1 rounded-md text-xs font-semibold transition">Cerrar</button>
               <a href="/ordenes/eliminar/{{ o.Id_orden }}"
                  onclick="return confirm('¿Eliminar la orden {{ o.numero_orden }}?')"
                  class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2.5 py-1.5 rounded-md text-xs transition inline-block">🗑️</a>
@@ -302,22 +300,18 @@
 <!-- MODAL CERRAR -->
 <div id="modalCerrar" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
   <div class="bg-[#111] rounded-xl p-6 w-full max-w-md border border-neutral-800 shadow-2xl">
-    <h2 class="text-xl font-bold font-['Rajdhani'] text-amber-400 mb-1 uppercase tracking-wider">Cerrar Orden Técnica</h2>
+    <h2 class="text-xl font-bold font-['Rajdhani'] text-amber-400 mb-1 uppercase tracking-wider">Precio a Cobrar</h2>
     <p id="textoOrden" class="text-neutral-500 text-xs mb-4 font-mono"></p>
     <form method="POST" id="formCerrar" class="space-y-4">
-      <input type="hidden" name="id_estado" value="2">
       <div>
-        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Fecha de liquidación oficial</label>
-        <input type="date" name="fecha_cierre" class="w-full rounded-lg p-2.5 text-sm" required>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Precio a cobrar ($)</label>
+        <input type="number" name="total" id="inputTotal" min="0" class="w-full rounded-lg p-2.5 text-sm font-mono" placeholder="0" required>
       </div>
-      <div>
-        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Costo total del servicio ($)</label>
-        <input type="number" name="total" min="0" class="w-full rounded-lg p-2.5 text-sm font-mono" placeholder="0" required>
-      </div>
+      <p class="text-neutral-500 text-[11px] leading-relaxed">💡 La orden se <b>cerrará automáticamente</b> cuando generes su factura en Facturación.</p>
       <div class="flex gap-3 pt-2">
         <button type="button" onclick="document.getElementById('modalCerrar').classList.add('hidden')"
           class="bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-sm px-4 py-2.5 rounded-lg w-full transition">Cancelar</button>
-        <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-black font-['Rajdhani'] font-bold uppercase tracking-wider text-sm px-4 py-2.5 rounded-lg w-full transition">Cerrar Operación</button>
+        <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-black font-['Rajdhani'] font-bold uppercase tracking-wider text-sm px-4 py-2.5 rounded-lg w-full transition">Guardar precio</button>
       </div>
     </form>
   </div>
@@ -383,9 +377,10 @@
       campo.value = hoy;  // la deja en hoy
     }
   })();
-  function abrirCerrar(id, numeroOrden) {
-    document.getElementById("formCerrar").action = "/ordenes/cerrar/" + id;
+  function abrirPrecio(id, numeroOrden, totalActual) {
+    document.getElementById("formCerrar").action = "/ordenes/precio/" + id;
     document.getElementById("textoOrden").textContent = "CÓDIGO DE ORDEN: N° " + numeroOrden;
+    document.getElementById("inputTotal").value = totalActual || "";
     document.getElementById("modalCerrar").classList.remove("hidden");
   }
 
