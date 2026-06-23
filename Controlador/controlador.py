@@ -389,6 +389,8 @@ def ordenes():
                            atenciones=atenciones,
                            siguiente_orden=siguiente,
                            marcas=marcas,
+                           productos=modelo.obtener_productos(),
+                           tipos_servicio=modelo.obtener_tipos_servicio(),
                            id_rol=session.get('id_rol'))
 
 @app.route('/ordenes/agregar', methods=['POST'])
@@ -518,6 +520,9 @@ def agregar_factura():
     id_metodo_pago = request.form.get('id_metodo_pago')
     fecha          = request.form.get('fecha')
     total          = request.form.get('total')
+    # Evita facturar dos veces la misma orden (no duplicar)
+    if id_orden and modelo.orden_tiene_factura(id_orden):
+        return redirect(url_for('facturacion'))
     # El número de factura se genera en el servidor (consecutivo, no se repite)
     numero_factura = modelo.obtener_siguiente_numero_factura()
     modelo.crear_factura(id_orden, id_metodo_pago, numero_factura, fecha, total)

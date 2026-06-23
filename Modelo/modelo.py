@@ -595,6 +595,15 @@ def obtener_factura_por_id(id):
     con.close()
     return resultado
 
+def orden_tiene_factura(id_orden):
+    # True si la orden ya fue facturada (para no duplicar facturas).
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("SELECT COUNT(*) FROM factura WHERE id_Orden_fk = %s", (id_orden,))
+    n = cursor.fetchone()[0]
+    con.close()
+    return n > 0
+
 def obtener_siguiente_numero_factura():
     # Devuelve el mayor numero_factura numérico + 1 (empieza en 1000 si no hay).
     con = conectar()
@@ -676,14 +685,16 @@ def obtener_movimientos():
         SELECT p.nombre_producto AS producto,
                'Salida' AS tipo,
                d.cantidad AS cantidad,
-               os.fecha_apertura AS fecha,
+               fa.fecha AS fecha,
                os.numero_orden AS numero_orden,
+               fa.numero_factura AS numero_factura,
                p.stock AS stock,
-               CONCAT('Orden #', COALESCE(os.numero_orden, '-')) AS observacion
+               CONCAT('Factura #', fa.numero_factura, ' · Orden #', os.numero_orden) AS observacion
         FROM detalle_orden d
-        JOIN producto p             ON d.id_Producto_fk = p.idProducto
-        LEFT JOIN orden_servicio os ON d.id_Orden_fk    = os.Id_orden
-        ORDER BY os.fecha_apertura DESC, d.idDetalleServicio DESC
+        JOIN producto p        ON d.id_Producto_fk = p.idProducto
+        JOIN orden_servicio os ON d.id_Orden_fk    = os.Id_orden
+        JOIN factura fa        ON fa.id_Orden_fk   = os.Id_orden
+        ORDER BY fa.fecha DESC, d.idDetalleServicio DESC
     """)
     resultado = cursor.fetchall()
     con.close()

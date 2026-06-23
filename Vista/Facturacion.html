@@ -130,12 +130,7 @@
   </div>
 
   <div id="panel-movimientos" class="hidden space-y-4">
-    <div class="flex justify-end">
-      <button onclick="document.getElementById('modalMovimiento').classList.remove('hidden')"
-        class="font-['Rajdhani'] font-bold text-sm bg-orange-600 hover:bg-orange-500 text-white px-5 py-2.5 rounded-lg uppercase tracking-wide transition shadow-lg shadow-orange-600/10">
-        + Nuevo Movimiento
-      </button>
-    </div>
+    <p class="text-neutral-500 text-xs">Se registran automáticamente los productos vendidos/usados en las órdenes de servicio.</p>
 
     <div class="card-dashboard p-4 overflow-x-auto">
       <table class="w-full text-sm text-left">
@@ -178,7 +173,8 @@
 <div id="modalFactura" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
   <div class="bg-[#111] rounded-xl p-6 w-full max-w-lg border border-neutral-800 shadow-2xl">
     <h2 class="text-xl font-bold font-['Rajdhani'] text-blue-400 mb-4 uppercase tracking-wider">Nueva Factura de Venta</h2>
-    <form method="POST" action="/facturacion/agregar" class="space-y-4">
+    <form method="POST" action="/facturacion/agregar" class="space-y-4"
+          onsubmit="var b=this.querySelector('button[type=submit]'); b.disabled=true; b.textContent='Guardando...';">
       <div>
         <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Orden de Servicio</label>
         <select name="id_orden" class="w-full rounded-lg p-2.5 text-sm" required>
@@ -190,7 +186,7 @@
       </div>
       <div>
         <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Método de Pago</label>
-        <select name="id_metodo_pago" class="w-full rounded-lg p-2.5 text-sm" required>
+        <select name="id_metodo_pago" id="metodoPago" class="w-full rounded-lg p-2.5 text-sm" required>
           <option value="">Seleccionar método...</option>
           {% for mp in metodos_pago %}
             <option value="{{ mp.idMetodoPago }}">{{ mp.nombre }}</option>
@@ -209,9 +205,23 @@
         </div>
         <div>
           <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Total ($)</label>
-          <input type="number" name="total" min="0" class="w-full rounded-lg p-2.5 text-sm font-mono" placeholder="0" required>
+          <input type="number" name="total" id="totalFactura" min="0" class="w-full rounded-lg p-2.5 text-sm font-mono" placeholder="0" required>
         </div>
       </div>
+
+      <!-- Calculadora de cambio (solo cuando el pago es Efectivo) -->
+      <div id="cashBox" class="hidden rounded-lg p-3 grid grid-cols-2 gap-3" style="background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.18);">
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Monto recibido ($)</label>
+          <input type="number" id="recibido" min="0" class="w-full rounded-lg p-2.5 text-sm font-mono" placeholder="0">
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Cambio a entregar</label>
+          <input type="text" id="cambio" readonly value="$0"
+                 class="w-full rounded-lg p-2.5 text-sm font-mono font-bold bg-neutral-900/60 text-emerald-400 cursor-not-allowed">
+        </div>
+      </div>
+
       <div class="flex gap-3 pt-2">
         <button type="button" onclick="document.getElementById('modalFactura').classList.add('hidden')"
           class="bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-sm px-4 py-2.5 rounded-lg w-full transition">Cancelar</button>
@@ -273,6 +283,36 @@
     document.getElementById('tab-facturas').className    = 'tab-btn px-2 py-3 transition ' + (cual === 'facturas'    ? 'tab-activa' : 'tab-inactiva');
     document.getElementById('tab-movimientos').className = 'tab-btn px-2 py-3 transition ' + (cual === 'movimientos' ? 'tab-activa' : 'tab-inactiva');
   }
+
+  /* Calculadora de cambio para pagos en Efectivo */
+  (function () {
+    var metodo = document.getElementById('metodoPago');
+    var total  = document.getElementById('totalFactura');
+    var cashBox = document.getElementById('cashBox');
+    var recibido = document.getElementById('recibido');
+    var cambio = document.getElementById('cambio');
+    if (!metodo) return;
+    function esEfectivo() {
+      var opt = metodo.options[metodo.selectedIndex];
+      return opt && /efectivo/i.test(opt.text);
+    }
+    function calc() {
+      var t = parseFloat(total.value) || 0;
+      var r = parseFloat(recibido.value) || 0;
+      var c = r - t;
+      if (c < 0) {
+        cambio.value = 'Falta $' + Math.abs(c).toLocaleString('en-US');
+        cambio.style.color = '#f87171';
+      } else {
+        cambio.value = '$' + c.toLocaleString('en-US');
+        cambio.style.color = '#34d399';
+      }
+    }
+    function toggle() { cashBox.classList.toggle('hidden', !esEfectivo()); calc(); }
+    metodo.addEventListener('change', toggle);
+    total.addEventListener('input', calc);
+    recibido.addEventListener('input', calc);
+  })();
 </script>
 </body>
 </html>
