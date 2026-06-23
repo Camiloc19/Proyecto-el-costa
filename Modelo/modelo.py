@@ -390,8 +390,11 @@ def actualizar_precio_orden(id, total):
     con.close()
 
 def eliminar_orden(id):
+    # Borra en cascada lo que cuelga de la orden (factura y detalles) y luego la orden.
     con = conectar()
     cursor = con.cursor()
+    cursor.execute("DELETE FROM factura WHERE id_Orden_fk=%s", (id,))
+    cursor.execute("DELETE FROM detalle_orden WHERE id_Orden_fk=%s", (id,))
     cursor.execute("DELETE FROM orden_servicio WHERE Id_orden=%s", (id,))
     con.commit()
     con.close()
@@ -556,11 +559,19 @@ def actualizar_producto(id, id_categoria, nombre, descripcion, stock, stock_mini
     con.close()
 
 def eliminar_producto(id):
+    # No se puede borrar si ya se usó en alguna orden/venta (se perdería el historial).
+    # Devuelve True si lo eliminó, False si está protegido por ventas.
     con = conectar()
     cursor = con.cursor()
+    cursor.execute("SELECT COUNT(*) FROM detalle_orden WHERE id_Producto_fk=%s", (id,))
+    if cursor.fetchone()[0] > 0:
+        con.close()
+        return False
+    cursor.execute("DELETE FROM producto_proveedor WHERE id_Producto_fk=%s", (id,))
     cursor.execute("DELETE FROM producto WHERE idProducto=%s", (id,))
     con.commit()
     con.close()
+    return True
 
 def obtener_productos_bajo_stock():
     con = conectar()
@@ -700,8 +711,10 @@ def actualizar_proveedor(id, nombre, nit, telefono, direccion):
     con.close()
 
 def eliminar_proveedor(id):
+    # Borra primero los vínculos producto-proveedor y luego el proveedor.
     con = conectar()
     cursor = con.cursor()
+    cursor.execute("DELETE FROM producto_proveedor WHERE id_Proveedor_fk=%s", (id,))
     cursor.execute("DELETE FROM proveedores WHERE idProveedor=%s", (id,))
     con.commit()
     con.close()
@@ -796,13 +809,13 @@ def obtener_atenciones_por_mecanico(id_mecanico):
     con.close()
     return resultado
 
-def crear_atencion(id_vehiculo, id_usuario, id_rol, fecha_inicio, fecha_final):
+def crear_atencion(id_vehiculo, id_usuario, id_rol, fecha_inicio, fecha_final, descripcion=None):
     con = conectar()
     cursor = con.cursor()
     cursor.execute("""
-        INSERT INTO atencion_vehiculo (id_Vehiculo_fk, id_Usuario_fk, id_Rol_fk, fecha_inicio, fecha_final) 
-        VALUES (%s, %s, %s, %s, %s)
-    """, (id_vehiculo, id_usuario, id_rol, fecha_inicio, fecha_final))
+        INSERT INTO atencion_vehiculo (id_Vehiculo_fk, id_Usuario_fk, id_Rol_fk, fecha_inicio, fecha_final, descripcion)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (id_vehiculo, id_usuario, id_rol, fecha_inicio, fecha_final, descripcion))
     con.commit()
     con.close()
 def validar_usuario(correo, contrasena):

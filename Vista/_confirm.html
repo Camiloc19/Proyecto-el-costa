@@ -1,0 +1,106 @@
+<!-- ════════════════════════════════════════════════════════════
+     Modal de confirmación REUTILIZABLE (mismo look que Empleados).
+     Uso: en cualquier <a>/<button> agrega:
+        data-confirm="Mensaje a mostrar"
+        data-confirm-title="Título"        (opcional)
+        data-confirm-ok="Texto del botón"  (opcional, por defecto "Eliminar")
+        data-confirm-class="gc-danger|gc-ok|gc-warn"  (opcional, color del botón)
+     El modal intercepta el click, muestra el aviso y, al confirmar,
+     navega (si es <a>) o envía el formulario (si es submit).
+     ════════════════════════════════════════════════════════════ -->
+<div id="gConfirm" class="gc-overlay">
+  <div class="gc-card" role="dialog" aria-modal="true">
+    <div class="gc-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h3 id="gcTitle">Confirmar acción</h3>
+    <p id="gcMsg">¿Seguro que deseas continuar?</p>
+    <div class="gc-actions">
+      <button type="button" id="gcCancel" class="gc-btn gc-cancel">Cancelar</button>
+      <button type="button" id="gcOk" class="gc-btn gc-danger">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .gc-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.78); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; z-index: 9999; padding: 16px; }
+  .gc-overlay.open { display: flex; animation: gcFade .2s ease; }
+  .gc-card { background: #0e0e0e; border: 1px solid #2a2a2a; border-radius: 18px; padding: 30px 28px;
+    max-width: 380px; width: 100%; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,.6);
+    animation: gcPop .26s cubic-bezier(.2,.9,.3,1.4); }
+  .gc-icon { width: 54px; height: 54px; margin: 0 auto 16px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; color: #f5c451; border: 1.5px solid rgba(245,196,81,.35);
+    background: rgba(245,196,81,.07); }
+  .gc-icon svg { width: 26px; height: 26px; }
+  .gc-card h3 { font-family: 'Orbitron','Rajdhani',sans-serif; font-size: 15px; color: #f5c451;
+    letter-spacing: .06em; text-transform: uppercase; margin: 0 0 10px; font-weight: 700; }
+  .gc-card p { font-size: 13px; color: #9a9a9a; line-height: 1.55; margin: 0 0 24px; }
+  .gc-card p b { color: #fff; }
+  .gc-actions { display: flex; gap: 12px; }
+  .gc-btn { flex: 1; padding: 11px 14px; border-radius: 11px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+  .gc-cancel { background: #1c1c1c; color: #ddd; border-color: #333; }
+  .gc-cancel:hover { background: #262626; }
+  .gc-danger { background: #ef4444; color: #fff; }
+  .gc-danger:hover { background: #dc2626; }
+  .gc-ok { background: #10b981; color: #fff; }
+  .gc-ok:hover { background: #059669; }
+  .gc-warn { background: #f59e0b; color: #111; }
+  .gc-warn:hover { background: #d97706; }
+  @keyframes gcFade { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes gcPop { from { opacity: 0; transform: translateY(10px) scale(.96) } to { opacity: 1; transform: none } }
+</style>
+
+<script>
+(function () {
+  var ov = document.getElementById('gConfirm');
+  var tEl = document.getElementById('gcTitle');
+  var mEl = document.getElementById('gcMsg');
+  var okEl = document.getElementById('gcOk');
+  var ccEl = document.getElementById('gcCancel');
+  var pending = null;
+
+  function close() { ov.classList.remove('open'); pending = null; }
+
+  // API global por si se quiere invocar manualmente
+  window.gConfirm = function (opts) {
+    opts = opts || {};
+    tEl.textContent = opts.title || 'Confirmar acción';
+    mEl.textContent = opts.msg || '¿Seguro que deseas continuar?';
+    okEl.textContent = opts.okText || 'Eliminar';
+    okEl.className = 'gc-btn ' + (opts.okClass || 'gc-danger');
+    pending = opts.onOk || null;
+    ov.classList.add('open');
+  };
+
+  okEl.addEventListener('click', function () { var p = pending; close(); if (p) p(); });
+  ccEl.addEventListener('click', close);
+  ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && ov.classList.contains('open')) close();
+  });
+
+  // Intercepta CUALQUIER elemento con data-confirm (en fase de captura, para
+  // adelantarse a la navegación / envío normal del enlace o formulario).
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-confirm]');
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    window.gConfirm({
+      title: el.getAttribute('data-confirm-title') || 'Confirmar acción',
+      msg: el.getAttribute('data-confirm'),
+      okText: el.getAttribute('data-confirm-ok') || 'Eliminar',
+      okClass: el.getAttribute('data-confirm-class') || 'gc-danger',
+      onOk: function () {
+        var href = el.getAttribute('href');
+        if (el.tagName === 'A' && href) { window.location.href = href; }
+        else if (el.form) { el.form.submit(); }
+        else if (el.tagName === 'FORM') { el.submit(); }
+        else if (el.getAttribute('data-confirm-href')) { window.location.href = el.getAttribute('data-confirm-href'); }
+      }
+    });
+  }, true);
+})();
+</script>

@@ -89,6 +89,26 @@
     </div>
   </header>
 
+  {% if request.args.get('err') == 'rel' %}
+  <div id="invToast" class="flex items-start gap-3 mb-5 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div class="text-sm">
+      <div class="font-bold">No se puede eliminar</div>
+      <div class="text-neutral-400 text-xs mt-0.5">{% if request.args.get('nombre') %}<b class="text-white">{{ request.args.get('nombre') }}</b> ya{% else %}Este producto ya{% endif %} se usó en órdenes/ventas. No se puede borrar para no perder el historial.</div>
+    </div>
+    <button onclick="this.parentElement.remove()" class="ml-auto text-red-300/60 hover:text-red-300 text-xl leading-none">&times;</button>
+  </div>
+  {% elif request.args.get('ok') == 'del' %}
+  <div id="invToast" class="flex items-start gap-3 mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <div class="text-sm">
+      <div class="font-bold">Producto eliminado</div>
+      <div class="text-neutral-400 text-xs mt-0.5">{% if request.args.get('nombre') %}<b class="text-white">{{ request.args.get('nombre') }}</b> se eliminó correctamente.{% else %}Se eliminó correctamente.{% endif %}</div>
+    </div>
+    <button onclick="this.parentElement.remove()" class="ml-auto text-emerald-300/60 hover:text-emerald-300 text-xl leading-none">&times;</button>
+  </div>
+  {% endif %}
+
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- PANEL IZQUIERDO: BUSCADOR Y REGISTRO -->
     <div class="lg:col-span-1 space-y-6">
@@ -192,7 +212,7 @@
                 <td class="p-3 font-mono text-neutral-300">${{ '{:,.0f}'.format(p.precio_venta) }}</td>
                 <td class="p-3 space-x-1 whitespace-nowrap">
                   <button type="button" onclick="editarProducto(this.closest('tr'))" class="bg-neutral-800 hover:bg-neutral-700 text-amber-400 px-2 py-1 rounded text-xs transition"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
-                  <a href="{{ url_for('eliminar_producto', id=p.idProducto) }}" onclick="return confirm('¿Eliminar producto del inventario?')" class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2 py-1 rounded text-xs transition inline-block"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
+                  <a href="{{ url_for('eliminar_producto', id=p.idProducto) }}" data-confirm='¿Seguro que deseas eliminar "{{ p.nombre_producto }}" del inventario? Esta acción no se puede deshacer.' data-confirm-title="Eliminar producto" class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2 py-1 rounded text-xs transition inline-block"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
                 </td>
               </tr>
               {% else %}
@@ -248,5 +268,14 @@ function buscar() {
   });
 }
 </script>
+<script>
+  (function(){
+    var t = document.getElementById('invToast');
+    if (!t) return;
+    if (window.history && history.replaceState) history.replaceState(null, '', window.location.pathname);
+    setTimeout(function(){ t.style.transition='opacity .4s'; t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 6000);
+  })();
+</script>
+{% include '_confirm.html' %}
 </body>
 </html>

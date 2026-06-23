@@ -310,41 +310,8 @@ def eliminar_usuario(id):
 #  VEHÍCULOS
 # ═════════════════════════════════════════
 
-@app.route('/vehiculos')
-def vehiculos():
-    lista    = modelo.obtener_vehiculos()
-    usuarios = modelo.obtener_usuarios()
-    marcas   = modelo.obtener_marcas()
-    return render_template('vehiculos.html', vehiculos=lista, usuarios=usuarios, marcas=marcas)
-
-@app.route('/vehiculos/agregar', methods=['POST'])
-def agregar_vehiculo():
-    id_usuario = request.form.get('id_usuario')
-    id_marca   = request.form.get('id_marca')
-    placa      = request.form.get('placa')
-    mod        = request.form.get('modelo')
-    anio       = request.form.get('anio')
-    color      = request.form.get('color')
-    tipo       = request.form.get('tipo')
-    modelo.crear_vehiculo(id_usuario, id_marca, placa, mod, anio, color, tipo)
-    return redirect(url_for('vehiculos'))
-
-@app.route('/vehiculos/editar/<int:id>', methods=['POST'])
-def editar_vehiculo(id):
-    id_usuario = request.form.get('id_usuario')
-    id_marca   = request.form.get('id_marca')
-    placa      = request.form.get('placa')
-    mod        = request.form.get('modelo')
-    anio       = request.form.get('anio')
-    color      = request.form.get('color')
-    tipo       = request.form.get('tipo')
-    modelo.actualizar_vehiculo(id, id_usuario, id_marca, placa, mod, anio, color, tipo)
-    return redirect(url_for('vehiculos'))
-
-@app.route('/vehiculos/eliminar/<int:id>')
-def eliminar_vehiculo(id):
-    modelo.eliminar_vehiculo(id)
-    return redirect(url_for('vehiculos'))
+# (Los vehículos no tienen página propia: se crean/gestionan automáticamente
+#  al generar las órdenes de servicio, usando placa y marca.)
 
 
 # ═════════════════════════════════════════
@@ -383,8 +350,15 @@ def editar_producto(id):
 
 @app.route('/inventario/eliminar/<int:id>')
 def eliminar_producto(id):
-    modelo.eliminar_producto(id)
-    return redirect(url_for('inventario'))
+    prod = modelo.obtener_producto_por_id(id)
+    nombre = (prod or {}).get('nombre_producto', '')
+    try:
+        ok = modelo.eliminar_producto(id)   # False si está en órdenes/ventas
+    except Exception:
+        ok = False
+    if ok:
+        return redirect(url_for('inventario', ok='del', nombre=nombre))
+    return redirect(url_for('inventario', err='rel', nombre=nombre))
 
 
 # ═════════════════════════════════════════
@@ -497,7 +471,10 @@ def eliminar_orden(id):
     # Solo Administrador y Super_administrador pueden eliminar
     if session.get('id_rol') not in (1, 2):
         return redirect(url_for('ordenes'))
-    modelo.eliminar_orden(id)
+    try:
+        modelo.eliminar_orden(id)   # borra en cascada factura y detalles
+    except Exception:
+        pass
     return redirect(url_for('ordenes'))
 
 @app.route('/ordenes/detalle/<int:id>')
@@ -521,10 +498,11 @@ def agregar_detalle():
 @app.route('/atenciones/agregar', methods=['POST'])
 def agregar_atencion():
     id_vehiculo = request.form.get('id_vehiculo')
-    id_usuario  = request.form.get('id_usuario')
+    id_usuario  = request.form.get('id_usuario')   # mecánico (rol 4)
     descripcion = request.form.get('descripcion')
     fecha       = request.form.get('fecha')
-    modelo.crear_atencion(id_vehiculo, id_usuario, descripcion, fecha)
+    # id_rol=4 (mecánico), fecha_final=None; la descripción queda en el historial
+    modelo.crear_atencion(id_vehiculo, id_usuario, 4, fecha, None, descripcion)
     return redirect(url_for('ordenes'))
 
 
@@ -568,15 +546,8 @@ def agregar_factura():
         modelo.actualizar_estado_orden(id_orden, 2, fecha, total)
     return redirect(url_for('facturacion'))
 
-@app.route('/movimientos/agregar', methods=['POST'])
-def agregar_movimiento():
-    id_producto        = request.form.get('id_producto')
-    id_tipo_movimiento = request.form.get('id_tipo_movimiento')
-    cantidad           = request.form.get('cantidad')
-    fecha              = request.form.get('fecha')
-    observacion        = request.form.get('observacion')
-    modelo.registrar_movimiento(id_producto, id_tipo_movimiento, cantidad, fecha, observacion)
-    return redirect(url_for('facturacion'))
+# (Los movimientos de inventario ya no se registran a mano: aparecen
+#  automáticamente desde los productos vendidos en cada factura.)
 
 
 # ═════════════════════════════════════════
@@ -608,7 +579,10 @@ def editar_proveedor(id):
 
 @app.route('/proveedores/eliminar/<int:id>')
 def eliminar_proveedor(id):
-    modelo.eliminar_proveedor(id)
+    try:
+        modelo.eliminar_proveedor(id)   # borra primero los vínculos producto-proveedor
+    except Exception:
+        pass
     return redirect(url_for('proveedores'))
 
 

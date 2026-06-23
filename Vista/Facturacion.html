@@ -232,51 +232,6 @@
   </div>
 </div>
 
-<div id="modalMovimiento" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-  <div class="bg-[#111] rounded-xl p-6 w-full max-w-lg border border-neutral-800 shadow-2xl">
-    <h2 class="text-xl font-bold font-['Rajdhani'] text-orange-400 mb-4 uppercase tracking-wider">Nuevo Movimiento de Inventario</h2>
-    <form method="POST" action="/movimientos/agregar" class="space-y-4">
-      <div>
-        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Producto</label>
-        <select name="id_producto" class="w-full rounded-lg p-2.5 text-sm" required>
-          <option value="">Seleccionar producto...</option>
-          {% for p in productos %}
-            <option value="{{ p.idProducto }}">{{ p.nombre_producto }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Tipo de Movimiento</label>
-        <select name="id_tipo_movimiento" class="w-full rounded-lg p-2.5 text-sm" required>
-          <option value="">Seleccionar tipo...</option>
-          {% for t in tipos_movimiento %}
-            <option value="{{ t.idTipoMovimiento }}">{{ t.nombre }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Cantidad</label>
-          <input type="number" name="cantidad" min="1" class="w-full rounded-lg p-2.5 text-sm font-mono" required>
-        </div>
-        <div>
-          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Fecha</label>
-          <input type="date" name="fecha" value="{{ hoy }}" class="w-full rounded-lg p-2.5 text-sm" required>
-        </div>
-      </div>
-      <div>
-        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Observación</label>
-        <input type="text" name="observacion" class="w-full rounded-lg p-2.5 text-sm" placeholder="Opcional (Ej: Ajuste por garantía, stock inicial)">
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button type="button" onclick="document.getElementById('modalMovimiento').classList.add('hidden')"
-          class="bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-sm px-4 py-2.5 rounded-lg w-full transition">Cancelar</button>
-        <button type="submit" class="bg-orange-600 hover:bg-orange-500 text-white font-['Rajdhani'] font-bold uppercase tracking-wider text-sm px-4 py-2.5 rounded-lg w-full transition">Registrar</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <script>
   function cambiarPestana(cual) {
     document.getElementById('panel-facturas').classList.toggle('hidden', cual !== 'facturas');

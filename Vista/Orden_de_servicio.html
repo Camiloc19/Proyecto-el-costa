@@ -191,7 +191,8 @@
                 Producto
               </button>
               <a href="/ordenes/finalizar/{{ o.Id_orden }}"
-                 onclick="return confirm('¿Finalizar el servicio de la orden {{ o.numero_orden }}?')" title="Finalizar servicio"
+                 data-confirm="¿Finalizar el servicio de la orden #{{ o.numero_orden }}? Quedará marcada como Finalizada."
+                 data-confirm-title="Finalizar servicio" data-confirm-ok="Finalizar" data-confirm-class="gc-ok" title="Finalizar servicio"
                  class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-neutral-800/80 text-emerald-400 ring-1 ring-inset ring-emerald-500/20 hover:bg-emerald-600 hover:text-white hover:ring-emerald-500 transition">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </a>
@@ -204,7 +205,8 @@
                 Editar
               </button>
               <a href="/ordenes/eliminar/{{ o.Id_orden }}"
-                 onclick="return confirm('¿Eliminar la orden {{ o.numero_orden }}?')" title="Eliminar orden"
+                 data-confirm="¿Seguro que deseas eliminar la orden #{{ o.numero_orden }}? Esta acción no se puede deshacer."
+                 data-confirm-title="Eliminar orden" title="Eliminar orden"
                  class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-neutral-800/80 text-red-400 ring-1 ring-inset ring-red-500/20 hover:bg-red-600 hover:text-white hover:ring-red-500 transition">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
               </a>
@@ -577,5 +579,6 @@
   initCombo('comboModelo');
 </script>
 
+{% include '_confirm.html' %}
 </body>
 </html>

@@ -69,8 +69,10 @@
       <!-- ── 2FA ACTIVO ── -->
       <div class="estado on"><span class="dot dot-on"></span>Verificación en 2 pasos ACTIVADA</div>
       <p class="sub">Tu cuenta está protegida. Al iniciar sesión te pediremos el código de tu app.</p>
-      <form method="POST" action="/seguridad/desactivar" onsubmit="return confirm('¿Seguro que quieres desactivar la verificación en 2 pasos?');">
-        <button type="submit" class="btn btn-off">Desactivar 2FA</button>
+      <form method="POST" action="/seguridad/desactivar">
+        <button type="submit" class="btn btn-off"
+          data-confirm="¿Seguro que quieres desactivar la verificación en 2 pasos? Tu cuenta quedará protegida solo con la contraseña."
+          data-confirm-title="Desactivar 2FA" data-confirm-ok="Desactivar" data-confirm-class="gc-warn">Desactivar 2FA</button>
       </form>
 
     {% else %}
@@ -111,5 +113,6 @@
     formO.addEventListener('submit', sync);
     {% endif %}
   </script>
+{% include '_confirm.html' %}
 </body>
 </html>
