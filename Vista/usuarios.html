@@ -86,6 +86,8 @@
     .td-nom { font-weight: 600; }
     .td-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
+    .group-row td.group-title { background: rgba(240,192,64,0.06); color: var(--gold); font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; padding: 10px 18px; border-top: 1px solid var(--border-gold); }
+    .group-count { display: inline-block; background: rgba(240,192,64,0.15); color: var(--gold); border-radius: 20px; padding: 1px 9px; font-size: 10px; margin-left: 8px; }
     .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; letter-spacing: .04em; }
     .b-super { color:#F0C040; background:rgba(240,192,64,.08); border:1px solid rgba(240,192,64,.28); }
     .b-admin { color:#4ade80; background:rgba(74,222,128,.07); border:1px solid rgba(74,222,128,.2); }
@@ -142,6 +144,19 @@
       .form-grid { grid-template-columns: 1fr; }
       .form-grid .full { grid-column: 1; }
     }
+    /* Toast / aviso */
+    .toast { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px;
+             margin-bottom: 18px; border: 1px solid; backdrop-filter: blur(8px); animation: toastIn .4s cubic-bezier(.2,.9,.3,1.4) both; }
+    .toast-err { background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.35); color: #fca5a5; }
+    .toast-ok  { background: rgba(16,185,129,.10); border-color: rgba(16,185,129,.35); color: #6ee7b7; }
+    .toast svg { flex: 0 0 auto; margin-top: 1px; }
+    .toast-title { font-weight: 700; font-size: 13.5px; letter-spacing: .02em; }
+    .toast-msg { font-size: 12.5px; line-height: 1.45; color: var(--muted); margin-top: 2px; }
+    .toast-msg b { color: #fff; }
+    .toast-x { margin-left: auto; background: none; border: none; color: inherit; opacity: .6; font-size: 22px;
+               line-height: 1; cursor: pointer; padding: 0 4px; transition: opacity .15s; }
+    .toast-x:hover { opacity: 1; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -178,6 +193,26 @@
   <!-- ═══ MAIN ═══ -->
   <main>
 
+    {% if request.args.get('err') == 'rel' %}
+    <div id="toast" class="toast toast-err">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div>
+        <div class="toast-title">No se puede eliminar</div>
+        <div class="toast-msg">{% if request.args.get('nombre') %}<b>{{ request.args.get('nombre') }}</b> tiene{% else %}Este empleado tiene{% endif %}{% if request.args.get('n') and request.args.get('n')|int > 0 %} {{ request.args.get('n') }} orden(es) de servicio{% else %} registros{% endif %} asociados. No se puede borrar para no perder el historial.</div>
+      </div>
+      <button onclick="this.parentElement.remove()" class="toast-x" aria-label="Cerrar">&times;</button>
+    </div>
+    {% elif request.args.get('ok') == 'del' %}
+    <div id="toast" class="toast toast-ok">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <div>
+        <div class="toast-title">Empleado eliminado</div>
+        <div class="toast-msg">{% if request.args.get('nombre') %}<b>{{ request.args.get('nombre') }}</b> se eliminó correctamente.{% else %}Se eliminó correctamente.{% endif %}</div>
+      </div>
+      <button onclick="this.parentElement.remove()" class="toast-x" aria-label="Cerrar">&times;</button>
+    </div>
+    {% endif %}
+
     {% set n_super = usuarios | selectattr('id_Rol_fk','equalto',1) | list | length %}
     {% set n_admin = usuarios | selectattr('id_Rol_fk','equalto',2) | list | length %}
     {% set n_mec   = usuarios | selectattr('id_Rol_fk','equalto',4) | list | length %}
@@ -210,7 +245,6 @@
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="tabs">
-        <button class="tab active" data-f="todos">Todos</button>
         <button class="tab" data-f="admins">Administradores</button>
         <button class="tab" data-f="4">Mecánicos</button>
         <button class="tab" data-f="3">Clientes</button>
@@ -240,9 +274,14 @@
           </tr>
         </thead>
         <tbody id="tableBody">
-          {% for u in usuarios %}
+          {% set grupos = [{'t':'Administradores','roles':[1,2],'f':'admins'},{'t':'Mecánicos','roles':[4],'f':'4'},{'t':'Clientes','roles':[3],'f':'3'}] %}
+          {% for g in grupos %}
+          {% set miembros = usuarios | selectattr('id_Rol_fk','in', g.roles) | list %}
+          {% if miembros %}
+          <tr class="group-row" data-grupo="{{ g.f }}"><td colspan="5" class="group-title">{{ g.t }} <span class="group-count">{{ miembros|length }}</span></td></tr>
+          {% for u in miembros %}
           {% set rc = 'b-super' if u.id_Rol_fk == 1 else ('b-admin' if u.id_Rol_fk == 2 else ('b-mec' if u.id_Rol_fk == 4 else 'b-cli')) %}
-          <tr data-rol="{{ u.id_Rol_fk }}" data-search="{{ (u.nombre ~ ' ' ~ (u.apellido or '') ~ ' ' ~ (u.correo or '')) | lower }}">
+          <tr data-rol="{{ u.id_Rol_fk }}" data-grupo="{{ g.f }}" data-search="{{ (u.nombre ~ ' ' ~ (u.apellido or '') ~ ' ' ~ (u.correo or '')) | lower }}">
             <td class="td-id">#{{ '%03d'|format(u.idUsuario) }}</td>
             <td><div class="td-nom">{{ u.nombre }} {{ u.apellido or '' }}</div></td>
             <td class="td-sub" style="font-size:12px;">{{ u.correo or '—' }}</td>
@@ -266,6 +305,8 @@
               </div>
             </td>
           </tr>
+          {% endfor %}
+          {% endif %}
           {% endfor %}
         </tbody>
       </table>
@@ -397,25 +438,35 @@
   /* ═══ FILTROS (pestañas) + BÚSQUEDA ═══ */
   let filterRol = 'todos', searchQ = '';
   function applyFilter() {
-    const rows = document.querySelectorAll('#tableBody tr');
-    let visibles = 0;
-    rows.forEach(tr => {
-      const rol = tr.dataset.rol;
-      let okRol = (filterRol === 'todos')
-        || (filterRol === 'admins' && (rol === '1' || rol === '2'))
-        || (rol === filterRol);
+    // 1) Miembros: mostrar/ocultar por pestaña + búsqueda
+    const visibleGroups = {};
+    document.querySelectorAll('#tableBody tr[data-rol]').forEach(tr => {
+      const okRol = (filterRol === 'todos') || (tr.dataset.grupo === filterRol);
       const okSearch = !searchQ || (tr.dataset.search || '').includes(searchQ);
       const show = okRol && okSearch;
       tr.style.display = show ? '' : 'none';
-      if (show) visibles++;
+      if (show) visibleGroups[tr.dataset.grupo] = true;
     });
-    document.getElementById('emptyState').style.display = visibles ? 'none' : 'block';
+    // 2) Encabezados de grupo: visibles solo si su grupo tiene miembros visibles
+    let anyVisible = false;
+    document.querySelectorAll('#tableBody tr.group-row').forEach(h => {
+      const show = !!visibleGroups[h.dataset.grupo];
+      h.style.display = show ? '' : 'none';
+      if (show) anyVisible = true;
+    });
+    document.getElementById('emptyState').style.display = anyVisible ? 'none' : 'block';
   }
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
+      const yaActiva = btn.classList.contains('active');
       document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      filterRol = btn.dataset.f;
+      // Volver a tocar la pestaña activa = ver todos de nuevo
+      if (yaActiva) {
+        filterRol = 'todos';
+      } else {
+        btn.classList.add('active');
+        filterRol = btn.dataset.f;
+      }
       applyFilter();
     });
   });
@@ -427,6 +478,16 @@
   /* ═══ CERRAR AL TOCAR FONDO ═══ */
   document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
   document.getElementById('confirmOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeConfirm(); });
+
+  /* ═══ TOAST: auto-cerrar y limpiar la URL ═══ */
+  (function(){
+    var t = document.getElementById('toast');
+    if (!t) return;
+    // Quita ?err/?ok de la URL para que al recargar no reaparezca
+    if (window.history && history.replaceState) history.replaceState(null, '', window.location.pathname);
+    setTimeout(function(){ t.style.transition = 'opacity .4s, transform .4s'; t.style.opacity = '0'; t.style.transform = 'translateY(-10px)';
+                           setTimeout(function(){ t.remove(); }, 400); }, 6000);
+  })();
   </script>
 </body>
 </html>

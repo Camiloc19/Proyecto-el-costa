@@ -17,6 +17,21 @@ app = Flask(__name__, template_folder='../Vista', static_folder='../static')
 app.secret_key = 'taller_el_costa_2026'
 
 
+# Formatea una fecha (date o texto 'YYYY-MM-DD') como "23 jun 2026". Útil en las vistas.
+_MESES_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
+@app.template_filter('fecha_corta')
+def fecha_corta(v):
+    if not v:
+        return '—'
+    try:
+        if isinstance(v, str):
+            v = datetime.strptime(v[:10], '%Y-%m-%d').date()
+        return f"{v.day:02d} {_MESES_ES[v.month - 1]} {v.year}"
+    except Exception:
+        return str(v)
+
+
 # ═════════════════════════════════════════
 #  LOGIN
 # ═════════════════════════════════════════
@@ -215,18 +230,19 @@ def seguridad_desactivar():
 # ═════════════════════════════════════════
 
 MODULOS_POR_ROL = {
-    1: ['empleados', 'inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Super_administrador
-    2: ['inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],               # Administrador
-    3: [],                                                                                     # Cliente (sin acceso)
-    4: ['ordenes'],                                                                            # Mecánico
+    1: ['empleados', 'inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Super_administrador (R001: total)
+    2: ['empleados', 'inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Administrador (R002: gestiona usuarios/productos/órdenes + reportes)
+    3: [],                                                                                     # Cliente (R003: sin acceso al programa)
+    4: ['ordenes'],                                                                            # Mecánico (R004: solo órdenes asignadas)
 }
 
 
-def solo_superadmin():
-    # Devuelve un redirect si el usuario no es Super_administrador (rol 1); None si tiene permiso.
+def solo_administradores():
+    # Permite Super_administrador (1) y Administrador (2). Redirige al resto.
+    # R001/R002: ambos pueden crear, editar y eliminar usuarios.
     if 'usuario' not in session:
         return redirect(url_for('login'))
-    if session.get('id_rol') != 1:
+    if session.get('id_rol') not in (1, 2):
         return redirect(url_for('dashboard'))
     return None
 
@@ -243,7 +259,7 @@ def dashboard():
 
 @app.route('/usuarios')
 def usuarios():
-    guard = solo_superadmin()
+    guard = solo_administradores()
     if guard: return guard
     lista = modelo.obtener_usuarios()
     roles = modelo.obtener_roles()
@@ -251,7 +267,7 @@ def usuarios():
 
 @app.route('/usuarios/agregar', methods=['POST'])
 def agregar_usuario():
-    guard = solo_superadmin()
+    guard = solo_administradores()
     if guard: return guard
     nombre     = request.form.get('nombre')
     apellido   = request.form.get('apellido')
@@ -263,7 +279,7 @@ def agregar_usuario():
 
 @app.route('/usuarios/editar/<int:id>', methods=['POST'])
 def editar_usuario(id):
-    guard = solo_superadmin()
+    guard = solo_administradores()
     if guard: return guard
     nombre     = request.form.get('nombre')
     apellido   = request.form.get('apellido')
@@ -275,10 +291,19 @@ def editar_usuario(id):
 
 @app.route('/usuarios/eliminar/<int:id>')
 def eliminar_usuario(id):
-    guard = solo_superadmin()
+    guard = solo_administradores()
     if guard: return guard
-    modelo.eliminar_usuario(id)
-    return redirect(url_for('usuarios'))
+    u = modelo.obtener_usuario_por_id(id)
+    nombre = ((u.get('nombre') or '') + ' ' + (u.get('apellido') or '')).strip() if u else ''
+    # No se puede borrar si tiene órdenes/atenciones asociadas (la BD lo protege con FK)
+    dep = modelo.contar_dependencias_usuario(id)
+    if dep['total'] > 0:
+        return redirect(url_for('usuarios', err='rel', nombre=nombre, n=dep['ordenes']))
+    try:
+        modelo.eliminar_usuario(id)
+    except Exception:
+        return redirect(url_for('usuarios', err='rel', nombre=nombre))
+    return redirect(url_for('usuarios', ok='del', nombre=nombre))
 
 
 # ═════════════════════════════════════════
@@ -446,6 +471,14 @@ def precio_orden(id):
     modelo.actualizar_precio_orden(id, total)
     return redirect(url_for('ordenes'))
 
+@app.route('/ordenes/finalizar/<int:id>')
+def finalizar_orden(id):
+    # Finalizar servicio: admins (1,2) y mecánico (4) — R004
+    if session.get('id_rol') not in (1, 2, 4):
+        return redirect(url_for('login'))
+    modelo.finalizar_servicio(id, datetime.now().strftime('%Y-%m-%d'))
+    return redirect(url_for('ordenes'))
+
 @app.route('/ordenes/editar/<int:id>', methods=['POST'])
 def editar_orden(id):
     # Solo Administrador (2) y Super_administrador (1) pueden editar
@@ -474,6 +507,9 @@ def detalle_orden(id):
 
 @app.route('/ordenes/detalle/agregar', methods=['POST'])
 def agregar_detalle():
+    # Registrar repuestos/servicios: admins (1,2) y mecánico (4) — R004
+    if session.get('id_rol') not in (1, 2, 4):
+        return redirect(url_for('login'))
     id_orden         = request.form.get('id_orden')
     id_tipo_servicio = request.form.get('id_tipo_servicio')
     id_producto      = request.form.get('id_producto')
@@ -511,6 +547,7 @@ def facturacion():
                            movimientos=movimientos,
                            productos=productos,
                            tipos_movimiento=tipos_movimiento,
+                           ordenes_sin_factura=modelo.obtener_ordenes_sin_factura(),
                            siguiente_factura=modelo.obtener_siguiente_numero_factura(),
                            hoy=datetime.now().strftime('%Y-%m-%d'))
 

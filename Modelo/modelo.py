@@ -99,6 +99,17 @@ def eliminar_usuario(id):
     con.commit()
     con.close()
 
+def contar_dependencias_usuario(id):
+    # Cuenta registros que impiden borrar al usuario (órdenes de servicio + atenciones).
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("SELECT COUNT(*) FROM orden_servicio WHERE id_Usuario_fk=%s", (id,))
+    ordenes = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM atencion_vehiculo WHERE id_Usuario_fk=%s", (id,))
+    atenciones = cursor.fetchone()[0]
+    con.close()
+    return {'ordenes': ordenes, 'atenciones': atenciones, 'total': ordenes + atenciones}
+
 def obtener_roles():
     con = conectar()
     cursor = con.cursor(dictionary=True)
@@ -323,6 +334,15 @@ def actualizar_estado_orden(id, id_estado, fecha_cierre, total):
         UPDATE orden_servicio SET id_Estado_fk=%s, fecha_cierre=%s, total=%s 
         WHERE Id_orden=%s
     """, (id_estado, fecha_cierre, total, id))
+    con.commit()
+    con.close()
+
+def finalizar_servicio(id_orden, fecha_cierre):
+    # El mecánico marca el servicio como Finalizado (estado 2). No toca el total (eso lo pone la factura).
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("UPDATE orden_servicio SET id_Estado_fk=2, fecha_cierre=%s WHERE Id_orden=%s",
+                   (fecha_cierre, id_orden))
     con.commit()
     con.close()
 
@@ -592,6 +612,21 @@ def obtener_factura_por_id(id):
         WHERE f.idFactura = %s
     """, (id,))
     resultado = cursor.fetchone()
+    con.close()
+    return resultado
+
+def obtener_ordenes_sin_factura():
+    # Órdenes que aún NO tienen factura (para el buscador de Nueva Factura, sin repetir).
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT os.Id_orden, os.numero_orden, v.placa
+        FROM orden_servicio os
+        LEFT JOIN vehiculos v ON os.id_Vehiculo_fk = v.IDvehiculos
+        WHERE NOT EXISTS (SELECT 1 FROM factura f WHERE f.id_Orden_fk = os.Id_orden)
+        ORDER BY CAST(os.numero_orden AS UNSIGNED) DESC
+    """)
+    resultado = cursor.fetchall()
     con.close()
     return resultado
 

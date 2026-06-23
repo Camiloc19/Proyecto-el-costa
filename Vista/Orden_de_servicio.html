@@ -144,50 +144,72 @@
     <div class="card-dashboard p-4 overflow-x-auto">
       <table class="w-full text-sm text-left">
         <thead>
-          <tr class="border-b border-neutral-800">
-            <th class="p-3">N° Orden</th>
-            <th class="p-3">Placa</th>
-            <th class="p-3">Cliente</th>
-            <th class="p-3">Estado</th>
-            <th class="p-3">Apertura</th>
-            <th class="p-3">Cierre</th>
-            <th class="p-3">Total</th>
-            <th class="p-3 text-center">Acciones</th>
+          <tr class="border-b border-neutral-800 text-[11px] uppercase tracking-[0.12em] text-amber-500/80">
+            <th class="px-3 py-3 font-semibold">N° Orden</th>
+            <th class="px-3 py-3 font-semibold">Placa</th>
+            <th class="px-3 py-3 font-semibold">Cliente</th>
+            <th class="px-3 py-3 font-semibold">Estado</th>
+            <th class="px-3 py-3 font-semibold">Apertura</th>
+            <th class="px-3 py-3 font-semibold">Cierre</th>
+            <th class="px-3 py-3 font-semibold text-right">Total</th>
+            <th class="px-3 py-3 font-semibold">Acciones</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-neutral-950">
+        <tbody class="divide-y divide-neutral-800/60">
           {% for o in ordenes %}
-          <tr class="hover:bg-white/[0.02] transition">
-            <td class="p-3 font-bold font-mono text-blue-400">{{ o.numero_orden }}</td>
-            <td class="p-3 font-medium text-white uppercase tracking-wider font-mono text-xs">{{ o.placa }}</td>
-            <td class="p-3 text-neutral-300">{{ o.cliente }}</td>
-            <td class="p-3">
-              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider
-                {% if o.estado == 'En proceso' %}bg-blue-500/10 text-blue-400 border border-blue-500/20
-                {% elif o.estado == 'Finalizado' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
-                {% else %}bg-neutral-500/10 text-neutral-400 border border-neutral-500/20{% endif %}">
+          <tr class="group hover:bg-white/[0.03] transition-colors">
+            <td class="px-3 py-3.5">
+              <span class="inline-flex items-center gap-1 font-mono font-bold text-blue-400 group-hover:text-blue-300 transition">
+                <span class="text-blue-500/50">#</span>{{ o.numero_orden }}
+              </span>
+            </td>
+            <td class="px-3 py-3.5">
+              <span class="inline-block bg-neutral-800/70 text-neutral-200 uppercase tracking-wider font-mono text-[11px] font-semibold px-2 py-1 rounded-md ring-1 ring-inset ring-white/5">{{ o.placa }}</span>
+            </td>
+            <td class="px-3 py-3.5 text-neutral-200 font-medium">{{ o.cliente }}</td>
+            <td class="px-3 py-3.5">
+              <span class="inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-md text-[10.5px] font-semibold uppercase tracking-wide leading-none
+                {% if o.estado == 'En proceso' %}bg-blue-500/10 text-blue-400 ring-1 ring-inset ring-blue-500/20
+                {% elif o.estado == 'Finalizado' %}bg-emerald-500/10 text-emerald-400 ring-1 ring-inset ring-emerald-500/20
+                {% else %}bg-neutral-500/10 text-neutral-400 ring-1 ring-inset ring-neutral-500/20{% endif %}">
+                <span class="h-1.5 w-1.5 rounded-full
+                  {% if o.estado == 'En proceso' %}bg-blue-400
+                  {% elif o.estado == 'Finalizado' %}bg-emerald-400{% else %}bg-neutral-400{% endif %}"></span>
                 {{ o.estado }}
               </span>
             </td>
-            <td class="p-3 text-neutral-400 font-mono text-xs">{{ o.fecha_apertura }}</td>
-            <td class="p-3 text-neutral-400 font-mono text-xs">{{ o.fecha_cierre or '—' }}</td>
-            <td class="p-3 font-mono font-medium text-neutral-200">{% if o.total %}${{ "{:,.0f}".format(o.total) }}{% else %}—{% endif %}</td>
-            <td class="p-3 text-center space-x-1 whitespace-nowrap">
-              {% if id_rol in [1, 2] %}
-              {% if o.estado != 'Finalizado' %}
-              <button onclick="abrirProducto({{ o.Id_orden }}, '{{ o.numero_orden }}')"
-                class="bg-neutral-800 hover:bg-emerald-600 hover:text-white text-emerald-400 px-3 py-1 rounded-md text-xs font-semibold transition">+ Producto</button>
-              {% endif %}
-              <button onclick='abrirEditar({{ o.Id_orden }}, {{ o.cliente|tojson }}, {{ (o.placa or "")|tojson }}, {{ (o.marca or "")|tojson }}, {{ (o.modelo_veh or "")|tojson }}, {{ (o.fecha_apertura|string)|tojson }})'
-                class="bg-neutral-800 hover:bg-blue-600 hover:text-white text-blue-400 px-3 py-1 rounded-md text-xs font-semibold transition">Editar</button>
-              <a href="/ordenes/eliminar/{{ o.Id_orden }}"
-                 onclick="return confirm('¿Eliminar la orden {{ o.numero_orden }}?')" title="Eliminar"
-                 class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2.5 py-1.5 rounded-md text-xs transition inline-flex items-center align-middle">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            <td class="px-3 py-3.5 text-neutral-400 text-xs whitespace-nowrap">{{ o.fecha_apertura|fecha_corta }}</td>
+            <td class="px-3 py-3.5 text-neutral-400 text-xs whitespace-nowrap">{{ o.fecha_cierre|fecha_corta }}</td>
+            <td class="px-3 py-3.5 text-right font-mono font-semibold {% if o.total %}text-emerald-400{% else %}text-neutral-600{% endif %}">{% if o.total %}${{ "{:,.0f}".format(o.total) }}{% else %}—{% endif %}</td>
+            <td class="px-3 py-3.5 whitespace-nowrap">
+              <div class="flex items-center justify-start gap-1.5">
+              {# Gestión del mecánico (R004) + admins (1,2): repuestos, observaciones y finalizar #}
+              {% if id_rol in [1, 2, 4] and o.estado != 'Finalizado' %}
+              <button onclick="abrirProducto({{ o.Id_orden }}, '{{ o.numero_orden }}')" title="Agregar repuesto"
+                class="group inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-neutral-800/80 text-emerald-400 ring-1 ring-inset ring-emerald-500/20 hover:bg-emerald-600 hover:text-white hover:ring-emerald-500 transition">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Producto
+              </button>
+              <a href="/ordenes/finalizar/{{ o.Id_orden }}"
+                 onclick="return confirm('¿Finalizar el servicio de la orden {{ o.numero_orden }}?')" title="Finalizar servicio"
+                 class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-neutral-800/80 text-emerald-400 ring-1 ring-inset ring-emerald-500/20 hover:bg-emerald-600 hover:text-white hover:ring-emerald-500 transition">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </a>
-              {% else %}
-              <span class="text-neutral-600 text-xs">—</span>
               {% endif %}
+              {# Editar / Eliminar: solo Super_admin y Administrador (R001/R002) #}
+              {% if id_rol in [1, 2] %}
+              <button onclick='abrirEditar({{ o.Id_orden }}, {{ o.cliente|tojson }}, {{ (o.placa or "")|tojson }}, {{ (o.marca or "")|tojson }}, {{ (o.modelo_veh or "")|tojson }}, {{ (o.fecha_apertura|string)|tojson }})' title="Editar orden"
+                class="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-neutral-800/80 text-blue-400 ring-1 ring-inset ring-blue-500/20 hover:bg-blue-600 hover:text-white hover:ring-blue-500 transition">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                Editar
+              </button>
+              <a href="/ordenes/eliminar/{{ o.Id_orden }}"
+                 onclick="return confirm('¿Eliminar la orden {{ o.numero_orden }}?')" title="Eliminar orden"
+                 class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-neutral-800/80 text-red-400 ring-1 ring-inset ring-red-500/20 hover:bg-red-600 hover:text-white hover:ring-red-500 transition">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </a>
+              {% endif %}
+              </div>
             </td>
           </tr>
           {% else %}

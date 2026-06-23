@@ -173,16 +173,17 @@
 <div id="modalFactura" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
   <div class="bg-[#111] rounded-xl p-6 w-full max-w-lg border border-neutral-800 shadow-2xl">
     <h2 class="text-xl font-bold font-['Rajdhani'] text-blue-400 mb-4 uppercase tracking-wider">Nueva Factura de Venta</h2>
-    <form method="POST" action="/facturacion/agregar" class="space-y-4"
-          onsubmit="var b=this.querySelector('button[type=submit]'); b.disabled=true; b.textContent='Guardando...';">
+    <form method="POST" action="/facturacion/agregar" class="space-y-4" id="facturaForm">
       <div>
-        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Orden de Servicio</label>
-        <select name="id_orden" class="w-full rounded-lg p-2.5 text-sm" required>
-          <option value="">Seleccionar orden...</option>
-          {% for o in ordenes %}
-            <option value="{{ o.Id_orden }}">Orden #{{ o.numero_orden }} — {{ o.placa }}</option>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Orden de Servicio (escribe placa o N°)</label>
+        <input list="ordenesDL" id="ordenInput" autocomplete="off" placeholder="Ej: GTA504 o 6010"
+               class="w-full rounded-lg p-2.5 text-sm" required>
+        <datalist id="ordenesDL">
+          {% for o in ordenes_sin_factura %}
+          <option data-id="{{ o.Id_orden }}" value="#{{ o.numero_orden }} — {{ o.placa }}"></option>
           {% endfor %}
-        </select>
+        </datalist>
+        <input type="hidden" name="id_orden" id="ordenId">
       </div>
       <div>
         <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Método de Pago</label>
@@ -312,6 +313,34 @@
     metodo.addEventListener('change', toggle);
     total.addEventListener('input', calc);
     recibido.addEventListener('input', calc);
+  })();
+
+  /* Buscador de orden (escribir placa o N°) + resolver el id real */
+  (function () {
+    var input = document.getElementById('ordenInput');
+    var hid   = document.getElementById('ordenId');
+    var dl    = document.getElementById('ordenesDL');
+    var form  = document.getElementById('facturaForm');
+    if (!input || !form) return;
+    function resolver() {
+      hid.value = '';
+      var opts = dl.options;
+      for (var i = 0; i < opts.length; i++) {
+        if (opts[i].value === input.value) { hid.value = opts[i].dataset.id; break; }
+      }
+    }
+    input.addEventListener('input', resolver);
+    input.addEventListener('change', resolver);
+    form.addEventListener('submit', function (e) {
+      resolver();
+      if (!hid.value) {
+        e.preventDefault();
+        alert('Selecciona una orden válida de la lista (escribe la placa o el número y elígela).');
+        return;
+      }
+      var b = form.querySelector('button[type=submit]');
+      b.disabled = true; b.textContent = 'Guardando...';
+    });
   })();
 </script>
 </body>
