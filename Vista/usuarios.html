@@ -281,7 +281,7 @@
   <div class="overlay" id="modalOverlay">
     <div class="modal">
       <svg class="modal-deco spin-ccw" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><path id="modalGear" fill="#F0C040" fill-rule="evenodd"/></svg>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       <div class="modal-title" id="modalTitle">Nuevo Empleado</div>
       <form id="userForm" method="POST" action="/usuarios/agregar">
         <div class="form-grid">
@@ -322,7 +322,7 @@
   <div class="overlay" id="confirmOverlay">
     <div class="modal" style="max-width:380px;">
       <div class="confirm-body">
-        <div class="confirm-icon">⚠️</div>
+        <div class="confirm-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <h3>Eliminar Empleado</h3>
         <p id="confirmText">¿Seguro que deseas eliminar este empleado? Esta acción no se puede deshacer.</p>
         <div style="display:flex;gap:10px;justify-content:center;">

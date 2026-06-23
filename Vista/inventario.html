@@ -96,7 +96,7 @@
       <!-- BUSCADOR -->
       <div class="card-dashboard p-5">
         <div class="flex items-center gap-3 mb-4">
-          <div class="text-xl text-amber-400">🔍</div>
+          <div class="text-xl text-amber-400"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
           <div>
             <h3 class="title-sector">Filtrar Catálogo</h3>
             <p class="text-neutral-500 text-xs">Localiza piezas o repuestos</p>
@@ -108,7 +108,7 @@
       <!-- FORMULARIO -->
       <div class="card-dashboard p-5">
         <div class="flex items-center gap-3 mb-4">
-          <div class="text-xl text-emerald-400">📦</div>
+          <div class="text-xl text-emerald-400"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></div>
           <div>
             <h3 class="title-sector" id="tituloForm">Gestionar Producto</h3>
             <p class="text-neutral-500 text-xs">Añadir o modificar el inventario</p>
@@ -136,7 +136,7 @@
           </div>
 
           <button type="submit" id="btnGuardar" class="btn-custom w-full mt-2 bg-gradient-to-r from-amber-500 to-yellow-600 text-black py-2.5 rounded-lg text-sm shadow-lg shadow-yellow-600/10 hover:brightness-110">
-            💾 Guardar Item
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar Item
           </button>
           <button type="button" onclick="cancelarEdicion()" id="btnCancelar" class="btn-custom w-full bg-neutral-800 text-neutral-300 py-2 rounded-lg text-xs hover:bg-neutral-700 hidden">
             Cancelar edición
@@ -191,8 +191,8 @@
                 <td class="p-3 font-mono text-neutral-300">${{ '{:,.0f}'.format(p.precio_compra) }}</td>
                 <td class="p-3 font-mono text-neutral-300">${{ '{:,.0f}'.format(p.precio_venta) }}</td>
                 <td class="p-3 space-x-1 whitespace-nowrap">
-                  <button type="button" onclick="editarProducto(this.closest('tr'))" class="bg-neutral-800 hover:bg-neutral-700 text-amber-400 px-2 py-1 rounded text-xs transition">✏️</button>
-                  <a href="{{ url_for('eliminar_producto', id=p.idProducto) }}" onclick="return confirm('¿Eliminar producto del inventario?')" class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2 py-1 rounded text-xs transition inline-block">🗑️</a>
+                  <button type="button" onclick="editarProducto(this.closest('tr'))" class="bg-neutral-800 hover:bg-neutral-700 text-amber-400 px-2 py-1 rounded text-xs transition"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
+                  <a href="{{ url_for('eliminar_producto', id=p.idProducto) }}" onclick="return confirm('¿Eliminar producto del inventario?')" class="bg-neutral-800 hover:bg-red-950 text-red-400 px-2 py-1 rounded text-xs transition inline-block"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
                 </td>
               </tr>
               {% else %}
@@ -223,7 +223,7 @@ function editarProducto(fila) {
   form.action = "/inventario/editar/" + d.id;
 
   document.getElementById("tituloForm").textContent = "Editar Producto";
-  document.getElementById("btnGuardar").textContent = "💾 Actualizar Item";
+  document.getElementById("btnGuardar").textContent = "<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Actualizar Item";
   document.getElementById("btnCancelar").classList.remove("hidden");
 
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -235,7 +235,7 @@ function cancelarEdicion() {
   form.action = "{{ url_for('agregar_producto') }}";
 
   document.getElementById("tituloForm").textContent = "Gestionar Producto";
-  document.getElementById("btnGuardar").textContent = "💾 Guardar Item";
+  document.getElementById("btnGuardar").textContent = "<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar Item";
   document.getElementById("btnCancelar").classList.add("hidden");
 }
 

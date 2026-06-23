@@ -79,17 +79,17 @@
 
   <header class="header">
     <div>
-      <h1 class="brand-name">🧾 FACTURACIÓN Y CONTROL</h1>
+      <h1 class="brand-name"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg> FACTURACIÓN Y CONTROL</h1>
       <p class="text-xs text-neutral-500 uppercase tracking-[0.2em] mt-1">Administración de ingresos e inventario</p>
     </div>
   </header>
 
   <div class="flex gap-6 mb-6 border-b border-neutral-800 pb-px">
     <button onclick="cambiarPestana('facturas')" id="tab-facturas" class="tab-btn px-2 py-3 transition tab-activa">
-      🧾 Historial de Facturas
+      <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg> Historial de Facturas
     </button>
     <button onclick="cambiarPestana('movimientos')" id="tab-movimientos" class="tab-btn px-2 py-3 transition tab-inactiva">
-      📦 Movimientos de Inventario
+      <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg> Movimientos de Inventario
     </button>
   </div>
 
@@ -196,13 +196,14 @@
         </select>
       </div>
       <div>
-        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Número de Factura</label>
-        <input type="text" name="numero_factura" class="w-full rounded-lg p-2.5 text-sm font-mono" placeholder="Ej: 1003" required>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Número de Factura (automático)</label>
+        <input type="text" name="numero_factura" value="{{ siguiente_factura }}" readonly
+               class="w-full rounded-lg p-2.5 text-sm font-mono bg-neutral-900/60 text-blue-400 cursor-not-allowed">
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Fecha</label>
-          <input type="date" name="fecha" class="w-full rounded-lg p-2.5 text-sm" required>
+          <input type="date" name="fecha" value="{{ hoy }}" class="w-full rounded-lg p-2.5 text-sm" required>
         </div>
         <div>
           <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Total ($)</label>
@@ -247,7 +248,7 @@
         </div>
         <div>
           <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1">Fecha</label>
-          <input type="date" name="fecha" class="w-full rounded-lg p-2.5 text-sm" required>
+          <input type="date" name="fecha" value="{{ hoy }}" class="w-full rounded-lg p-2.5 text-sm" required>
         </div>
       </div>
       <div>

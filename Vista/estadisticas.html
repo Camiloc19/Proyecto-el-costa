@@ -287,13 +287,14 @@
       {% if producto_top %}
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-               style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.2);">🏆</div>
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
+               style="background:linear-gradient(135deg,rgba(249,115,22,0.30),rgba(249,115,22,0.06));border:1px solid rgba(249,115,22,0.35);box-shadow:0 6px 18px -6px rgba(249,115,22,0.55);">🏆</div>
           <div>
             <p class="text-gray-400 text-xs uppercase tracking-widest">Producto más vendido</p>
             <p class="text-white font-bold text-lg leading-tight" style="font-family:'Oswald',sans-serif;">{{ producto_top.nombre_producto }}</p>
           </div>
         </div>
+        <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style="background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.3);">🔥 Top ventas</span>
       </div>
 
       <div class="grid grid-cols-2 gap-2">
@@ -303,7 +304,7 @@
           <p class="stat-sq-label">Ventas totales</p>
         </div>
         <div class="stat-sq anim-2">
-          <span class="stat-sq-icon">💰</span>
+          <span class="stat-sq-icon">💵</span>
           <p class="stat-sq-num">${{ "{:,.0f}".format(producto_top.ingresos) }}</p>
           <p class="stat-sq-label">Ingresos</p>
         </div>
@@ -326,13 +327,16 @@
     <!-- Mecánico destacado -->
     <div id="card-mecanico" class="card card-blue card-mech-top anim-2" style="border:1px solid rgba(96,165,250,0.12);" onclick="celebrar(this)">
       {% if mecanicos %}
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-             style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.2);">👨‍🔧</div>
-        <div>
-          <p class="text-gray-400 text-xs uppercase tracking-widest">Mecánico destacado</p>
-          <p class="text-white font-bold text-lg leading-tight" style="font-family:'Oswald',sans-serif;">{{ mecanicos[0].mecanico }}</p>
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
+               style="background:linear-gradient(135deg,rgba(96,165,250,0.30),rgba(96,165,250,0.06));border:1px solid rgba(96,165,250,0.35);box-shadow:0 6px 18px -6px rgba(96,165,250,0.55);">👨‍🔧</div>
+          <div>
+            <p class="text-gray-400 text-xs uppercase tracking-widest">Mecánico destacado</p>
+            <p class="text-white font-bold text-lg leading-tight" style="font-family:'Oswald',sans-serif;">{{ mecanicos[0].mecanico }}</p>
+          </div>
         </div>
+        <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style="background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);">👑 #1</span>
       </div>
 
       <div class="rounded-xl p-4 text-center count-anim mb-4"
@@ -342,9 +346,9 @@
       </div>
 
       <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:0.85rem;">
-        <p class="text-gray-400 text-xs uppercase tracking-widest mb-3">🏅 Top 3 Mecánicos</p>
+        <p class="text-gray-400 text-xs uppercase tracking-widest mb-3">🏆 Top 3 Mecánicos</p>
         <div class="space-y-2">
-          {% set medallas = ['🏆','🥈','🥉'] %}
+          {% set medallas = ['🥇','🥈','🥉'] %}
           {% set fondos   = ['rgba(251,191,36,0.08)','rgba(209,213,219,0.06)','rgba(194,120,59,0.08)'] %}
           {% set bordes   = ['rgba(251,191,36,0.2)','rgba(209,213,219,0.15)','rgba(194,120,59,0.2)'] %}
           {% set barras   = ['linear-gradient(90deg,#fbbf24,#f59e0b)','linear-gradient(90deg,#d1d5db,#9ca3af)','linear-gradient(90deg,#c2783b,#a16207)'] %}
@@ -352,8 +356,9 @@
           {% for m in mecanicos %}
           <div class="flex items-center gap-3 rounded-xl px-3 py-2"
                style="background:{{ fondos[loop.index0] }};border:1px solid {{ bordes[loop.index0] }};
+                      {% if loop.index0 == 0 %}box-shadow:0 0 18px rgba(251,191,36,0.18);{% endif %}
                       animation:fadeUp 0.5s ease both;animation-delay:{{ 1.0 + loop.index0 * 0.1 }}s;">
-            <span class="text-xl flex-shrink-0">{{ medallas[loop.index0] }}</span>
+            <span class="text-xl flex-shrink-0 {{ textos[loop.index0] }}">{{ medallas[loop.index0]|safe }}</span>
             <div class="flex-1 min-w-0">
               <p class="text-white text-sm font-semibold leading-tight truncate">{{ m.mecanico }}</p>
               <div class="prog-bar mt-1" style="height:3px;">
@@ -379,7 +384,7 @@
   <div class="card anim-3 mb-6">
     <div class="flex items-center justify-between mb-5">
       <div>
-        <h3 class="text-white font-bold text-base">🗂️ Productos por Categoría</h3>
+        <h3 class="text-white font-bold text-base"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Productos por Categoría</h3>
         <p class="text-gray-500 text-xs">Ventas agrupadas por tipo de servicio</p>
       </div>
     </div>
@@ -396,7 +401,7 @@
     <div class="card anim-4">
       <div class="flex items-center justify-between mb-5">
         <div>
-          <h3 class="text-white font-bold text-base">📅 Actividad Mensual</h3>
+          <h3 class="text-white font-bold text-base"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Actividad Mensual</h3>
           <p class="text-gray-500 text-xs">Órdenes por mes — año {{ anio_actual }}</p>
         </div>
         <span class="text-xs font-semibold px-3 py-1 rounded-full"
@@ -411,7 +416,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between mb-5">
         <div>
-          <h3 class="text-white font-bold text-base">📆 Actividad Semanal</h3>
+          <h3 class="text-white font-bold text-base"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Actividad Semanal</h3>
           <p class="text-gray-500 text-xs">Órdenes por día — semana actual</p>
         </div>
         <div class="flex items-center gap-2">
@@ -454,7 +459,7 @@
              style="background:radial-gradient(circle,rgba(74,222,128,0.08),transparent);transform:translate(40%,-40%);"></div>
         <div class="flex items-center gap-3 mb-5">
           <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-               style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.2);">💵</div>
+               style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.2);"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
           <div>
             <p class="text-gray-400 text-xs uppercase tracking-widest">Ganancias del mes</p>
             <p id="finGan" class="text-green-400 font-bold text-2xl leading-tight" style="font-family:'Oswald',sans-serif;">${{ '{:,}'.format(finanzas.ganancias) }}</p>
@@ -482,7 +487,7 @@
              style="background:radial-gradient(circle,rgba(248,113,113,0.08),transparent);transform:translate(40%,-40%);"></div>
         <div class="flex items-center gap-3 mb-5">
           <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-               style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.2);">🧾</div>
+               style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.2);"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg></div>
           <div>
             <p class="text-gray-400 text-xs uppercase tracking-widest">Gastos del mes</p>
             <p id="finGas" class="text-red-400 font-bold text-2xl leading-tight" style="font-family:'Oswald',sans-serif;">${{ '{:,}'.format(finanzas.gastos) }}</p>
@@ -514,7 +519,7 @@
   <div class="card mt-6" style="border:1px solid rgba(255,255,255,0.07);">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
       <div>
-        <h3 class="text-white font-bold text-base">📋 Órdenes de Servicio</h3>
+        <h3 class="text-white font-bold text-base"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Órdenes de Servicio</h3>
         <p class="text-gray-500 text-xs">Órdenes sin finalizar (en proceso)</p>
       </div>
       <span class="text-xs font-semibold px-3 py-1 rounded-full"
@@ -533,14 +538,14 @@
       style="background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;cursor:pointer;
              padding:0.75rem 2rem;border-radius:999px;
              box-shadow:0 4px 20px rgba(239,68,68,0.35);">
-      📄 Exportar PDF
+      <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Exportar PDF
     </button>
     <button onclick="exportExcel()"
       class="flex items-center gap-2 font-semibold text-sm text-white transition-all hover:scale-105 active:scale-95"
       style="background:linear-gradient(135deg,#16a34a,#15803d);border:none;cursor:pointer;
              padding:0.75rem 2rem;border-radius:999px;
              box-shadow:0 4px 20px rgba(22,163,74,0.35);">
-      📊 Exportar Excel
+      <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> Exportar Excel
     </button>
   </div>
 
@@ -548,7 +553,7 @@
 
 <!-- Toast -->
 <div id="toast">
-  <span id="toast-icon">⏳</span>
+  <span id="toast-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
   <span id="toast-msg"></span>
 </div>
 
@@ -602,12 +607,12 @@ function gearPath(teeth, outerR, innerR, holeR, cx, cy) {
    CATEGORÍAS
 ════════════════════════════ */
 const categories = [
-  { icon:'🛢️', name:'Mantenimiento', color:'#f97316', bg:'rgba(249,115,22,0.1)',  border:'rgba(249,115,22,0.2)',  ventas:148, pct:100, ingresos:'$6.6M' },
-  { icon:'🛑', name:'Frenos',        color:'#f87171', bg:'rgba(248,113,113,0.1)', border:'rgba(248,113,113,0.2)', ventas: 94, pct: 64, ingresos:'$4.2M' },
-  { icon:'⚙️', name:'Motor',         color:'#60a5fa', bg:'rgba(96,165,250,0.1)',  border:'rgba(96,165,250,0.2)',  ventas: 76, pct: 51, ingresos:'$5.1M' },
-  { icon:'🔩', name:'Suspensión',    color:'#4ade80', bg:'rgba(74,222,128,0.1)',  border:'rgba(74,222,128,0.2)',  ventas: 55, pct: 37, ingresos:'$2.8M' },
-  { icon:'⚡', name:'Eléctrico',     color:'#fbbf24', bg:'rgba(251,191,36,0.1)',  border:'rgba(251,191,36,0.2)',  ventas: 42, pct: 28, ingresos:'$1.9M' },
-  { icon:'🚗', name:'Carrocería',    color:'#c084fc', bg:'rgba(192,132,252,0.1)', border:'rgba(192,132,252,0.2)', ventas: 31, pct: 21, ingresos:'$1.4M' },
+  { icon:'<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>', name:'Mantenimiento', color:'#f97316', bg:'rgba(249,115,22,0.1)',  border:'rgba(249,115,22,0.2)',  ventas:148, pct:100, ingresos:'$6.6M' },
+  { icon:'<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/></svg>', name:'Frenos',        color:'#f87171', bg:'rgba(248,113,113,0.1)', border:'rgba(248,113,113,0.2)', ventas: 94, pct: 64, ingresos:'$4.2M' },
+  { icon:'<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>', name:'Motor',         color:'#60a5fa', bg:'rgba(96,165,250,0.1)',  border:'rgba(96,165,250,0.2)',  ventas: 76, pct: 51, ingresos:'$5.1M' },
+  { icon:'<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>', name:'Suspensión',    color:'#4ade80', bg:'rgba(74,222,128,0.1)',  border:'rgba(74,222,128,0.2)',  ventas: 55, pct: 37, ingresos:'$2.8M' },
+  { icon:'<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', name:'Eléctrico',     color:'#fbbf24', bg:'rgba(251,191,36,0.1)',  border:'rgba(251,191,36,0.2)',  ventas: 42, pct: 28, ingresos:'$1.9M' },
+  { icon:'<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M5 17H3v-5l2-5h11l3 5h2v5h-2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>', name:'Carrocería',    color:'#c084fc', bg:'rgba(192,132,252,0.1)', border:'rgba(192,132,252,0.2)', ventas: 31, pct: 21, ingresos:'$1.4M' },
 ];
 
 const grid = document.getElementById('categories-grid');
@@ -911,15 +916,15 @@ document.getElementById('finNext').addEventListener('click', () => { if (finOffs
 const ordenes = {{ ordenes_pendientes | tojson }};
 
 const estadoBadge = {
-  completado: { bg:'rgba(74,222,128,0.12)',  color:'#4ade80',  label:'✅ Completado'  },
-  entregado:  { bg:'rgba(192,132,252,0.12)', color:'#c084fc',  label:'🟣 Entregado'   },
-  en_proceso: { bg:'rgba(96,165,250,0.12)',  color:'#60a5fa',  label:'🔵 En Proceso'  },
-  pendiente:  { bg:'rgba(251,191,36,0.12)',  color:'#fbbf24',  label:'🟡 Pendiente'   },
+  completado: { bg:'rgba(74,222,128,0.12)',  color:'#4ade80',  label:'<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polyline points="20 6 9 17 4 12"/></svg> Completado'  },
+  entregado:  { bg:'rgba(192,132,252,0.12)', color:'#c084fc',  label:'● Entregado'   },
+  en_proceso: { bg:'rgba(96,165,250,0.12)',  color:'#60a5fa',  label:'● En Proceso'  },
+  pendiente:  { bg:'rgba(251,191,36,0.12)',  color:'#fbbf24',  label:'● Pendiente'   },
 };
 
 const ordersList = document.getElementById('orders-list');
 if (!ordenes.length) {
-  ordersList.innerHTML = '<div style="text-align:center;padding:40px 16px;color:#6b7280;">✅ No hay órdenes sin finalizar.</div>';
+  ordersList.innerHTML = '<div style="text-align:center;padding:40px 16px;color:#6b7280;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polyline points="20 6 9 17 4 12"/></svg> No hay órdenes sin finalizar.</div>';
 }
 ordenes.forEach((o, idx) => {
   const badge = estadoBadge[o.estado];
@@ -946,33 +951,33 @@ ordenes.forEach((o, idx) => {
 
         <!-- Mecánico -->
         <div class="px-4 py-3">
-          <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">👨‍🔧 Mecánico</p>
+          <p class="text-gray-500 text-xs uppercase tracking-wider mb-1"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mecánico</p>
           <p class="text-white text-sm font-semibold">${o.mecanico}</p>
         </div>
 
         <!-- Cliente -->
         <div class="px-4 py-3">
-          <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">👤 Cliente</p>
+          <p class="text-gray-500 text-xs uppercase tracking-wider mb-1"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Cliente</p>
           <p class="text-white text-sm font-semibold">${o.cliente}</p>
         </div>
 
         <!-- Vehículo -->
         <div class="px-4 py-3">
-          <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">🚗 Vehículo</p>
+          <p class="text-gray-500 text-xs uppercase tracking-wider mb-1"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M5 17H3v-5l2-5h11l3 5h2v5h-2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg> Vehículo</p>
           <p class="text-white text-sm font-semibold">${o.marca}</p>
           <p class="text-orange-400 text-xs font-bold mt-0.5">${o.placa}</p>
         </div>
 
         <!-- Costo -->
         <div class="px-4 py-3">
-          <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">💰 Costo Total</p>
+          <p class="text-gray-500 text-xs uppercase tracking-wider mb-1"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Costo Total</p>
           <p class="text-green-400 text-lg font-bold" style="font-family:'Oswald',sans-serif;">${o.total}</p>
         </div>
       </div>
 
       <!-- Productos -->
       <div class="px-4 pb-4 pt-2" style="border-top:1px solid rgba(255,255,255,0.05);">
-        <p class="text-gray-500 text-xs uppercase tracking-wider mb-2">🔩 Productos utilizados</p>
+        <p class="text-gray-500 text-xs uppercase tracking-wider mb-2"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Productos utilizados</p>
         <div class="flex flex-wrap gap-2">
           ${o.productos.map(p => `
             <span class="text-xs px-2.5 py-1 rounded-lg"

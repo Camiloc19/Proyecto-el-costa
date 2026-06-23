@@ -392,7 +392,7 @@
       </div>
     </div>
     <div class="hdr-pills">
-      <span class="hdr-pill active">⚙ Admin</span>
+      <span class="hdr-pill active"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Admin</span>
       <span class="hdr-pill" onclick="showToast('Sesión cerrada')">← Salir</span>
     </div>
   </header>
@@ -477,7 +477,7 @@
       <svg class="modal-deco spin-ccw" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
         <path id="modalGear" fill="#F0C040" fill-rule="evenodd"/>
       </svg>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       <div class="modal-title" id="modalTitle">Nuevo Proveedor</div>
       <div class="form-grid">
         <div class="field full">
@@ -530,7 +530,7 @@
   <div class="overlay" id="confirmOverlay">
     <div class="modal" style="max-width:380px;">
       <div class="confirm-body">
-        <div class="confirm-icon">⚠️</div>
+        <div class="confirm-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <h3>Eliminar Proveedor</h3>
         <p id="confirmText">¿Seguro que deseas eliminar este proveedor? Esta acción no se puede deshacer.</p>
         <div style="display:flex;gap:10px;justify-content:center;">
@@ -703,10 +703,10 @@
     if (editId) {
       const i = db.findIndex(x=>x.id===editId);
       if (i!==-1) db[i] = {...db[i], ...data};
-      showToast('Proveedor actualizado ✓');
+      showToast('Proveedor actualizado <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polyline points="20 6 9 17 4 12"/></svg>');
     } else {
       db.push({id: nextId++, ...data});
-      showToast('Proveedor agregado ✓');
+      showToast('Proveedor agregado <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polyline points="20 6 9 17 4 12"/></svg>');
     }
     closeModal();
     render();

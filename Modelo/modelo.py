@@ -239,16 +239,42 @@ def obtener_ordenes():
     con = conectar()
     cursor = con.cursor(dictionary=True)
     cursor.execute("""
-        SELECT os.*, 
-               v.placa,
+        SELECT os.*,
+               v.placa, v.modelo AS modelo_veh,
+               mar.nombre AS marca,
                CONCAT(u.nombre, ' ', u.apellido) AS cliente,
                e.nombre AS estado
         FROM orden_servicio os
-        LEFT JOIN vehiculos v    ON os.id_Vehiculo_fk = v.IDvehiculos
-        LEFT JOIN usuarios u     ON os.id_Usuario_fk  = u.idUsuario
-        LEFT JOIN estado_orden e ON os.id_Estado_fk   = e.idEstado
+        LEFT JOIN vehiculos v       ON os.id_Vehiculo_fk = v.IDvehiculos
+        LEFT JOIN marca_vehiculo mar ON v.id_Marca_fk    = mar.idMarca
+        LEFT JOIN usuarios u        ON os.id_Usuario_fk  = u.idUsuario
+        LEFT JOIN estado_orden e    ON os.id_Estado_fk   = e.idEstado
         ORDER BY os.fecha_apertura DESC
     """)
+    resultado = cursor.fetchall()
+    con.close()
+    return resultado
+
+def obtener_ordenes_por_mecanico(id_mecanico):
+    # Órdenes de los vehículos que ESTE mecánico ha atendido (solo lo suyo).
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT os.*,
+               v.placa, v.modelo AS modelo_veh,
+               mar.nombre AS marca,
+               CONCAT(u.nombre, ' ', u.apellido) AS cliente,
+               e.nombre AS estado
+        FROM orden_servicio os
+        LEFT JOIN vehiculos v        ON os.id_Vehiculo_fk = v.IDvehiculos
+        LEFT JOIN marca_vehiculo mar ON v.id_Marca_fk     = mar.idMarca
+        LEFT JOIN usuarios u         ON os.id_Usuario_fk  = u.idUsuario
+        LEFT JOIN estado_orden e     ON os.id_Estado_fk   = e.idEstado
+        WHERE os.id_Vehiculo_fk IN (
+            SELECT id_Vehiculo_fk FROM atencion_vehiculo WHERE id_Usuario_fk = %s
+        )
+        ORDER BY os.fecha_apertura DESC
+    """, (id_mecanico,))
     resultado = cursor.fetchall()
     con.close()
     return resultado
@@ -297,6 +323,41 @@ def actualizar_estado_orden(id, id_estado, fecha_cierre, total):
         UPDATE orden_servicio SET id_Estado_fk=%s, fecha_cierre=%s, total=%s 
         WHERE Id_orden=%s
     """, (id_estado, fecha_cierre, total, id))
+    con.commit()
+    con.close()
+
+def actualizar_orden(id_orden, cliente, placa, marca, modelo_txt, fecha):
+    # Edita los datos de una orden: nombre del cliente, datos del vehículo y fecha.
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("SELECT id_Vehiculo_fk, id_Usuario_fk FROM orden_servicio WHERE Id_orden=%s", (id_orden,))
+    fila = cursor.fetchone()
+    if not fila:
+        con.close()
+        return
+    id_veh, id_cli = fila
+    # Cliente (nombre completo -> nombre + apellido)
+    nombre_completo = (cliente or '').strip()
+    partes = nombre_completo.split(' ', 1)
+    nombre = partes[0] if partes else ''
+    apellido = partes[1] if len(partes) > 1 else ''
+    if id_cli:
+        cursor.execute("UPDATE usuarios SET nombre=%s, apellido=%s WHERE idUsuario=%s",
+                       (nombre, apellido, id_cli))
+    # Marca (buscar o crear) y actualizar vehículo
+    if id_veh:
+        cursor.execute("SELECT idMarca FROM marca_vehiculo WHERE LOWER(nombre)=LOWER(%s)", (marca,))
+        m = cursor.fetchone()
+        if m:
+            id_marca = m[0]
+        else:
+            cursor.execute("INSERT INTO marca_vehiculo (nombre) VALUES (%s)", (marca,))
+            id_marca = cursor.lastrowid
+        cursor.execute("UPDATE vehiculos SET placa=%s, id_Marca_fk=%s, modelo=%s WHERE IDvehiculos=%s",
+                       (placa, id_marca, modelo_txt, id_veh))
+    # Fecha de apertura
+    if fecha:
+        cursor.execute("UPDATE orden_servicio SET fecha_apertura=%s WHERE Id_orden=%s", (fecha, id_orden))
     con.commit()
     con.close()
 
@@ -525,6 +586,15 @@ def obtener_factura_por_id(id):
     con.close()
     return resultado
 
+def obtener_siguiente_numero_factura():
+    # Devuelve el mayor numero_factura numérico + 1 (empieza en 1000 si no hay).
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("SELECT MAX(CAST(numero_factura AS UNSIGNED)) FROM factura")
+    maximo = cursor.fetchone()[0]
+    con.close()
+    return (maximo or 999) + 1
+
 def crear_factura(id_orden, id_metodo_pago, numero_factura, fecha, total):
     con = conectar()
     cursor = con.cursor()
@@ -641,7 +711,28 @@ def obtener_atenciones():
         LEFT JOIN vehiculos v ON av.id_Vehiculo_fk = v.IDvehiculos
         LEFT JOIN usuarios u  ON av.id_Usuario_fk  = u.idUsuario
         LEFT JOIN roles r     ON av.id_Rol_fk      = r.idRol
+        ORDER BY av.fecha_inicio DESC, av.idAtencion DESC
     """)
+    resultado = cursor.fetchall()
+    con.close()
+    return resultado
+
+def obtener_atenciones_por_mecanico(id_mecanico):
+    # Solo las atenciones asignadas a ESTE mecánico.
+    con = conectar()
+    cursor = con.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT av.*,
+               v.placa,
+               CONCAT(u.nombre, ' ', u.apellido) AS mecanico,
+               r.nombre AS rol
+        FROM atencion_vehiculo av
+        LEFT JOIN vehiculos v ON av.id_Vehiculo_fk = v.IDvehiculos
+        LEFT JOIN usuarios u  ON av.id_Usuario_fk  = u.idUsuario
+        LEFT JOIN roles r     ON av.id_Rol_fk      = r.idRol
+        WHERE av.id_Usuario_fk = %s
+        ORDER BY av.fecha_inicio DESC, av.idAtencion DESC
+    """, (id_mecanico,))
     resultado = cursor.fetchall()
     con.close()
     return resultado

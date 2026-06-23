@@ -97,7 +97,7 @@
 
       {% elif paso == 3 %}
       <!-- ── PASO 3: NUEVA CONTRASEÑA ── -->
-      <p class="subtitle">Código verificado ✓<br>Crea tu nueva contraseña.</p>
+      <p class="subtitle">Código verificado <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;display:inline-block"><polyline points="20 6 9 17 4 12"/></svg><br>Crea tu nueva contraseña.</p>
       <form method="POST" action="/recuperar/nueva" style="width:100%;display:flex;flex-direction:column;gap:16px;align-items:center;">
         <input type="password" name="contrasena" placeholder="Nueva contraseña" required autofocus/>
         <input type="password" name="confirmar" placeholder="Confirmar contraseña" required/>

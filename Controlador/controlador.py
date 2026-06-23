@@ -368,11 +368,17 @@ def eliminar_producto(id):
 
 @app.route('/ordenes')
 def ordenes():
-    lista      = modelo.obtener_ordenes()
+    # El mecánico (rol 4) solo ve SUS órdenes y SUS atenciones; admin/super ven todo.
+    if session.get('id_rol') == 4:
+        uid        = session.get('id_usuario')
+        lista      = modelo.obtener_ordenes_por_mecanico(uid)
+        atenciones = modelo.obtener_atenciones_por_mecanico(uid)
+    else:
+        lista      = modelo.obtener_ordenes()
+        atenciones = modelo.obtener_atenciones()
     lista_veh  = modelo.obtener_vehiculos()
     lista_usu  = modelo.obtener_usuarios()
     estados    = modelo.obtener_estados_orden()
-    atenciones = modelo.obtener_atenciones()
     siguiente  = modelo.obtener_siguiente_numero_orden()
     marcas     = modelo.obtener_marcas()
     return render_template('Orden_de_servicio.html',
@@ -382,7 +388,8 @@ def ordenes():
                            estados=estados,
                            atenciones=atenciones,
                            siguiente_orden=siguiente,
-                           marcas=marcas)
+                           marcas=marcas,
+                           id_rol=session.get('id_rol'))
 
 @app.route('/ordenes/agregar', methods=['POST'])
 def agregar_orden():
@@ -437,8 +444,24 @@ def precio_orden(id):
     modelo.actualizar_precio_orden(id, total)
     return redirect(url_for('ordenes'))
 
+@app.route('/ordenes/editar/<int:id>', methods=['POST'])
+def editar_orden(id):
+    # Solo Administrador (2) y Super_administrador (1) pueden editar
+    if session.get('id_rol') not in (1, 2):
+        return redirect(url_for('ordenes'))
+    cliente    = request.form.get('cliente')
+    placa      = (request.form.get('placa') or '').strip().upper()
+    marca      = request.form.get('marca')
+    modelo_txt = request.form.get('modelo')
+    fecha      = request.form.get('fecha_apertura')
+    modelo.actualizar_orden(id, cliente, placa, marca, modelo_txt, fecha)
+    return redirect(url_for('ordenes'))
+
 @app.route('/ordenes/eliminar/<int:id>')
 def eliminar_orden(id):
+    # Solo Administrador y Super_administrador pueden eliminar
+    if session.get('id_rol') not in (1, 2):
+        return redirect(url_for('ordenes'))
     modelo.eliminar_orden(id)
     return redirect(url_for('ordenes'))
 
@@ -485,15 +508,18 @@ def facturacion():
                            metodos_pago=metodos_pago,
                            movimientos=movimientos,
                            productos=productos,
-                           tipos_movimiento=tipos_movimiento)
+                           tipos_movimiento=tipos_movimiento,
+                           siguiente_factura=modelo.obtener_siguiente_numero_factura(),
+                           hoy=datetime.now().strftime('%Y-%m-%d'))
 
 @app.route('/facturacion/agregar', methods=['POST'])
 def agregar_factura():
     id_orden       = request.form.get('id_orden')
     id_metodo_pago = request.form.get('id_metodo_pago')
-    numero_factura = request.form.get('numero_factura')
     fecha          = request.form.get('fecha')
     total          = request.form.get('total')
+    # El número de factura se genera en el servidor (consecutivo, no se repite)
+    numero_factura = modelo.obtener_siguiente_numero_factura()
     modelo.crear_factura(id_orden, id_metodo_pago, numero_factura, fecha, total)
     # Al facturar, la orden ya terminó -> se cierra automáticamente (Finalizado)
     if id_orden:
