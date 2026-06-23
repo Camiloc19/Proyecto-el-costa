@@ -8,7 +8,7 @@ import hashlib
 import smtplib
 import pyotp
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timedelta
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Modelo'))
 import modelo
@@ -538,6 +538,25 @@ def eliminar_proveedor(id):
 #  ESTADÍSTICAS
 # ═════════════════════════════════════════
 
+@app.route('/api/actividad-semanal')
+def api_actividad_semanal():
+    if 'usuario' not in session:
+        return jsonify({'error': 'no autorizado'}), 401
+    try:
+        offset = int(request.args.get('offset', 0))
+    except (TypeError, ValueError):
+        offset = 0
+    offset = max(-520, min(0, offset))   # solo semanas pasadas y la actual
+    datos, lunes = modelo.obtener_ordenes_semana(offset)
+    domingo = lunes + timedelta(days=6)
+    meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+    if lunes.month == domingo.month:
+        label = "%d–%d %s %d" % (lunes.day, domingo.day, meses[lunes.month - 1], lunes.year)
+    else:
+        label = "%d %s – %d %s %d" % (lunes.day, meses[lunes.month - 1], domingo.day, meses[domingo.month - 1], domingo.year)
+    return jsonify({'datos': datos, 'label': label, 'offset': offset, 'esActual': offset == 0})
+
+
 @app.route('/estadisticas')
 def estadisticas():
     productos    = modelo.obtener_productos()
@@ -545,6 +564,8 @@ def estadisticas():
     facturas     = modelo.obtener_facturas()
     bajo_stock   = modelo.obtener_productos_bajo_stock()
     semana       = modelo.obtener_ordenes_semana_actual()
+    mensual      = modelo.obtener_actividad_mensual_anio()   # órdenes por mes del año actual
+    anio_actual  = datetime.now().year
 
     # ── Datos reales para las tarjetas ──
     producto_top = modelo.obtener_producto_mas_vendido()   # {nombre_producto, total_ventas, ingresos}
@@ -565,7 +586,7 @@ def estadisticas():
 
     return render_template('estadisticas.html',
                            productos=productos, ordenes=lista_ord, facturas=facturas,
-                           bajo_stock=bajo_stock, semana=semana,
+                           bajo_stock=bajo_stock, semana=semana, mensual=mensual, anio_actual=anio_actual,
                            producto_top=producto_top, mecanicos=mecanicos, ventas_cat=ventas_cat)
 
 ## ═════════════════════════════════════════

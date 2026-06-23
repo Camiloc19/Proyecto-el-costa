@@ -397,10 +397,10 @@
       <div class="flex items-center justify-between mb-5">
         <div>
           <h3 class="text-white font-bold text-base">📅 Actividad Mensual</h3>
-          <p class="text-gray-500 text-xs">Órdenes completadas por mes</p>
+          <p class="text-gray-500 text-xs">Órdenes por mes — año {{ anio_actual }}</p>
         </div>
         <span class="text-xs font-semibold px-3 py-1 rounded-full"
-              style="background:rgba(249,115,22,0.12);color:#f97316;">Últimos 12 meses</span>
+              style="background:rgba(249,115,22,0.12);color:#f97316;">{{ anio_actual }}</span>
       </div>
       <canvas id="chart-monthly" height="240"></canvas>
     </div>
@@ -414,8 +414,14 @@
           <h3 class="text-white font-bold text-base">📆 Actividad Semanal</h3>
           <p class="text-gray-500 text-xs">Órdenes por día — semana actual</p>
         </div>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full"
-              style="background:rgba(96,165,250,0.12);color:#60a5fa;">Semana actual</span>
+        <div class="flex items-center gap-2">
+          <button id="weekPrev" type="button" title="Semana anterior"
+                  style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#9ca3af;cursor:pointer;font-size:11px;">◄</button>
+          <span id="weekLabel" class="text-xs font-semibold px-3 py-1 rounded-full"
+                style="background:rgba(96,165,250,0.12);color:#60a5fa;min-width:120px;text-align:center;">Semana actual</span>
+          <button id="weekNext" type="button" title="Semana siguiente"
+                  style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#9ca3af;cursor:pointer;font-size:11px;opacity:0.35;">►</button>
+        </div>
       </div>
 
       <!-- Contadores por día -->
@@ -691,7 +697,7 @@ new Chart(document.getElementById('chart-monthly'), {
     labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
     datasets: [{
       label: 'Órdenes',
-      data: [28, 34, 41, 38, 52, 47, 61, 58, 44, 67, 53, 72],
+      data: {{ mensual | tojson }},
       backgroundColor: barColors.map(c => c + 'dd'),
       borderColor:     barColors,
       borderWidth: 0,
@@ -779,10 +785,13 @@ function hexToRgb(hex) {
 
 Chart.register(rect3DPlugin);
 
-// Contadores por día
+// Contadores por día (reutilizable para cualquier semana)
 const countersEl = document.getElementById('week-counters');
-weekShort.forEach((day, i) => {
-  const isMax = weekData[i] === weekMax;
+function renderCounters(weekData) {
+  const weekMax = Math.max(...weekData.filter(v => v > 0)) || 1;
+  countersEl.innerHTML = '';
+  weekShort.forEach((day, i) => {
+  const isMax = weekData[i] === weekMax && weekData[i] > 0;
   const pct   = Math.round((weekData[i] / weekMax) * 100);
   countersEl.innerHTML += `
     <div class="flex flex-col items-center gap-1 text-center"
@@ -803,9 +812,11 @@ weekShort.forEach((day, i) => {
       ${isMax ? `<span style="font-size:0.42rem;background:${weekColors[i]};color:#000;border-radius:99px;padding:1px 4px;font-weight:800;">MAX</span>` : ''}
     </div>
   `;
-});
+  });
+}
+renderCounters(weekData);
 
-new Chart(document.getElementById('chart-weekly'), {
+const weeklyChart = new Chart(document.getElementById('chart-weekly'), {
   type: 'bar',
   data: {
     labels: weekLabels,
@@ -835,6 +846,36 @@ new Chart(document.getElementById('chart-weekly'), {
     },
   },
 });
+
+/* ── Navegación de semanas (◄ ►) — los datos siempre están guardados en la BD ── */
+function aplicarSemana(data) {
+  renderCounters(data);
+  weeklyChart.data.datasets[0].data = data;
+  weeklyChart.update();
+}
+let weekOffset = 0;
+function cargarSemana(off) {
+  off = Math.min(0, off);
+  const nextBtn = document.getElementById('weekNext');
+  if (off === 0) {
+    aplicarSemana(weekDataRaw.map((v, i) => i <= diaActual ? v : 0));
+    document.getElementById('weekLabel').textContent = 'Semana actual';
+    nextBtn.style.opacity = 0.35;
+    weekOffset = 0;
+    return;
+  }
+  fetch('/api/actividad-semanal?offset=' + off)
+    .then(r => r.json())
+    .then(j => {
+      aplicarSemana(j.datos);
+      document.getElementById('weekLabel').textContent = j.label;
+      nextBtn.style.opacity = 1;
+      weekOffset = j.offset;
+    })
+    .catch(() => {});
+}
+document.getElementById('weekPrev').addEventListener('click', () => cargarSemana(weekOffset - 1));
+document.getElementById('weekNext').addEventListener('click', () => { if (weekOffset < 0) cargarSemana(weekOffset + 1); });
 
 /* ════════════════════════════
    ÓRDENES DE SERVICIO

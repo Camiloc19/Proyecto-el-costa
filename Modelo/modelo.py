@@ -653,6 +653,32 @@ def obtener_ventas_por_categoria():
     con.close()
     return resultado
 
+def obtener_actividad_mensual_anio(anio=None):
+    # Devuelve un arreglo de 12 posiciones (Ene..Dic) con las órdenes por mes del año dado.
+    con = conectar()
+    cursor = con.cursor()
+    if anio is None:
+        cursor.execute("""
+            SELECT MONTH(fecha_apertura) AS mes, COUNT(*) AS total
+            FROM orden_servicio
+            WHERE YEAR(fecha_apertura) = YEAR(CURDATE())
+            GROUP BY MONTH(fecha_apertura)
+        """)
+    else:
+        cursor.execute("""
+            SELECT MONTH(fecha_apertura) AS mes, COUNT(*) AS total
+            FROM orden_servicio
+            WHERE YEAR(fecha_apertura) = %s
+            GROUP BY MONTH(fecha_apertura)
+        """, (anio,))
+    datos = [0] * 12
+    for mes, total in cursor.fetchall():
+        if mes and 1 <= mes <= 12:
+            datos[mes - 1] = total
+    con.close()
+    return datos
+
+
 def obtener_actividad_mensual():
     con = conectar()
     cursor = con.cursor(dictionary=True)
@@ -699,22 +725,34 @@ def obtener_mecanico_destacado():
     con.close()
     return resultado
 
-def obtener_ordenes_semana_actual():
+def obtener_ordenes_semana(offset=0):
+    # offset = semanas relativas a la actual (0 = esta semana, -1 = la pasada, ...).
+    # Devuelve (datos[7] de Lun..Dom, fecha del lunes de esa semana).
     con = conectar()
     cursor = con.cursor(dictionary=True)
     cursor.execute("""
         SELECT DAYOFWEEK(fecha_apertura) AS dia, COUNT(*) AS total
         FROM orden_servicio
-        WHERE YEARWEEK(fecha_apertura, 1) = YEARWEEK(CURDATE(), 1)
+        WHERE YEARWEEK(fecha_apertura, 1) = YEARWEEK(DATE_ADD(CURDATE(), INTERVAL %s WEEK), 1)
         GROUP BY DAYOFWEEK(fecha_apertura)
-    """)
+    """, (offset,))
     resultado = cursor.fetchall()
+    cursor.execute(
+        "SELECT DATE_SUB(DATE_ADD(CURDATE(), INTERVAL %s WEEK), "
+        "INTERVAL WEEKDAY(DATE_ADD(CURDATE(), INTERVAL %s WEEK)) DAY) AS lunes",
+        (offset, offset))
+    lunes = cursor.fetchone()['lunes']
     con.close()
     datos = [0] * 7
     for r in resultado:
         dia = r['dia']
         if dia == 1:
-            datos[6] = r['total']
+            datos[6] = r['total']      # Domingo (DAYOFWEEK=1) va al final
         else:
             datos[dia - 2] = r['total']
+    return datos, lunes
+
+
+def obtener_ordenes_semana_actual():
+    datos, _ = obtener_ordenes_semana(0)
     return datos
