@@ -143,7 +143,8 @@
           <tr class="border-b border-neutral-800">
             <th class="p-3">Producto</th>
             <th class="p-3">Tipo</th>
-            <th class="p-3">Cantidad</th>
+            <th class="p-3">Cantidad usada</th>
+            <th class="p-3">Stock actual</th>
             <th class="p-3">Fecha</th>
             <th class="p-3">Observación</th>
           </tr>
@@ -159,12 +160,13 @@
                 {{ m.tipo }}
               </span>
             </td>
-            <td class="p-3 font-mono text-neutral-300">{{ m.cantidad }}</td>
+            <td class="p-3 font-mono text-red-400 font-bold">-{{ m.cantidad }}</td>
+            <td class="p-3 font-mono font-bold {% if m.stock <= 5 %}text-red-400{% else %}text-emerald-400{% endif %}">{{ m.stock }}</td>
             <td class="p-3 text-neutral-400 font-mono text-xs">{{ m.fecha }}</td>
             <td class="p-3 text-neutral-500 text-xs italic max-w-xs break-words">{{ m.observacion or '—' }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="5" class="p-8 text-center text-neutral-500 font-medium">No hay movimientos de inventario registrados.</td></tr>
+          <tr><td colspan="6" class="p-8 text-center text-neutral-500 font-medium">No hay movimientos de inventario registrados.</td></tr>
           {% endfor %}
         </tbody>
       </table>

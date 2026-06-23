@@ -460,9 +460,18 @@ def agregar_detalle_orden(id_orden, id_tipo_servicio, id_producto, cantidad, pre
     con = conectar()
     cursor = con.cursor()
     cursor.execute("""
-        INSERT INTO detalle_orden (id_Orden_fk, id_TipoServicio_fk, id_Producto_fk, cantidad, precio_unitario) 
+        INSERT INTO detalle_orden (id_Orden_fk, id_TipoServicio_fk, id_Producto_fk, cantidad, precio_unitario)
         VALUES (%s, %s, %s, %s, %s)
     """, (id_orden, id_tipo_servicio, id_producto, cantidad, precio_unitario))
+    # Descontar del inventario el producto utilizado (sin bajar de 0)
+    if id_producto:
+        try:
+            cant = int(cantidad or 0)
+        except (TypeError, ValueError):
+            cant = 0
+        if cant > 0:
+            cursor.execute("UPDATE producto SET stock = GREATEST(stock - %s, 0) WHERE idProducto=%s",
+                           (cant, id_producto))
     con.commit()
     con.close()
 
@@ -659,18 +668,22 @@ def eliminar_proveedor(id):
 # ═════════════════════════════════════════
 
 def obtener_movimientos():
+    # Movimientos reales: productos usados en las órdenes (salidas de inventario),
+    # con la cantidad gastada y el stock actual de cada producto.
     con = conectar()
     cursor = con.cursor(dictionary=True)
     cursor.execute("""
-        SELECT dm.*, 
-               tm.nombre AS tipo_movimiento,
-               f.numero_factura,
-               p.nombre_producto
-        FROM detalle_movimiento dm
-        LEFT JOIN tipo_movimiento tm    ON dm.id_TipoMovimiento_fk    = tm.idTipoMovimiento
-        LEFT JOIN factura f             ON dm.id_Factura_fk           = f.idFactura
-        LEFT JOIN producto_proveedor pp ON dm.id_ProductoProveedor_fk = pp.idProductoProveedor
-        LEFT JOIN producto p            ON pp.id_Producto_fk          = p.idProducto
+        SELECT p.nombre_producto AS producto,
+               'Salida' AS tipo,
+               d.cantidad AS cantidad,
+               os.fecha_apertura AS fecha,
+               os.numero_orden AS numero_orden,
+               p.stock AS stock,
+               CONCAT('Orden #', COALESCE(os.numero_orden, '-')) AS observacion
+        FROM detalle_orden d
+        JOIN producto p             ON d.id_Producto_fk = p.idProducto
+        LEFT JOIN orden_servicio os ON d.id_Orden_fk    = os.Id_orden
+        ORDER BY os.fecha_apertura DESC, d.idDetalleServicio DESC
     """)
     resultado = cursor.fetchall()
     con.close()
