@@ -1,0 +1,14 @@
+<!-- Botón de navegación reutilizable: volver atrás (al panel).
+     Si está dentro del visor (iframe) del dashboard, le pide al panel padre que
+     muestre el inicio (vacía el #hash) en vez de cargar el dashboard dentro del marco. -->
+<div class="navpills">
+  <a href="/dashboard" class="navpill"
+     onclick="if(window.top!==window.self){window.top.location.hash=''; return false;}">Atrás</a>
+</div>
+<style>
+  .navpills { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+  .navpill { font-size: 10.5px; color: #9a9a9a; border: 1px solid #2a2a2a; border-radius: 20px;
+    padding: 5px 14px; letter-spacing: .05em; text-decoration: none; white-space: nowrap;
+    transition: border-color .2s, color .2s; cursor: pointer; }
+  .navpill:hover { border-color: rgba(245,196,81,.5); color: #f5c451; }
+</style>

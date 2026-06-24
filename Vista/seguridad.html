@@ -84,7 +84,8 @@
       </form>
     {% endif %}
 
-    <a href="/dashboard" class="link">← Volver al panel</a>
+    <a href="/dashboard" class="link"
+       onclick="if(window.top!==window.self){window.top.location.hash=''; return false;}">Atrás</a>
   </div>
 
   <script>

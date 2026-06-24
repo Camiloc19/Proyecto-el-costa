@@ -185,8 +185,8 @@
       </div>
     </div>
     <div class="hdr-pills">
-      <a href="/dashboard" class="hdr-pill">← Panel</a>
-      <a href="/logout" class="hdr-pill">Salir</a>
+      <a href="/dashboard" class="hdr-pill"
+         onclick="if(window.top!==window.self){window.top.location.hash=''; return false;}">Atrás</a>
     </div>
   </header>
 
