@@ -3,3 +3,6 @@ Controlador/__pycache__/controlador.cpython-314.pyc
 
 # Artefactos de despliegue (solo locales, no van al repo compartido)
 deploy/
+
+# Credenciales locales del correo (contraseña de aplicación) — NUNCA subir
+config_local.py

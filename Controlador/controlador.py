@@ -13,6 +13,14 @@ from datetime import datetime, timedelta
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Modelo'))
 import modelo
 
+# Carga credenciales locales (correo, etc.) desde config_local.py si existe.
+# Ese archivo NO se sube al repo (está en .gitignore) para no exponer la contraseña.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+try:
+    import config_local  # noqa: F401  (define os.environ['MAIL_USER'] / ['MAIL_PASSWORD'])
+except Exception:
+    pass
+
 app = Flask(__name__, template_folder='../Vista', static_folder='../static')
 app.secret_key = 'taller_el_costa_2026'
 
@@ -94,26 +102,31 @@ def logout():
 # ═════════════════════════════════════════
 
 def enviar_codigo_correo(destino, codigo):
-    """Envía el código por Gmail si hay credenciales (MAIL_USER/MAIL_PASSWORD);
-    si no, lo imprime en consola (modo demo). Devuelve True si se envió por correo real."""
+    """Envía el código de recuperación por Gmail (MAIL_USER/MAIL_PASSWORD).
+    Devuelve True si el correo salió, False si no hay credenciales o falló el envío.
+    NUNCA muestra el código al usuario; un fallo solo se registra en la consola del servidor."""
     mail_user = os.environ.get('MAIL_USER')
     mail_pass = os.environ.get('MAIL_PASSWORD')
+    if not mail_user or not mail_pass:
+        print("[CORREO] Faltan credenciales MAIL_USER / MAIL_PASSWORD (revisa config_local.py).")
+        return False
     cuerpo = (
         f"Hola,\n\nTu código para recuperar la contraseña de Taller El Costa es:\n\n"
         f"    {codigo}\n\nEste código vence en 10 minutos. Si no fuiste tú, ignora este correo."
     )
-    if not mail_user or not mail_pass:
-        print(f"[DEMO] Código de recuperación para {destino}: {codigo}")
-        return False
     msg = MIMEText(cuerpo)
     msg['Subject'] = 'Código de recuperación — Taller El Costa'
     msg['From'] = mail_user
     msg['To'] = destino
-    contexto = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=contexto) as servidor:
-        servidor.login(mail_user, mail_pass)
-        servidor.sendmail(mail_user, destino, msg.as_string())
-    return True
+    try:
+        contexto = ssl.create_default_context()
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=contexto) as servidor:
+            servidor.login(mail_user, mail_pass)
+            servidor.sendmail(mail_user, destino, msg.as_string())
+        return True
+    except Exception as e:
+        print(f"[CORREO] No se pudo enviar a {destino}: {type(e).__name__}: {e}")
+        return False
 
 
 def _hash_codigo(codigo):
@@ -128,13 +141,16 @@ def recuperar():
         if not usuario:
             return render_template('recuperar.html', paso=1, error='No existe una cuenta con ese correo', correo=correo)
         codigo = '%06d' % random.randint(0, 999999)
+        enviado = enviar_codigo_correo(correo, codigo)
+        if not enviado:
+            # No se reveló el código: si el correo no salió, no se puede continuar.
+            return render_template('recuperar.html', paso=1, correo=correo,
+                                   error='No pudimos enviar el correo en este momento. Inténtalo más tarde o contacta al administrador.')
         session['rec_correo'] = correo
         session['rec_hash']   = _hash_codigo(codigo)
         session['rec_exp']    = time.time() + 600  # 10 minutos
         session.pop('rec_ok', None)
-        enviado = enviar_codigo_correo(correo, codigo)
-        aviso = None if enviado else f'Modo demo: tu código es {codigo} (revisa la consola del servidor)'
-        return render_template('recuperar.html', paso=2, correo=correo, aviso=aviso)
+        return render_template('recuperar.html', paso=2, correo=correo)
     return render_template('recuperar.html', paso=1)
 
 
