@@ -479,6 +479,19 @@ def obtener_detalle_orden(id_orden):
     con.close()
     return resultado
 
+def obtener_total_orden(id_orden):
+    """Calcula el total de una orden sumando cantidad * precio_unitario de todos los items."""
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("""
+        SELECT COALESCE(SUM(cantidad * precio_unitario), 0) as total
+        FROM detalle_orden
+        WHERE id_Orden_fk = %s
+    """, (id_orden,))
+    resultado = cursor.fetchone()
+    con.close()
+    return resultado[0] if resultado else 0
+
 def agregar_detalle_orden(id_orden, id_tipo_servicio, id_producto, cantidad, precio_unitario):
     con = conectar()
     cursor = con.cursor()
@@ -666,6 +679,14 @@ def crear_factura(id_orden, id_metodo_pago, numero_factura, fecha, total):
         INSERT INTO factura (id_Orden_fk, id_MetodoPago_fk, numero_factura, fecha, total) 
         VALUES (%s, %s, %s, %s, %s)
     """, (id_orden, id_metodo_pago, numero_factura, fecha, total))
+    con.commit()
+    con.close()
+
+def eliminar_factura(id):
+    """Elimina una factura por su ID. Solo Super Admin."""
+    con = conectar()
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM factura WHERE idFactura=%s", (id,))
     con.commit()
     con.close()
 

@@ -271,18 +271,34 @@
     recibido.addEventListener('input', calc);
   })();
 
-  /* Buscador de orden (escribir placa o N°) + resolver el id real */
+  /* Buscador de orden (escribir placa o N°) + resolver el id real + auto-llenar total */
   (function () {
     var input = document.getElementById('ordenInput');
     var hid   = document.getElementById('ordenId');
     var dl    = document.getElementById('ordenesDL');
     var form  = document.getElementById('facturaForm');
+    var totalInput = document.getElementById('totalFactura');
     if (!input || !form) return;
+    
     function resolver() {
       hid.value = '';
       var opts = dl.options;
       for (var i = 0; i < opts.length; i++) {
-        if (opts[i].value === input.value) { hid.value = opts[i].dataset.id; break; }
+        if (opts[i].value === input.value) { 
+          hid.value = opts[i].dataset.id; 
+          // Auto-llenar el total cuando se selecciona una orden
+          if (hid.value) {
+            fetch('/api/orden/' + hid.value + '/total')
+              .then(r => r.json())
+              .then(data => {
+                totalInput.value = Math.round(data.total);
+              })
+              .catch(() => {
+                totalInput.value = '0';
+              });
+          }
+          break; 
+        }
       }
     }
     input.addEventListener('input', resolver);

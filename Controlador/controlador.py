@@ -7,6 +7,7 @@ import random
 import hashlib
 import smtplib
 import pyotp
+import dns.resolver
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
@@ -246,8 +247,8 @@ def seguridad_desactivar():
 # ═════════════════════════════════════════
 
 MODULOS_POR_ROL = {
-    1: ['empleados', 'inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Super_administrador (R001: total)
-    2: ['empleados', 'inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Administrador (R002: gestiona usuarios/productos/órdenes + reportes)
+    1: ['empleados', 'inventario', 'ordenes', 'facturacion', 'proveedores', 'estadisticas'],  # Super_administrador (R001: control total)
+    2: ['inventario', 'ordenes', 'proveedores', 'estadisticas'],                              # Administrador (R002: gestión diaria, sin empleados ni facturas)
     3: [],                                                                                     # Cliente (R003: sin acceso al programa)
     4: ['ordenes'],                                                                            # Mecánico (R004: solo órdenes asignadas)
 }
@@ -255,10 +256,18 @@ MODULOS_POR_ROL = {
 
 def solo_administradores():
     # Permite Super_administrador (1) y Administrador (2). Redirige al resto.
-    # R001/R002: ambos pueden crear, editar y eliminar usuarios.
     if 'usuario' not in session:
         return redirect(url_for('login'))
     if session.get('id_rol') not in (1, 2):
+        return redirect(url_for('dashboard'))
+    return None
+
+def solo_super_administrador():
+    # Permite SOLO Super_administrador (1). Redirige al resto.
+    # R001: gestión de usuarios y facturas (solo super admin)
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    if session.get('id_rol') != 1:
         return redirect(url_for('dashboard'))
     return None
 
@@ -273,9 +282,34 @@ def dashboard():
 #  USUARIOS
 # ═════════════════════════════════════════
 
+def validar_nombre(nombre):
+    """Valida que el nombre solo contenga letras, espacios y caracteres válidos."""
+    if not nombre:
+        return False, "El nombre no puede estar vacío"
+    # Permite letras (incluyendo acentos) y espacios
+    if not all(c.isalpha() or c.isspace() or c in "áéíóúñÁÉÍÓÚÑ" for c in nombre):
+        return False, "El nombre solo puede contener letras"
+    return True, None
+
+def validar_dominio_correo(correo):
+    """Valida que el dominio del correo tenga registros MX válidos."""
+    if not correo or '@' not in correo:
+        return False, "Correo inválido"
+    
+    dominio = correo.split('@')[1].lower()
+    try:
+        dns.resolver.resolve(dominio, 'MX')
+        return True, None
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.exception.Timeout):
+        return False, "El dominio del correo no existe o no tiene servidor de correo"
+    except Exception as e:
+        # En caso de error de conexión DNS, permitir pero advertir
+        print(f"[DNS] Error validando {dominio}: {e}")
+        return False, "No se pudo validar el dominio del correo"
+
 @app.route('/usuarios')
 def usuarios():
-    guard = solo_administradores()
+    guard = solo_super_administrador()
     if guard: return guard
     lista = modelo.obtener_usuarios()
     roles = modelo.obtener_roles()
@@ -283,31 +317,69 @@ def usuarios():
 
 @app.route('/usuarios/agregar', methods=['POST'])
 def agregar_usuario():
-    guard = solo_administradores()
+    guard = solo_super_administrador()
     if guard: return guard
-    nombre     = request.form.get('nombre')
-    apellido   = request.form.get('apellido')
+    nombre     = (request.form.get('nombre') or '').strip()
+    apellido   = (request.form.get('apellido') or '').strip()
     contrasena = request.form.get('contrasena')
-    correo     = request.form.get('correo')
+    correo     = (request.form.get('correo') or '').strip()
     id_rol     = request.form.get('id_rol')
+    
+    # Validar nombre
+    nombre_valido, error_nombre = validar_nombre(nombre)
+    if not nombre_valido:
+        lista = modelo.obtener_usuarios()
+        roles = modelo.obtener_roles()
+        return render_template('usuarios.html', usuarios=lista, roles=roles, 
+                             error_agregar=error_nombre, nombre=nombre, apellido=apellido, correo=correo)
+    
+    # Validar dominio del correo
+    correo_valido, error_correo = validar_dominio_correo(correo)
+    if not correo_valido:
+        lista = modelo.obtener_usuarios()
+        roles = modelo.obtener_roles()
+        return render_template('usuarios.html', usuarios=lista, roles=roles, 
+                             error_agregar=error_correo, nombre=nombre, apellido=apellido, correo=correo)
+    
     modelo.crear_usuario(nombre, apellido, contrasena, correo, id_rol)
     return redirect(url_for('usuarios'))
 
 @app.route('/usuarios/editar/<int:id>', methods=['POST'])
 def editar_usuario(id):
-    guard = solo_administradores()
+    guard = solo_super_administrador()
     if guard: return guard
-    nombre     = request.form.get('nombre')
-    apellido   = request.form.get('apellido')
+    nombre     = (request.form.get('nombre') or '').strip()
+    apellido   = (request.form.get('apellido') or '').strip()
     contrasena = request.form.get('contrasena')
-    correo     = request.form.get('correo')
+    correo     = (request.form.get('correo') or '').strip()
     id_rol     = request.form.get('id_rol')
+    
+    # Validar nombre
+    nombre_valido, error_nombre = validar_nombre(nombre)
+    if not nombre_valido:
+        lista = modelo.obtener_usuarios()
+        roles = modelo.obtener_roles()
+        usuario = modelo.obtener_usuario_por_id(id)
+        return render_template('usuarios.html', usuarios=lista, roles=roles, 
+                             error_editar=error_nombre, usuario_edit=usuario, 
+                             nombre=nombre, apellido=apellido, correo=correo)
+    
+    # Validar dominio del correo
+    correo_valido, error_correo = validar_dominio_correo(correo)
+    if not correo_valido:
+        lista = modelo.obtener_usuarios()
+        roles = modelo.obtener_roles()
+        usuario = modelo.obtener_usuario_por_id(id)
+        return render_template('usuarios.html', usuarios=lista, roles=roles, 
+                             error_editar=error_correo, usuario_edit=usuario, 
+                             nombre=nombre, apellido=apellido, correo=correo)
+    
     modelo.actualizar_usuario(id, nombre, apellido, contrasena, correo, id_rol)
     return redirect(url_for('usuarios'))
 
 @app.route('/usuarios/eliminar/<int:id>')
 def eliminar_usuario(id):
-    guard = solo_administradores()
+    guard = solo_super_administrador()
     if guard: return guard
     u = modelo.obtener_usuario_por_id(id)
     nombre = ((u.get('nombre') or '') + ' ' + (u.get('apellido') or '')).strip() if u else ''
@@ -345,10 +417,13 @@ def agregar_producto():
     id_categoria  = request.form.get('id_categoria')
     nombre        = request.form.get('nombre')
     descripcion   = request.form.get('descripcion')
-    stock         = request.form.get('stock', 0)
-    stock_minimo  = request.form.get('stock_minimo', 0)
-    precio_compra = request.form.get('precio_compra', 0)
-    precio_venta  = request.form.get('precio_venta', 0)
+    stock         = float(request.form.get('stock', 0) or 0)
+    stock_minimo  = float(request.form.get('stock_minimo', 0) or 0)
+    precio_compra = float(request.form.get('precio_compra', 0) or 0)
+    precio_venta  = float(request.form.get('precio_venta', 0) or 0)
+    # Validar que stock y stock_minimo no sean negativos
+    if stock < 0 or stock_minimo < 0:
+        return redirect(url_for('inventario'))
     modelo.crear_producto(id_categoria, nombre, descripcion, stock, stock_minimo, precio_compra, precio_venta)
     return redirect(url_for('inventario'))
 
@@ -357,10 +432,13 @@ def editar_producto(id):
     id_categoria  = request.form.get('id_categoria')
     nombre        = request.form.get('nombre')
     descripcion   = request.form.get('descripcion')
-    stock         = request.form.get('stock', 0)
-    stock_minimo  = request.form.get('stock_minimo', 0)
-    precio_compra = request.form.get('precio_compra', 0)
-    precio_venta  = request.form.get('precio_venta', 0)
+    stock         = float(request.form.get('stock', 0) or 0)
+    stock_minimo  = float(request.form.get('stock_minimo', 0) or 0)
+    precio_compra = float(request.form.get('precio_compra', 0) or 0)
+    precio_venta  = float(request.form.get('precio_venta', 0) or 0)
+    # Validar que stock y stock_minimo no sean negativos
+    if stock < 0 or stock_minimo < 0:
+        return redirect(url_for('inventario'))
     modelo.actualizar_producto(id, id_categoria, nombre, descripcion, stock, stock_minimo, precio_compra, precio_venta)
     return redirect(url_for('inventario'))
 
@@ -417,6 +495,12 @@ def agregar_orden():
 
     # Cliente: se busca por nombre; si no existe, se registra como nuevo (rol 3)
     cliente_nombre = (request.form.get('cliente') or '').strip()
+    
+    # Validar que el nombre del cliente solo contenga letras, acentos y espacios
+    nombre_valido, error_msg = validar_nombre(cliente_nombre)
+    if not nombre_valido:
+        return redirect(url_for('ordenes'))
+    
     id_usuario = modelo.obtener_o_crear_cliente(cliente_nombre)
 
     # Vehículo: se busca por placa; si no existe, se registra como carro nuevo
@@ -547,6 +631,8 @@ def facturacion():
 
 @app.route('/facturacion/agregar', methods=['POST'])
 def agregar_factura():
+    guard = solo_super_administrador()
+    if guard: return guard
     id_orden       = request.form.get('id_orden')
     id_metodo_pago = request.form.get('id_metodo_pago')
     fecha          = request.form.get('fecha')
@@ -562,8 +648,23 @@ def agregar_factura():
         modelo.actualizar_estado_orden(id_orden, 2, fecha, total)
     return redirect(url_for('facturacion'))
 
-# (Los movimientos de inventario ya no se registran a mano: aparecen
-#  automáticamente desde los productos vendidos en cada factura.)
+@app.route('/facturacion/eliminar/<int:id>')
+def eliminar_factura(id):
+    guard = solo_super_administrador()
+    if guard: return guard
+    try:
+        modelo.eliminar_factura(id)
+    except Exception:
+        pass
+    return redirect(url_for('facturacion'))
+
+@app.route('/api/orden/<int:id_orden>/total')
+def api_total_orden(id_orden):
+    """API para obtener el total de una orden (para auto-llenar en facturación)."""
+    if 'usuario' not in session:
+        return jsonify({'error': 'No autorizado'}), 401
+    total = modelo.obtener_total_orden(id_orden)
+    return jsonify({'total': total})
 
 
 # ═════════════════════════════════════════
