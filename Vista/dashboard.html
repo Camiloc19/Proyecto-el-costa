@@ -445,7 +445,7 @@
           <section class="home-hero">
             <div class="hero-inner">
               <span class="hero-welcome">
-                Bienvenido{% if session.usuario %}, {{ session.usuario.split(' ')[0] }}{% endif %}
+                {% if session.genero == 'F' %}Bienvenida{% elif session.genero == 'M' %}Bienvenido{% else %}Te damos la bienvenida{% endif %}{% if session.usuario %}, {{ session.usuario.split(' ')[0] }}{% endif %}
               </span>
               <h1 class="hero-title">Tu taller,<br><span>bajo control</span></h1>
               <p class="hero-text">

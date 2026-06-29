@@ -74,6 +74,7 @@ def iniciar_sesion(usuario):
     session['id_rol']     = usuario['id_Rol_fk']
     session['id_usuario'] = usuario['idUsuario']
     session['correo']     = usuario.get('correo')
+    session['genero']     = usuario.get('genero')
 
 
 @app.route('/login/2fa', methods=['GET', 'POST'])
@@ -324,24 +325,25 @@ def agregar_usuario():
     contrasena = request.form.get('contrasena')
     correo     = (request.form.get('correo') or '').strip()
     id_rol     = request.form.get('id_rol')
-    
+    genero     = request.form.get('genero') or None
+
     # Validar nombre
     nombre_valido, error_nombre = validar_nombre(nombre)
     if not nombre_valido:
         lista = modelo.obtener_usuarios()
         roles = modelo.obtener_roles()
-        return render_template('usuarios.html', usuarios=lista, roles=roles, 
+        return render_template('usuarios.html', usuarios=lista, roles=roles,
                              error_agregar=error_nombre, nombre=nombre, apellido=apellido, correo=correo)
-    
+
     # Validar dominio del correo
     correo_valido, error_correo = validar_dominio_correo(correo)
     if not correo_valido:
         lista = modelo.obtener_usuarios()
         roles = modelo.obtener_roles()
-        return render_template('usuarios.html', usuarios=lista, roles=roles, 
+        return render_template('usuarios.html', usuarios=lista, roles=roles,
                              error_agregar=error_correo, nombre=nombre, apellido=apellido, correo=correo)
-    
-    modelo.crear_usuario(nombre, apellido, contrasena, correo, id_rol)
+
+    modelo.crear_usuario(nombre, apellido, contrasena, correo, id_rol, genero)
     return redirect(url_for('usuarios'))
 
 @app.route('/usuarios/editar/<int:id>', methods=['POST'])
@@ -353,28 +355,29 @@ def editar_usuario(id):
     contrasena = request.form.get('contrasena')
     correo     = (request.form.get('correo') or '').strip()
     id_rol     = request.form.get('id_rol')
-    
+    genero     = request.form.get('genero') or None
+
     # Validar nombre
     nombre_valido, error_nombre = validar_nombre(nombre)
     if not nombre_valido:
         lista = modelo.obtener_usuarios()
         roles = modelo.obtener_roles()
         usuario = modelo.obtener_usuario_por_id(id)
-        return render_template('usuarios.html', usuarios=lista, roles=roles, 
-                             error_editar=error_nombre, usuario_edit=usuario, 
+        return render_template('usuarios.html', usuarios=lista, roles=roles,
+                             error_editar=error_nombre, usuario_edit=usuario,
                              nombre=nombre, apellido=apellido, correo=correo)
-    
+
     # Validar dominio del correo
     correo_valido, error_correo = validar_dominio_correo(correo)
     if not correo_valido:
         lista = modelo.obtener_usuarios()
         roles = modelo.obtener_roles()
         usuario = modelo.obtener_usuario_por_id(id)
-        return render_template('usuarios.html', usuarios=lista, roles=roles, 
-                             error_editar=error_correo, usuario_edit=usuario, 
+        return render_template('usuarios.html', usuarios=lista, roles=roles,
+                             error_editar=error_correo, usuario_edit=usuario,
                              nombre=nombre, apellido=apellido, correo=correo)
-    
-    modelo.actualizar_usuario(id, nombre, apellido, contrasena, correo, id_rol)
+
+    modelo.actualizar_usuario(id, nombre, apellido, contrasena, correo, id_rol, genero)
     return redirect(url_for('usuarios'))
 
 @app.route('/usuarios/eliminar/<int:id>')
