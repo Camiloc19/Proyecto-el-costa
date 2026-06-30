@@ -198,8 +198,8 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </a>
               {% endif %}
-              {# Editar / Eliminar: solo Super_admin y Administrador (R001/R002) #}
-              {% if id_rol in [1, 2] %}
+              {# Editar / Eliminar: solo Super_admin (R001) #}
+              {% if id_rol == 1 %}
               <button onclick='abrirEditar({{ o.Id_orden }}, {{ o.cliente|tojson }}, {{ (o.placa or "")|tojson }}, {{ (o.marca or "")|tojson }}, {{ (o.modelo_veh or "")|tojson }}, {{ (o.fecha_apertura|string)|tojson }})' title="Editar orden"
                 class="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-neutral-800/80 text-blue-400 ring-1 ring-inset ring-blue-500/20 hover:bg-blue-600 hover:text-white hover:ring-blue-500 transition">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>

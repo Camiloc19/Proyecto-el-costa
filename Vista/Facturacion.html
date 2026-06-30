@@ -96,10 +96,12 @@
 
   <div id="panel-facturas" class="space-y-4">
     <div class="flex justify-end">
+      {% if id_rol == 1 %}
       <button onclick="document.getElementById('modalFactura').classList.remove('hidden')"
         class="font-['Rajdhani'] font-bold text-sm bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg uppercase tracking-wide transition shadow-lg shadow-blue-600/10">
         + Nueva Factura
       </button>
+      {% endif %}
     </div>
 
     <div class="card-dashboard p-4 overflow-x-auto">
@@ -111,6 +113,7 @@
             <th class="p-3">Método de Pago</th>
             <th class="p-3">Fecha</th>
             <th class="p-3">Total</th>
+            <th class="p-3">Acciones</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-950">
@@ -121,9 +124,21 @@
             <td class="p-3 text-neutral-400">{{ f.metodo_pago }}</td>
             <td class="p-3 text-neutral-400 font-mono text-xs">{{ f.fecha }}</td>
             <td class="p-3 font-mono font-bold text-emerald-400">${{ "{:,.0f}".format(f.total) }}</td>
+            <td class="p-3">
+              {% if id_rol == 1 %}
+              <a href="/facturacion/eliminar/{{ f.idFactura }}"
+                 data-confirm="¿Seguro que deseas eliminar la factura #{{ f.numero_factura }}? Esta acción no se puede deshacer."
+                 data-confirm-title="Eliminar factura" title="Eliminar factura"
+                 class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-neutral-800/80 text-red-400 ring-1 ring-inset ring-red-500/20 hover:bg-red-600 hover:text-white hover:ring-red-500 transition">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </a>
+              {% else %}
+              <span class="text-neutral-600 text-xs">—</span>
+              {% endif %}
+            </td>
           </tr>
           {% else %}
-          <tr><td colspan="5" class="p-8 text-center text-neutral-500 font-medium">No hay facturas registradas en el sistema.</td></tr>
+          <tr><td colspan="6" class="p-8 text-center text-neutral-500 font-medium">No hay facturas registradas en el sistema.</td></tr>
           {% endfor %}
         </tbody>
       </table>

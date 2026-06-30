@@ -255,6 +255,14 @@ MODULOS_POR_ROL = {
 }
 
 
+def puede_modificar_ordenes(id_rol):
+    return id_rol == 1
+
+
+def puede_modificar_facturas(id_rol):
+    return id_rol == 1
+
+
 def solo_administradores():
     # Permite Super_administrador (1) y Administrador (2). Redirige al resto.
     if 'usuario' not in session:
@@ -558,8 +566,8 @@ def finalizar_orden(id):
 
 @app.route('/ordenes/editar/<int:id>', methods=['POST'])
 def editar_orden(id):
-    # Solo Administrador (2) y Super_administrador (1) pueden editar
-    if session.get('id_rol') not in (1, 2):
+    # Solo el Super_administrador puede editar órdenes.
+    if not puede_modificar_ordenes(session.get('id_rol')):
         return redirect(url_for('ordenes'))
     cliente    = request.form.get('cliente')
     placa      = (request.form.get('placa') or '').strip().upper()
@@ -571,8 +579,8 @@ def editar_orden(id):
 
 @app.route('/ordenes/eliminar/<int:id>')
 def eliminar_orden(id):
-    # Solo Administrador y Super_administrador pueden eliminar
-    if session.get('id_rol') not in (1, 2):
+    # Solo el Super_administrador puede eliminar órdenes.
+    if not puede_modificar_ordenes(session.get('id_rol')):
         return redirect(url_for('ordenes'))
     try:
         modelo.eliminar_orden(id)   # borra en cascada factura y detalles
@@ -630,7 +638,8 @@ def facturacion():
                            tipos_movimiento=tipos_movimiento,
                            ordenes_sin_factura=modelo.obtener_ordenes_sin_factura(),
                            siguiente_factura=modelo.obtener_siguiente_numero_factura(),
-                           hoy=datetime.now().strftime('%Y-%m-%d'))
+                           hoy=datetime.now().strftime('%Y-%m-%d'),
+                           id_rol=session.get('id_rol'))
 
 @app.route('/facturacion/agregar', methods=['POST'])
 def agregar_factura():
