@@ -6,3 +6,6 @@ deploy/
 
 # Credenciales locales del correo (contraseña de aplicación) — NUNCA subir
 config_local.py
+
+# Skills de diseño de IA (no son parte de la app; movidas a Documentos/Skills-Diseno-Claude)
+.agents/
