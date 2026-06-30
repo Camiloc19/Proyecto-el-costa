@@ -76,9 +76,9 @@ def crear_usuario(nombre, apellido, contrasena, correo, id_rol, genero=None):
     con = conectar()
     cursor = con.cursor()
     cursor.execute("""
-        INSERT INTO usuarios (nombre, apellido, contraseña, correo, id_Rol_fk, genero)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (nombre, apellido, contrasena, correo, id_rol, genero))
+        INSERT INTO usuarios (nombre, apellido, contraseña, correo, id_Rol_fk)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (nombre, apellido, contrasena, correo, id_rol))
     con.commit()
     con.close()
 
@@ -86,9 +86,9 @@ def actualizar_usuario(id, nombre, apellido, contrasena, correo, id_rol, genero=
     con = conectar()
     cursor = con.cursor()
     cursor.execute("""
-        UPDATE usuarios SET nombre=%s, apellido=%s, contraseña=%s, correo=%s, id_Rol_fk=%s, genero=%s
+        UPDATE usuarios SET nombre=%s, apellido=%s, contraseña=%s, correo=%s, id_Rol_fk=%s
         WHERE idUsuario=%s
-    """, (nombre, apellido, contrasena, correo, id_rol, genero, id))
+    """, (nombre, apellido, contrasena, correo, id_rol, id))
     con.commit()
     con.close()
 

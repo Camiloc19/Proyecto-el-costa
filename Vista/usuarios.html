@@ -270,7 +270,7 @@
         <tbody id="tableBody">
           {% set grupos = [{'t':'Administradores','roles':[1,2],'f':'admins'},{'t':'Mecánicos','roles':[4],'f':'4'}] %}
           {% for g in grupos %}
-          {% set miembros = usuarios | selectattr('id_Rol_fk','in', g.roles) | list %}
+          {% set miembros = usuarios | selectattr('id_Rol_fk','in', g.roles) | rejectattr('idUsuario','equalto', id_usuario) | list %}
           {% if miembros %}
           <tr class="group-row" data-grupo="{{ g.f }}"><td colspan="5" class="group-title">{{ g.t }} <span class="group-count">{{ miembros|length }}</span></td></tr>
           {% for u in miembros %}

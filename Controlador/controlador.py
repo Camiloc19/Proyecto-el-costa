@@ -322,7 +322,7 @@ def usuarios():
     if guard: return guard
     lista = modelo.obtener_usuarios()
     roles = modelo.obtener_roles()
-    return render_template('usuarios.html', usuarios=lista, roles=roles)
+    return render_template('usuarios.html', usuarios=lista, roles=roles, id_usuario=session.get('id_usuario'))
 
 @app.route('/usuarios/agregar', methods=['POST'])
 def agregar_usuario():
